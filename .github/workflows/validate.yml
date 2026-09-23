@@ -1,0 +1,28 @@
+name: ADAMARKET validation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate inline JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path("index.html").read_text(encoding="utf-8")
+          scripts=re.findall(r"<script(?:\s[^>]*)?>([\s\S]*?)</script>", html, re.I)
+          inline=[s for s in scripts if s.strip() and "src=" not in s[:100]]
+          Path("/tmp/adamarket-inline.js").write_text("\n".join(inline),encoding="utf-8")
+          print("Inline scripts:",len(inline))
+          PY
+          node --check /tmp/adamarket-inline.js
+      - name: Check public API
+        run: |
+          curl -fsS "https://nmskpqugwiwdcukqckcy.supabase.co/functions/v1/adamarket-web-api?action=plans" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const x=JSON.parse(s);if(!x.ok)process.exit(1);console.log("plans:",(x.plans||[]).length)})'
+          curl -fsS "https://nmskpqugwiwdcukqckcy.supabase.co/functions/v1/adamarket-web-api?action=places" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const x=JSON.parse(s);if(!x.ok)process.exit(1);console.log("places:",(x.places||[]).length)})'
