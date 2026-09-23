@@ -1,0 +1,1 @@
+ADAMARKET standalone web app. Telegram Mini App is not required. Uses Supabase Auth and the ADAMARKET web API.
