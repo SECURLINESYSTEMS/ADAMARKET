@@ -65,6 +65,9 @@
 <div><label class="label">Город</label><input id="fCity" class="field" value="Ташкент"></div>
 <div><label class="label">Район</label><input id="fDistrict" class="field" placeholder="Яккасарайский"></div>
 <div class="full"><label class="label">Адрес</label><input id="fAddress" class="field" placeholder="Улица, дом"></div>
+<div><label class="label">Широта</label><input id="fLat" class="field" type="number" step="any" placeholder="41.3111"></div>
+<div><label class="label">Долгота</label><input id="fLng" class="field" type="number" step="any" placeholder="69.2797"></div>
+<div class="full"><button type="button" class="btn ghost" onclick="fillCurrentLocation()">📍 Определить координаты автоматически</button></div>
 <div><label class="label">Охват</label><input id="fReach" class="field" placeholder="50 000+"></div>
 <div><label class="label">Трафик</label><input id="fTraffic" class="field" placeholder="35 000+ в день"></div>
 <div class="full"><label class="label">Фотографии</label><div class="upload"><input id="fPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple onchange="previewPhotos()"><div id="previews" class="previews"></div><small style="color:#888">До 5 фотографий. Фото загружаются прямо с телефона/компьютера.</small></div></div>
