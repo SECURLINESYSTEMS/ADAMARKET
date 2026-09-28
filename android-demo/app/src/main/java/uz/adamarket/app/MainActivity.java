@@ -7,13 +7,16 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -34,11 +37,23 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(true);
         s.setAllowContentAccess(true);
         s.setMediaPlaybackRequiresUserGesture(false);
+        webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
-                if (u != null && (u.getScheme().equals("http") || u.getScheme().equals("https"))) { v.loadUrl(u.toString()); return true; }
+                if (u != null && "adamarket".equalsIgnoreCase(u.getScheme())) {
+                    v.loadUrl(DEMO_URL);
+                    return true;
+                }
+                if (u != null && ("http".equals(u.getScheme()) || "https".equals(u.getScheme()))) {
+                    v.loadUrl(u.toString());
+                    return true;
+                }
                 return false;
+            }
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                injectPatch();
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -61,6 +76,26 @@ public class MainActivity extends Activity {
         });
         webView.loadUrl(DEMO_URL);
     }
+
+    private void injectPatch() {
+        try {
+            InputStream in = getAssets().open("app_patch.js");
+            BufferedReader r = new BufferedReader(new InputStreamReader(in));
+            StringBuilder b = new StringBuilder(); String line;
+            while ((line = r.readLine()) != null) b.append(line).append('\n');
+            r.close();
+            String js = b.toString().replace("\\", "\\\\").replace("`", "\\`");
+            webView.evaluateJavascript("(function(){try{eval(`" + js + "`)}catch(e){console.error(e)}})();", null);
+        } catch (Exception ignored) {}
+    }
+
+    public class AndroidBridge {
+        @JavascriptInterface public void openUrl(String url) {
+            try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
+            catch (Exception ignored) {}
+        }
+    }
+
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_PICKER && uploadCallback != null) {
