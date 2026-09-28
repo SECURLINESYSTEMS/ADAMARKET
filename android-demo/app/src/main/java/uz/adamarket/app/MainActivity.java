@@ -78,8 +78,13 @@ public class MainActivity extends Activity {
     }
 
     private void injectPatch() {
+        injectAsset("app_patch.js");
+        injectAsset("guest_map_patch.js");
+    }
+
+    private void injectAsset(String assetName) {
         try {
-            InputStream in = getAssets().open("app_patch.js");
+            InputStream in = getAssets().open(assetName);
             BufferedReader r = new BufferedReader(new InputStreamReader(in));
             StringBuilder b = new StringBuilder(); String line;
             while ((line = r.readLine()) != null) b.append(line).append('\n');
