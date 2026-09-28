@@ -2,7 +2,7 @@
 'use strict';
 const KEY='adamarket_guest_mode';
 const protectedViews=['search','map','favorites','add','myads','plans','company','profile','admin'];
-function isGuest(){return !window.session||!window.session.user;}
+function isGuest(){return !window.__adamLoggedIn;}
 function openRegistration(){
   const auth=document.getElementById('authScreen'),app=document.getElementById('app');
   if(app)app.classList.add('hidden');
@@ -25,6 +25,7 @@ function showPublicHome(){
   if(typeof loadPlaces==='function')Promise.resolve(loadPlaces()).then(()=>{if(typeof go==='function')go('home')});
   else if(typeof go==='function')go('home');
 }
+function restoreLoggedInUi(){window.__adamLoggedIn=true;document.getElementById('topAvatar')?.classList.remove('hidden');const l=document.querySelector('.side button[onclick*="logout"]');if(l)l.classList.remove('hidden')}
 function patchGo(){
   if(typeof window.go!=='function'||window.go.__adamPublicHome)return;
   const old=window.go;
@@ -37,7 +38,11 @@ function patchHomeActions(){
   h.addEventListener('click',function(e){if(!isGuest())return;const b=e.target.closest('button');if(!b)return;e.preventDefault();e.stopPropagation();openRegistration()},true);
 }
 function patchLogo(){const logo=document.querySelector('.logo');if(!logo||logo.__adamLogo)return;logo.__adamLogo=true;logo.style.cursor='pointer';logo.addEventListener('click',function(){if(typeof go==='function')go('home')})}
-function init(){if(isGuest())showPublicHome();patchGo();patchHomeActions();patchLogo()}
+function init(){
+  if(typeof sb!=='undefined'&&sb.auth&&sb.auth.getSession)sb.auth.getSession().then(function(r){if(r&&r.data&&r.data.session){restoreLoggedInUi()}else showPublicHome()}).catch(function(){showPublicHome()});
+  else showPublicHome();
+  patchGo();patchHomeActions();patchLogo();
+}
 function tick(){patchGo();patchHomeActions();patchLogo();if(isGuest()&&document.getElementById('authScreen')?.classList.contains('hidden')===false&&document.getElementById('app')?.classList.contains('hidden')===false)showPublicHome()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 setInterval(tick,700);
