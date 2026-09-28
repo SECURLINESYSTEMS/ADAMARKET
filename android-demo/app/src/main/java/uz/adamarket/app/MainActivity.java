@@ -51,17 +51,15 @@ public class MainActivity extends Activity {
                     v.loadUrl(DEMO_URL);
                     return true;
                 }
-                // Let WebView handle normal http/https navigation itself.
-                // Re-loading the URL here could interrupt JavaScript clicks/navigation.
                 return false;
             }
 
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Inject only the safe Android-specific patches. The previous guest patch
-                // used a MutationObserver that could continuously mutate the DOM and freeze touches.
                 injectAsset("app_patch.js");
                 injectAsset("guest_fix.js");
+                injectAsset("guest_map_patch.js");
+                injectAsset("adamarket_demo_changes.js");
             }
         });
 
