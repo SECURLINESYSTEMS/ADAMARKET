@@ -28,7 +28,11 @@ public class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         webView = new WebView(this);
+        webView.setClickable(true);
+        webView.setFocusable(true);
+        webView.setFocusableInTouchMode(true);
         setContentView(webView);
+
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
@@ -37,7 +41,9 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(true);
         s.setAllowContentAccess(true);
         s.setMediaPlaybackRequiresUserGesture(false);
+        s.setSupportZoom(false);
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
@@ -45,17 +51,20 @@ public class MainActivity extends Activity {
                     v.loadUrl(DEMO_URL);
                     return true;
                 }
-                if (u != null && ("http".equals(u.getScheme()) || "https".equals(u.getScheme()))) {
-                    v.loadUrl(u.toString());
-                    return true;
-                }
+                // Let WebView handle normal http/https navigation itself.
+                // Re-loading the URL here could interrupt JavaScript clicks/navigation.
                 return false;
             }
+
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                injectPatch();
+                // Inject only the safe Android-specific patches. The previous guest patch
+                // used a MutationObserver that could continuously mutate the DOM and freeze touches.
+                injectAsset("app_patch.js");
+                injectAsset("guest_fix.js");
             }
         });
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -63,6 +72,7 @@ public class MainActivity extends Activity {
                 }
                 callback.invoke(origin, true, false);
             }
+
             @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> cb, FileChooserParams params) {
                 if (uploadCallback != null) uploadCallback.onReceiveValue(null);
                 uploadCallback = cb;
@@ -74,23 +84,20 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
-        webView.loadUrl(DEMO_URL);
-    }
 
-    private void injectPatch() {
-        injectAsset("app_patch.js");
-        injectAsset("guest_map_patch.js");
+        webView.loadUrl(DEMO_URL);
     }
 
     private void injectAsset(String assetName) {
         try {
             InputStream in = getAssets().open(assetName);
             BufferedReader r = new BufferedReader(new InputStreamReader(in));
-            StringBuilder b = new StringBuilder(); String line;
+            StringBuilder b = new StringBuilder();
+            String line;
             while ((line = r.readLine()) != null) b.append(line).append('\n');
             r.close();
             String js = b.toString().replace("\\", "\\\\").replace("`", "\\`");
-            webView.evaluateJavascript("(function(){try{eval(`" + js + "`)}catch(e){console.error(e)}})();", null);
+            webView.evaluateJavascript("(function(){try{eval(`" + js + "`)}catch(e){console.error('ADAMARKET patch',e)}})();", null);
         } catch (Exception ignored) {}
     }
 
@@ -107,13 +114,18 @@ public class MainActivity extends Activity {
             Uri[] results = null;
             if (resultCode == RESULT_OK && data != null) {
                 if (data.getClipData() != null) {
-                    int n = data.getClipData().getItemCount(); results = new Uri[n];
-                    for (int i=0;i<n;i++) results[i] = data.getClipData().getItemAt(i).getUri();
-                } else if (data.getData() != null) results = new Uri[]{data.getData()};
+                    int n = data.getClipData().getItemCount();
+                    results = new Uri[n];
+                    for (int i = 0; i < n; i++) results[i] = data.getClipData().getItemAt(i).getUri();
+                } else if (data.getData() != null) {
+                    results = new Uri[]{data.getData()};
+                }
             }
-            uploadCallback.onReceiveValue(results); uploadCallback = null;
+            uploadCallback.onReceiveValue(results);
+            uploadCallback = null;
         }
     }
+
     @Override public void onBackPressed() {
         if (webView.canGoBack()) webView.goBack(); else super.onBackPressed();
     }
