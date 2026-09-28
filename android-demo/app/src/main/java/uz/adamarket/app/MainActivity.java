@@ -55,6 +55,7 @@ public class MainActivity extends Activity {
                 injectAsset("guest_map_patch.js");
                 injectAsset("adamarket_demo_changes.js");
                 injectAsset("roles_business_patch.js");
+                injectAsset("final_ui_patch.js");
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
