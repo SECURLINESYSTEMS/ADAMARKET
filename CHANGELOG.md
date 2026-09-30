@@ -1,5 +1,18 @@
 # ADAMARKET — Production Hardening
 
+## 1.1.3
+
+- `index.html` now uses `window.AdamarketState` as the single frontend state source.
+- Legacy lexical state and `window.*` state aliases were removed from the source flow.
+- Guest search remains public; protected actions require an authenticated session.
+- Authentication fields are resolved explicitly with `document.getElementById`.
+- Leaflet remains the canonical coordinate picker; map clicks write latitude/longitude directly.
+- Business ad forms include area (m²) and allowed advertising formats.
+- Source-level `updatePlace` preserves existing images, cover image, reach and traffic metadata.
+- Legacy Android runtime patch injection files were removed; Android now loads the canonical branch source directly.
+- Android GPS permission and multi-image picker remain implemented natively.
+- `create_producer` exists in the live `adamarket-web-api` Edge Function and enforces the manufacturer role server-side.
+
 ## 1.1.2
 
 - Backend role/RLS enforcement verified against the live Supabase schema.
@@ -10,14 +23,13 @@
 - Multi-image picker and image validation/compression retained in the Android demo layer.
 - Leaflet remains the canonical coordinate picker; the hardening layer no longer replaces it with a cross-origin Yandex iframe.
 - Release signing configuration supports GitHub Secrets without committing a keystore.
-- Frontend smoke tests are present and will become a release gate after the source state migration is completed.
 
 ## Remaining before release
 
-- Complete the source-level state migration in `index.html`: `session`, `profile`, `places`, `myAds`, `favorites`, `plans`, `signup`, `lang`, and `demo` must use `window.AdamarketState` exclusively.
-- Move demo-only runtime overrides from Android asset injection into the web source and remove legacy runtime patch injection.
+- Complete the GitHub Actions approval/run for the latest source state.
+- Run the complete frontend smoke matrix and Android build from the final branch head.
 - Configure release signing secrets and build a signed APK/AAB.
-- Run the complete device test matrix after the state migration.
+- Execute device-level checks for login, registration, GPS, photo picker, map, editing, favorites and promotion payment request.
 
 ## Security notes
 
