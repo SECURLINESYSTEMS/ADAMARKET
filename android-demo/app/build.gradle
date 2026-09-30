@@ -7,11 +7,29 @@ android {
         applicationId 'uz.adamarket.app'
         minSdk 23
         targetSdk 35
-        versionCode 11
-        versionName '1.1.1'
+        versionCode 12
+        versionName '1.1.2'
+    }
+    signingConfigs {
+        release {
+            def propsFile = rootProject.file('signing.properties')
+            if (propsFile.exists()) {
+                def props = new Properties()
+                propsFile.withInputStream { props.load(it) }
+                storeFile rootProject.file(props['storeFile'])
+                storePassword props['storePassword']
+                keyAlias props['keyAlias']
+                keyPassword props['keyPassword']
+            }
+        }
     }
     buildTypes {
         debug { debuggable true }
-        release { minifyEnabled false; shrinkResources false }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            def propsFile = rootProject.file('signing.properties')
+            if (propsFile.exists()) signingConfig signingConfigs.release
+        }
     }
 }
