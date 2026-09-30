@@ -4,7 +4,6 @@ import re
 path = Path('index.html')
 text = path.read_text(encoding='utf-8')
 
-# Repair accidental prefixes from earlier runs before doing anything else.
 state_keys = ('session','profile','places','myAds','favorites','plans','signup','lang')
 for key in state_keys:
     text = text.replace(f'S.{key}:', f'{key}:')
@@ -15,17 +14,20 @@ text = text.replace("adamarket_S.lang", "adamarket_lang")
 old = "let session=null,profile=null,places=[],myAds=[],favorites=new Set(),plans=[],signup=false,lang='ru';"
 if old in text:
     text = text.replace(old, """const AdamarketState = window.AdamarketState = Object.assign(window.AdamarketState || {}, {
-  session: null, profile: null, places: [], myAds: [], favorites: new Set(), plans: [], signup: false, lang: localStorage.getItem('adamarket_lang') || 'ru'
+  session: null, profile: null, places: [], myAds: [], favorites: new Set(), plans: [], signup: false, lang: localStorage.getItem('adamarket_lang') || 'ru', demo: []
 });
 const S = AdamarketState;""", 1)
 
 start = text.index('<script>') + len('<script>')
 end = text.index('</script>', start)
 js = text[start:end]
-
-# If state is already centralized, do not run a second global identifier rewrite.
 if 'const AdamarketState = window.AdamarketState' not in js:
     raise SystemExit('AdamarketState declaration missing')
+
+# Keep demo records in the same state object consumed by Android/frontend code.
+js = js.replace('const demo=[', 'S.demo=[', 1)
+# Ensure existing declarations have the demo slot.
+js = js.replace("session: null, profile: null, places: [], myAds: [], favorites: new Set(), plans: [], signup: false, lang: localStorage.getItem('adamarket_lang') || 'ru'", "session: null, profile: null, places: [], myAds: [], favorites: new Set(), plans: [], signup: false, lang: localStorage.getItem('adamarket_lang') || 'ru', demo: []", 1)
 
 marker = '<div class="full"><label class="label">Адрес</label><input id="fAddress" class="field"></div>'
 if marker in text and 'id="fArea"' not in text:
@@ -40,4 +42,4 @@ if old_set in js:
 
 text = text[:start] + js + text[end:]
 path.write_text(text, encoding='utf-8')
-print('state corruption repair complete')
+print('centralized demo state and business fields')
