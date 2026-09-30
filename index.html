@@ -59,7 +59,11 @@ async function loadPlaces(){try{let r=await fetch(API+"?action=S.places"),d=awai
 async function logout(){await sb.auth.signOut();S.session=null;S.profile=null;renderHome();toast("Вы вышли из аккаунта")}
 function toggleLang(){let m=document.getElementById("S.langmenu");m.style.display=m.style.display==="block"?"none":"block"}function setLang(l,f){S.lang=l;flag.textContent=f;document.getElementById("S.langmenu").style.display="none";toast(l==="ru"?"Русский":"Язык выбран")}
 (async()=>{let {data}=await sb.auth.getSession();if(data.session){S.session=data.session;try{await bootstrap()}catch(e){};await loadPlaces()}renderHome()})();
- r.json();places=d.places||[]}catch(e){places=[]}}
+ r.json();S.places=d.places||[]}catch(e){S.places=[]}}
+async function logout(){await sb.auth.signOut();S.session=null;S.profile=null;renderHome();toast("Вы вышли из аккаунта")}
+function toggleLang(){let m=document.getElementById("S.langmenu");m.style.display=m.style.display==="block"?"none":"block"}function setLang(l,f){S.lang=l;flag.textContent=f;document.getElementById("S.langmenu").style.display="none";toast(l==="ru"?"Русский":"Язык выбран")}
+(async()=>{let {data}=await sb.auth.getSession();if(data.session){S.session=data.session;try{await bootstrap()}catch(e){};await loadPlaces()}renderHome()})();
+.json();places=d.places||[]}catch(e){places=[]}}
 async function logout(){await sb.auth.signOut();session=null;profile=null;renderHome();toast("Вы вышли из аккаунта")}
 function toggleLang(){let m=document.getElementById("langmenu");m.style.display=m.style.display==="block"?"none":"block"}function setLang(l,f){lang=l;flag.textContent=f;document.getElementById("langmenu").style.display="none";toast(l==="ru"?"Русский":"Язык выбран")}
 (async()=>{let {data}=await sb.auth.getSession();if(data.session){session=data.session;try{await bootstrap()}catch(e){};await loadPlaces()}renderHome()})();
