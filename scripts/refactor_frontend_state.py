@@ -1,45 +1,56 @@
 from pathlib import Path
-import re
 
-path = Path('index.html')
-text = path.read_text(encoding='utf-8')
-
-state_keys = ('session','profile','places','myAds','favorites','plans','signup','lang')
-for key in state_keys:
-    text = text.replace(f'S.{key}:', f'{key}:')
-    text = text.replace(f"'S.{key}'", f"'{key}'")
-    text = text.replace(f'"S.{key}"', f'"{key}"')
-text = text.replace("adamarket_S.lang", "adamarket_lang")
-
-old = "let session=null,profile=null,places=[],myAds=[],favorites=new Set(),plans=[],signup=false,lang='ru';"
-if old in text:
-    text = text.replace(old, """const AdamarketState = window.AdamarketState = Object.assign(window.AdamarketState || {}, {
-  session: null, profile: null, places: [], myAds: [], favorites: new Set(), plans: [], signup: false, lang: localStorage.getItem('adamarket_lang') || 'ru', demo: []
+path=Path('index.html')
+text=path.read_text(encoding='utf-8')
+old="let session=null,profile=null,places=[],myAds=[],favorites=new Set(),plans=[],signup=false,lang='ru';"
+new="""const AdamarketState = window.AdamarketState = Object.assign(window.AdamarketState || {}, {
+  session:null, profile:null, places:[], myAds:[], favorites:new Set(), plans:[], signup:false, lang:localStorage.getItem('adamarket_lang')||'ru', demo:[]
 });
-const S = AdamarketState;""", 1)
+const S=AdamarketState;"""
+if old not in text: raise SystemExit('legacy state declaration not found')
+text=text.replace(old,new,1)
+start=text.index('<script>')+8; end=text.index('</script>',start); js=text[start:end]
+keys={'session','profile','places','myAds','favorites','plans','signup','lang','demo'}
 
-start = text.index('<script>') + len('<script>')
-end = text.index('</script>', start)
-js = text[start:end]
-if 'const AdamarketState = window.AdamarketState' not in js:
-    raise SystemExit('AdamarketState declaration missing')
+def rewrite(code):
+    out=[];i=0;n=len(code);q=None;line=False;block=False;last_word=''
+    while i<n:
+        c=code[i]
+        if line:
+            out.append(c);line=c!='\n';i+=1;continue
+        if block:
+            out.append(c)
+            if c=='*' and i+1<n and code[i+1]=='/':out.append('/');i+=2;block=False
+            else:i+=1
+            continue
+        if q:
+            out.append(c)
+            if c=='\\' and i+1<n:out.append(code[i+1]);i+=2;continue
+            if c==q:q=None
+            i+=1;continue
+        if c=='/' and i+1<n and code[i+1]=='/':out.extend('//');i+=2;line=True;continue
+        if c=='/' and i+1<n and code[i+1]=='*':out.extend('/*');i+=2;block=True;continue
+        if c in "'\"`":q=c;out.append(c);i+=1;continue
+        if c.isalpha() or c in '_$':
+            j=i+1
+            while j<n and (code[j].isalnum() or code[j] in '_$'):j+=1
+            word=code[i:j];prev=code[i-1] if i else '';k=j
+            while k<n and code[k].isspace():k+=1
+            if word in keys and prev!='.' and code[k:k+1] != ':' and last_word not in ('const','let','var','function'):
+                out.append('S.'+word)
+            else:out.append(word)
+            last_word=word;i=j;continue
+        out.append(c);i+=1
+    return ''.join(out)
 
-# Keep demo records in the same state object consumed by Android/frontend code.
-js = js.replace('const demo=[', 'S.demo=[', 1)
-# Ensure existing declarations have the demo slot.
-js = js.replace("session: null, profile: null, places: [], myAds: [], favorites: new Set(), plans: [], signup: false, lang: localStorage.getItem('adamarket_lang') || 'ru'", "session: null, profile: null, places: [], myAds: [], favorites: new Set(), plans: [], signup: false, lang: localStorage.getItem('adamarket_lang') || 'ru', demo: []", 1)
-
-marker = '<div class="full"><label class="label">Адрес</label><input id="fAddress" class="field"></div>'
+js=rewrite(js)
+js=js.replace('const demo=', 'S.demo=').replace('let demo=', 'S.demo=').replace('var demo=', 'S.demo=')
+for k in keys: js=js.replace(f'S.{k}:',f'{k}:')
+js=js.replace('function setLang(l,f){S.lang=l;',"function setLang(l,f){S.lang=l;localStorage.setItem('adamarket_lang',l);localStorage.setItem('adamarket_flag',f);")
+marker='<div class="full"><label class="label">Адрес</label><input id="fAddress" class="field"></div>'
 if marker in text and 'id="fArea"' not in text:
     buttons=''.join(f'<button type="button" class="ghost" data-type="{x}">{x}</button>' for x in ['Баннер','LED-экран','Билборд','Вывеска','Объёмные буквы'])
-    insert = marker + '<div><label class="label">Площадь, м²</label><input id="fArea" class="field" type="number" min="0" step="0.01"></div><div><label class="label">Разрешённые форматы</label><div id="fAllowed" class="actions">'+buttons+'</div></div>'
-    text = text.replace(marker, insert, 1)
-
-old_set = "function toggleLang(){let m=document.getElementById(\"langmenu\");m.style.display=m.style.display===\"block\"?\"none\":\"block\"}function setLang(l,f){S.lang=l;flag.textContent=f;document.getElementById(\"langmenu\").style.display=\"none\";toast(l===\"ru\"?\"Русский\":\"Язык выбран\")}"
-new_set = "function toggleLang(){let m=document.getElementById(\"langmenu\");m.style.display=m.style.display===\"block\"?\"none\":\"block\"}function setLang(l,f){S.lang=l;localStorage.setItem('adamarket_lang',l);localStorage.setItem('adamarket_flag',f);flag.textContent=f;document.getElementById(\"langmenu\").style.display=\"none\";toast(l===\"ru\"?\"Русский\":l===\"uz\"?\"O‘zbek\":\"English\")}"
-if old_set in js:
-    js = js.replace(old_set, new_set, 1)
-
-text = text[:start] + js + text[end:]
-path.write_text(text, encoding='utf-8')
-print('centralized demo state and business fields')
+    text=text.replace(marker,marker+'<div><label class="label">Площадь, м²</label><input id="fArea" class="field" type="number" min="0" step="0.01"></div><div><label class="label">Разрешённые форматы</label><div id="fAllowed" class="actions">'+buttons+'</div></div>',1)
+text=text[:start]+js+text[end:]
+path.write_text(text,encoding='utf-8')
+print('frontend state centralized')
