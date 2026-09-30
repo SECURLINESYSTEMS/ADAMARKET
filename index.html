@@ -69,6 +69,7 @@ async function logout(){await sb.auth.signOut();S.session=null;S.profile=null;re
 function toggleLang(){const m=document.getElementById("langmenu");m.style.display=m.style.display==="block"?"none":"block"}function setLang(l,f){S.lang=l;localStorage.setItem('adamarket_lang',l);localStorage.setItem('adamarket_flag',f);document.getElementById("flag").textContent=f;document.getElementById("langmenu").style.display="none";toast(l==="ru"?"Русский":l==="uz"?"O‘zbek":"English")}
 
 
+
 (async()=>{const {data}=await sb.auth.getSession();if(data.session){S.session=data.session;try{await bootstrap()}catch(e){S.session=null;S.profile=null}}await loadPlaces();renderHome()})();
 ()}renderHome()})();
 ;
