@@ -7,8 +7,8 @@ start = text.index('<script>') + len('<script>')
 end = text.index('</script>', start)
 js = text[start:end]
 
-# Deterministically discard every historical boot fragment. Keep only code
-# before the first async bootstrap IIFE and append exactly one canonical boot.
+# Keep source code before the first bootstrap IIFE; all legacy boot fragments
+# after that point are discarded. The canonical boot is appended at the end.
 parts = re.split(r'\(async\(\)=>', js, maxsplit=1)
 js = parts[0]
 
@@ -30,7 +30,6 @@ if 'window.AdamarketState' not in js:
     pos = js.index('const SUPA_URL=')
     js = js[:pos] + state + js[pos:]
 
-# Lexically map all application state identifiers to the canonical object.
 keys = {'session','profile','places','myAds','favorites','plans','signup','lang','demo'}
 def rewrite(code):
     out=[]; i=0; quote=None; line=False; block=False; n=len(code)
@@ -63,32 +62,26 @@ def rewrite(code):
         out.append(c); i+=1
     return ''.join(out)
 js = rewrite(js)
-js = re.sub(r'(?:S\.)+demo\b', 'S.demo', js)
-js = js.replace('const demo=[', 'S.demo=[')
+js = re.sub(r'(?:S\.)+demo\b', 'S.demo', js).replace('const demo=[','S.demo=[')
 
-# Explicit DOM lookup instead of implicit globals.
 for name in ['aName','aPhone','aInn','aEmail','aPass','searchQ','results','fTitle','fType','fPrice','fCity','fDistrict','fAddress','fLat','fLng','fDesc','fPhotos','fArea','fAllowed','flag']:
     js = re.sub(rf'(?<![.\w"\']){name}(?=\.value|\.textContent|\.innerHTML|\.required|\?\.)', f'document.getElementById("{name}")', js)
 js = js.replace('document.getElementById("S.signupFields")','document.getElementById("signupFields")').replace('document.getElementById("S.langmenu")','document.getElementById("langmenu")')
 js = js.replace('API+"?action=S.plans"','API+"?action=plans"').replace('API+"?action=S.places"','API+"?action=places"')
 
-# Public guest search; protected actions require a session.
 js = re.sub(r'function action\(id\)\{.*?\}', 'function action(id){if(id==="search")return renderSearch();if(!S.session)return needAuth();if(id==="add")renderAdd();else if(id==="favorites")renderFav();else if(id==="profile")renderProfile();else if(id==="messages")renderMessages()}', js, count=1, flags=re.S)
 
-# Explicit authentication handler.
 auth='''document.getElementById("authForm").onsubmit=async e=>{e.preventDefault();const nameEl=document.getElementById("aName"),phoneEl=document.getElementById("aPhone"),innEl=document.getElementById("aInn"),emailEl=document.getElementById("aEmail"),passEl=document.getElementById("aPass");try{if(S.signup){const inn=innEl.value.replace(/\\s/g,"");if(!/^[0-9]{9,14}$/.test(inn))throw Error("ИНН фирмы: 9–14 цифр");const {data,error}=await sb.auth.signUp({email:emailEl.value.trim(),password:passEl.value,options:{data:{full_name:nameEl.value.trim(),phone:phoneEl.value.trim(),inn}}});if(error)throw error;if(!data.session){toast("Проверьте email для подтверждения");return}}else{const {error}=await sb.auth.signInWithPassword({email:emailEl.value.trim(),password:passEl.value});if(error)throw error}closeAuth();const current=await sb.auth.getSession();S.session=current.data.session||null;if(S.session)await bootstrap();renderHome()}catch(e){toast(e.message)}};'''
 if 'document.getElementById("authForm").onsubmit=' in js:
     i=js.index('document.getElementById("authForm").onsubmit='); j=js.find('\nfunction renderHome',i)
     if j<0: raise SystemExit('renderHome boundary missing')
     js=js[:i]+auth+'\n'+js[j+1:]
 
-# Add business-specific form fields.
 marker='<div class="full"><label class="label">Адрес</label><input id="fAddress" class="field"></div>'
 if 'id="fArea"' not in text:
     extra=marker+'<div><label class="label">Площадь, м²</label><input id="fArea" class="field" type="number" min="0" step="0.01"></div><div class="full"><label class="label">Разрешённые форматы рекламы</label><div id="fAllowed" class="actions">'+''.join(f'<button type="button" class="ghost" data-type="{x}">{x}</button>' for x in ['Баннер','LED-экран','Билборд','Вывеска','Объёмные буквы'])+'</div></div>'
     text=text.replace(marker,extra,1)
 
-# Preserve all metadata on create/update and keep ownership server-side.
 if 'area_m2:document.getElementById("fArea")' not in js:
     js=js.replace('description:document.getElementById("fDesc").value};await api("create_place",{place});','description:document.getElementById("fDesc").value,area_m2:document.getElementById("fArea")?.value?Number(document.getElementById("fArea").value):null,allowed_ad_types:[...(document.getElementById("fAllowed")?.querySelectorAll(".primary")||[])].map(x=>x.dataset.type)};await api("create_place",{place});')
 if 'async function updatePlace(' not in js:
@@ -96,13 +89,17 @@ if 'async function updatePlace(' not in js:
     update='''async function updatePlace(id){try{const p=S.myAds.find(x=>x.id===id);if(!p)throw Error("Объявление не найдено");const allowed=[...(document.getElementById("fAllowed")?.querySelectorAll(".primary")||[])].map(x=>x.dataset.type);const images=Array.isArray(p.images)?p.images:[];const place={title:document.getElementById("fTitle").value,type:document.getElementById("fType").value,price:document.getElementById("fPrice").value,unit:p.unit||"month",city:document.getElementById("fCity").value,district:document.getElementById("fDistrict").value,address:document.getElementById("fAddress").value,latitude:document.getElementById("fLat").value?Number(document.getElementById("fLat").value):null,longitude:document.getElementById("fLng").value?Number(document.getElementById("fLng").value):null,description:document.getElementById("fDesc").value,reach:p.reach??null,traffic:p.traffic??null,images,cover_image:p.cover_image??images[0]??null,area_m2:document.getElementById("fArea")?.value?Number(document.getElementById("fArea").value):(p.area_m2??null),allowed_ad_types:allowed.length?allowed:(p.allowed_ad_types||[])};await api("update_place",{placeId:id,place});toast("Изменения сохранены");await bootstrap();renderMyAds()}catch(e){toast(e.message)}}\n'''
     js=js.replace(anchor,update+anchor,1)
 
-# Edit only the selected state record.
 js=re.sub(r'async function editPlace\(id\)\{.*?\n\}', '''async function editPlace(id){const p=S.myAds.find(x=>x.id===id);if(!p)return;renderAdd();setTimeout(()=>{document.getElementById("fTitle").value=p.title||"";document.getElementById("fType").value=p.type||"Баннер";document.getElementById("fPrice").value=p.price||"";document.getElementById("fCity").value=p.city||"Ташкент";document.getElementById("fDistrict").value=p.district||"";document.getElementById("fAddress").value=p.address||"";document.getElementById("fLat").value=p.latitude??"";document.getElementById("fLng").value=p.longitude??"";document.getElementById("fDesc").value=p.description||"";if(document.getElementById("fArea"))document.getElementById("fArea").value=p.area_m2??"";if(document.getElementById("fAllowed"))document.getElementById("fAllowed").querySelectorAll("[data-type]").forEach(b=>b.classList.toggle("primary",(p.allowed_ad_types||[]).includes(b.dataset.type)));const btn=document.querySelector('#content .primary[onclick="createPlace()"]');if(btn){btn.textContent="Сохранить изменения";btn.onclick=()=>updatePlace(p.id)}},0)}\n''',js,count=1,flags=re.S)
 
-# Canonical language helpers and one boot.
 js=re.sub(r'function toggleLang\(\)\{.*?\}', 'function toggleLang(){const m=document.getElementById("langmenu");m.style.display=m.style.display==="block"?"none":"block"}', js, count=1, flags=re.S)
 js=re.sub(r'function setLang\(l,f\)\{.*?\}', '''function setLang(l,f){S.lang=l;localStorage.setItem('adamarket_lang',l);localStorage.setItem('adamarket_flag',f);document.getElementById("flag").textContent=f;document.getElementById("langmenu").style.display="none";toast(l==="ru"?"Русский":l==="uz"?"O‘zbek":"English")}''', js, count=1, flags=re.S)
-js += '\n(async()=>{const {data}=await sb.auth.getSession();if(data.session){S.session=data.session;try{await bootstrap()}catch(e){S.session=null;S.profile=null}}await loadPlaces();renderHome()})();\n'
+
+boot='(async()=>{const {data}=await sb.auth.getSession();if(data.session){S.session=data.session;try{await bootstrap()}catch(e){S.session=null;S.profile=null}}await loadPlaces();renderHome()})();'
+js += '\n' + boot + '\n'
+# Hard stop at the canonical boot's closing delimiter.
+m=re.search(re.escape(boot), js)
+if m: js=js[:m.end()]+'\n'
+
 text=text[:start]+js+text[end:]
 path.write_text(text,encoding='utf-8')
 print('source state refactor prepared')
