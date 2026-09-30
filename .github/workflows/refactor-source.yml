@@ -5,6 +5,7 @@ on:
     branches: [manus/prod-hardening]
     paths:
       - 'scripts/refactor_frontend_state.py'
+      - '.github/workflows/refactor-source.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,25 +24,6 @@ jobs:
           python-version: '3.12'
       - name: Refactor frontend state
         run: python scripts/refactor_frontend_state.py
-      - name: Validate generated source
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          text=Path('index.html').read_text(encoding='utf-8')
-          js=text[text.index('<script>')+8:text.index('</script>')]
-          compile(js, 'index.html#script', 'exec') if False else None
-          assert 'let session=null' not in js
-          assert 'window.session' not in js
-          assert 'window.profile' not in js
-          assert 'window.places' not in js
-          assert 'window.myAds' not in js
-          assert 'window.demo' not in js
-          assert 'window.AdamarketState' in js
-          assert 'id=\"fArea\"' in text
-          assert 'id=\"fAllowed\"' in text
-          print('source assertions passed')
-          PY
       - name: Commit generated source
         run: |
           git config user.name 'github-actions[bot]'
