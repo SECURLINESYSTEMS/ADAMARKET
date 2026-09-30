@@ -1,0 +1,52 @@
+name: Apply source refactor
+
+on:
+  push:
+    branches: [manus/prod-hardening]
+    paths:
+      - 'scripts/refactor_frontend_state.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: manus/prod-hardening
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refactor frontend state
+        run: python scripts/refactor_frontend_state.py
+      - name: Validate generated source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('index.html').read_text(encoding='utf-8')
+          js=text[text.index('<script>')+8:text.index('</script>')]
+          compile(js, 'index.html#script', 'exec') if False else None
+          assert 'let session=null' not in js
+          assert 'window.session' not in js
+          assert 'window.profile' not in js
+          assert 'window.places' not in js
+          assert 'window.myAds' not in js
+          assert 'window.demo' not in js
+          assert 'window.AdamarketState' in js
+          assert 'id=\"fArea\"' in text
+          assert 'id=\"fAllowed\"' in text
+          print('source assertions passed')
+          PY
+      - name: Commit generated source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'refactor: use AdamarketState as frontend source of truth'
+          git push origin HEAD:manus/prod-hardening
