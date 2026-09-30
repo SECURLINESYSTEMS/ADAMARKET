@@ -20,28 +20,43 @@ jobs:
         with: {python-version: '3.12'}
       - name: Refactor frontend source
         run: python scripts/refactor_frontend_state.py
-      - name: Apply role source flows
+      - name: Apply producer role source flow
         run: python scripts/ensure_role_flows.py
-      - name: Enforce canonical boot boundary
+      - name: Enforce source invariants
         run: |
           python - <<'PY'
           from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); a=s.index('<script>')+len('<script>'); b=s.index('</script>',a); js=s[a:b]
-          marker='(async()=>{const {data}=await sb.auth.getSession();'; i=js.find(marker)
-          if i<0: raise SystemExit('canonical boot marker missing')
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          s=s.replace('id="S.plans"','id="plans"').replace('getElementById("S.plans")','getElementById("plans")')
+          old='function action(id){if(id==="search")return renderSearch();if(!S.session)return needAuth();if(id==="add")renderAdd();else if(id==="favorites")renderFav();else if(id==="profile")renderProfile();else if(id==="messages")renderMessages()}'
+          new='function action(id){if(id==="search")return renderSearch();if(!S.session)return needAuth();if(id==="add"){const role=S.profile?.account_type||S.profile?.role;if(role==="manufacturer")return renderProducer();if(role==="business"||role==="admin")return renderAdd();return renderSearch()}if(id==="favorites")return renderFav();if(id==="profile")return renderProfile();if(id==="messages")return renderMessages()}'
+          if old in s:s=s.replace(old,new,1)
+          marker='function renderAdd(){'
+          if 'function renderProducer()' not in s:
+              producer='''function renderProducer(){if(!S.session)return needAuth();document.getElementById("content").innerHTML=`<div class="page"><div class="head"><h1 class="pageTitle">Разместить производство</h1><button class="ghost" onclick="goHome()">Отмена</button></div><div class="panel"><div class="formgrid"><div class="full"><label class="label">Название компании *</label><input id="pCompany" class="field"></div><div><label class="label">Город *</label><input id="pCity" class="field" value="Ташкент"></div><div><label class="label">Район</label><input id="pDistrict" class="field"></div><div class="full"><label class="label">Что изготавливаете *</label><div id="pCats" class="actions">${["Баннеры","Объёмные буквы","Вывески","Световые короба","LED-экраны","Билборды","Плёнка / наклейки"].map(x=>`<button type="button" class="ghost" data-cat="${esc(x)}">${esc(x)}</button>`).join("")}</div></div><div class="full"><label class="label">Описание</label><textarea id="pDesc" class="field" rows="5"></textarea></div><div class="full"><button class="primary" onclick="createProducer()">Отправить на модерацию</button></div></div></div></div>`;document.getElementById("pCats").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{b.classList.toggle("primary");b.classList.toggle("ghost")})}
+async function createProducer(){try{const categories=[...document.getElementById("pCats").querySelectorAll(".primary")].map(x=>x.dataset.cat);if(!categories.length)throw Error("Выберите хотя бы одну категорию производства");await api("create_producer",{producer:{company_name:document.getElementById("pCompany").value.trim(),city:document.getElementById("pCity").value.trim(),district:document.getElementById("pDistrict").value.trim(),description:document.getElementById("pDesc").value.trim(),categories}});toast("Услуга отправлена на проверку");await bootstrap();renderProfile()}catch(e){toast(e.message)}}
+'''
+              s=s.replace(marker,producer+marker,1)
+          a=s.index('<script>')+8; b=s.index('</script>',a); js=s[a:b]
+          marker2='(async()=>{const {data}=await sb.auth.getSession();'; i=js.find(marker2)
+          if i<0: raise SystemExit('boot missing')
           j=js.find('renderHome()})();',i)
-          if j<0: raise SystemExit('canonical boot terminator missing')
+          if j<0: raise SystemExit('boot terminator missing')
           js=js[:j+len('renderHome()})();')]+'\n'
-          if js.count(marker)!=1: raise SystemExit('duplicate canonical boot')
-          s=s[:a]+js+s[b:]; p.write_text(s,encoding='utf-8')
+          s=s[:a]+js+s[b:]
+          p.write_text(s,encoding='utf-8')
+          assert 'function renderProducer()' in s
+          assert 'createProducer()' in s
+          assert 'id="S.plans"' not in s
+          assert '()}renderHome()})();' not in s
           PY
-      - name: Validate generated source
+      - name: Validate generated JavaScript
         run: |
-          node --check <(python - <<'PY'
+          python - <<'PY' > /tmp/adamarket.js
           from pathlib import Path
           s=Path('index.html').read_text(encoding='utf-8'); a=s.index('<script>')+8; b=s.index('</script>',a); print(s[a:b])
           PY
-          )
+          node --check /tmp/adamarket.js
           git diff --check
       - name: Commit generated source
         run: |
