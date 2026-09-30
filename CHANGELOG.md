@@ -1,5 +1,11 @@
 # ADAMARKET — Production Hardening
 
+## 1.1.4
+
+- Fixed the source refactor pass so JavaScript regular expressions and template literals are never corrupted by token rewriting.
+- Enforced the producer source flow, literal `plans` DOM id, and business area/allowed-format fields at source level.
+- Kept `window.AdamarketState` as the single frontend state source and preserved the Leaflet coordinate picker.
+
 ## 1.1.3
 
 - `index.html` now uses `window.AdamarketState` as the single frontend state source.
