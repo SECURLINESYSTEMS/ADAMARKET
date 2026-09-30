@@ -13,4 +13,7 @@ catch(e){toast(e.message)}}
 '''
     s=s.replace(anchor,producer+anchor,1)
 p.write_text(s,encoding='utf-8')
+assert 'function renderProducer()' in s, 'producer UI injection failed'
+assert 'function createProducer()' in s, 'producer action injection failed'
+assert 'return renderProducer()' in s, 'manufacturer add flow missing'
 print('role flows ensured')
