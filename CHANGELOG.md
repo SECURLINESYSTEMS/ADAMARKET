@@ -1,21 +1,26 @@
 # ADAMARKET — Production Hardening
 
-## 1.1.1
+## 1.1.2
 
-- Hardened Android WebView navigation and file/URL access.
-- Fixed Android GPS permission flow: the WebView callback is resolved only after the Android permission result.
-- Added safe browsing and disabled file/universal file access from WebView.
-- Added `prod_hardening.js` for the Android demo: guest search, persistent language, role-aware creation flow, image compression, multi-image upload, full edit flow, and Yandex map display.
-- Added manufacturer service creation flow and business-only advertising-place creation at the API boundary.
-- Added server-side role checks for advertiser/business/manufacturer/admin actions.
-- Added server-side coordinate validation and image type/size validation.
-- Payment requests now carry a stable plan identifier for admin confirmation.
-- Added database role helpers and tighter RLS policies.
-- Android demo version bumped to 1.1.1.
-- CI now validates every Android JavaScript patch and builds both debug and unsigned release APKs.
+- Backend role/RLS enforcement verified against the live Supabase schema.
+- INN validation enforced in PostgreSQL for 9–14 digits.
+- Owner-only update/delete rules and admin override verified for advertising places and producer records.
+- Advertiser-only request creation enforced by RLS.
+- Android WebView security and explicit GPS permission flow retained.
+- Multi-image picker and image validation/compression retained in the Android demo layer.
+- Leaflet remains the canonical coordinate picker; the hardening layer no longer replaces it with a cross-origin Yandex iframe.
+- Release signing configuration supports GitHub Secrets without committing a keystore.
+- Frontend smoke tests are present and will become a release gate after the source state migration is completed.
+
+## Remaining before release
+
+- Complete the source-level state migration in `index.html`: `session`, `profile`, `places`, `myAds`, `favorites`, `plans`, `signup`, `lang`, and `demo` must use `window.AdamarketState` exclusively.
+- Move demo-only runtime overrides from Android asset injection into the web source and remove legacy runtime patch injection.
+- Configure release signing secrets and build a signed APK/AAB.
+- Run the complete device test matrix after the state migration.
 
 ## Security notes
 
 - No service-role key, database password, JWT secret, or keystore is stored in the repository.
-- The publishable Supabase key may be used by the browser; authorization is enforced by Supabase Auth, Edge Function checks, and RLS.
-- The unsigned release APK is not an installable production artifact. A signed release requires a keystore supplied through GitHub Secrets.
+- The browser uses only the publishable Supabase key; authorization is enforced by Auth, Edge Function checks, and RLS.
+- An unsigned release APK is not a production artifact.
