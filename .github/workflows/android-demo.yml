@@ -1,10 +1,13 @@
 name: Build ADAMARKET Android Demo
+
 on:
   workflow_dispatch:
   push:
     paths:
       - 'android-demo/**'
       - '.github/workflows/android-demo.yml'
+      - '.github/workflows/validate.yml'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,14 +25,26 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Build APK
+      - name: Validate Android sources
+        run: |
+          test -f android-demo/settings.gradle
+          test -f android-demo/app/src/main/AndroidManifest.xml
+          test -f android-demo/app/src/main/assets/prod_hardening.js
+          node --check android-demo/app/src/main/assets/prod_hardening.js
+      - name: Build debug APK
         working-directory: android-demo
-        run: gradle :app:assembleDebug --no-daemon
-      - name: Rename APK
-        run: cp android-demo/app/build/outputs/apk/debug/app-debug.apk ADAMARKET-DEMO.apk
-      - name: Upload APK
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Build unsigned release APK
+        working-directory: android-demo
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+      - name: Prepare artifacts
+        run: |
+          mkdir -p dist
+          cp android-demo/app/build/outputs/apk/debug/app-debug.apk dist/ADAMARKET-DEMO-debug.apk
+          cp android-demo/app/build/outputs/apk/release/app-release-unsigned.apk dist/ADAMARKET-DEMO-release-unsigned.apk
+      - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
-          name: ADAMARKET-Android-Demo
-          path: ADAMARKET-DEMO.apk
+          name: ADAMARKET-Android-Demo-1.1.1
+          path: dist/*.apk
           retention-days: 30
