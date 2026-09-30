@@ -7,16 +7,12 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.GeolocationPermissions;
-import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -25,7 +21,8 @@ public class MainActivity extends Activity {
     private String pendingGeoOrigin;
     private static final int FILE_PICKER = 1001;
     private static final int LOCATION = 1002;
-    private static final String DEMO_URL = "https://securlinesystems.github.io/ADAMARKET/";
+    private static final String DEMO_URL = "https://raw.githubusercontent.com/SECURLINESYSTEMS/ADAMARKET/manus/prod-hardening/index.html";
+    private static final String TRUSTED_PREFIX = "https://raw.githubusercontent.com/SECURLINESYSTEMS/ADAMARKET/";
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -47,7 +44,6 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(true);
         s.setSupportZoom(false);
         s.setSafeBrowsingEnabled(true);
-        webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
@@ -55,21 +51,12 @@ public class MainActivity extends Activity {
                 if (u == null) return true;
                 String scheme = u.getScheme();
                 if (!"https".equalsIgnoreCase(scheme)) return true;
-                if (u.toString().startsWith("https://securlinesystems.github.io/ADAMARKET")) return false;
+                if (u.toString().startsWith(TRUSTED_PREFIX)) return false;
                 try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
                 return true;
             }
-            @Override public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                injectAsset("app_patch.js");
-                injectAsset("guest_fix.js");
-                injectAsset("guest_map_patch.js");
-                injectAsset("adamarket_demo_changes.js");
-                injectAsset("roles_business_patch.js");
-                injectAsset("final_ui_patch.js");
-                injectAsset("prod_hardening.js");
-            }
         });
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
@@ -95,24 +82,6 @@ public class MainActivity extends Activity {
         webView.loadUrl(DEMO_URL);
     }
 
-    private void injectAsset(String assetName) {
-        try {
-            InputStream in = getAssets().open(assetName);
-            BufferedReader r = new BufferedReader(new InputStreamReader(in));
-            StringBuilder b = new StringBuilder(); String line;
-            while ((line = r.readLine()) != null) b.append(line).append('\n');
-            r.close();
-            String js = b.toString().replace("\\", "\\\\").replace("`", "\\`");
-            webView.evaluateJavascript("(function(){try{eval(`" + js + "`)}catch(e){console.error('ADAMARKET patch',e)}})();", null);
-        } catch (Exception ignored) {}
-    }
-
-    public class AndroidBridge {
-        @JavascriptInterface public void openUrl(String url) {
-            try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) {}
-        }
-    }
-
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION && pendingGeoCallback != null) {
@@ -130,13 +99,19 @@ public class MainActivity extends Activity {
             Uri[] results = null;
             if (resultCode == RESULT_OK && data != null) {
                 if (data.getClipData() != null) {
-                    int n=data.getClipData().getItemCount(); results=new Uri[n];
-                    for(int i=0;i<n;i++) results[i]=data.getClipData().getItemAt(i).getUri();
-                } else if (data.getData() != null) results=new Uri[]{data.getData()};
+                    int n = data.getClipData().getItemCount();
+                    results = new Uri[n];
+                    for (int i = 0; i < n; i++) results[i] = data.getClipData().getItemAt(i).getUri();
+                } else if (data.getData() != null) {
+                    results = new Uri[]{data.getData()};
+                }
             }
-            uploadCallback.onReceiveValue(results); uploadCallback=null;
+            uploadCallback.onReceiveValue(results);
+            uploadCallback = null;
         }
     }
 
-    @Override public void onBackPressed() { if (webView.canGoBack()) webView.goBack(); else super.onBackPressed(); }
+    @Override public void onBackPressed() {
+        if (webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+    }
 }
