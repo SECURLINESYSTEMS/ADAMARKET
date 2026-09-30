@@ -18,8 +18,41 @@ jobs:
         with: {ref: manus/prod-hardening, fetch-depth: 0}
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
-      - run: python scripts/refactor_frontend_state.py
-      - run: |
+      - name: Refactor frontend source
+        run: python scripts/refactor_frontend_state.py
+      - name: Enforce canonical boot boundary
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          a=s.index('<script>')+len('<script>')
+          b=s.index('</script>',a)
+          js=s[a:b]
+          marker='(async()=>{const {data}=await sb.auth.getSession();'
+          i=js.find(marker)
+          if i < 0:
+              raise SystemExit('canonical boot marker missing')
+          j=js.find('renderHome()})();',i)
+          if j < 0:
+              raise SystemExit('canonical boot terminator missing')
+          js=js[:j+len('renderHome()})();')]+'\n'
+          if js.count('(async()=>{const {data}=await sb.auth.getSession();') != 1:
+              raise SystemExit('duplicate canonical boot')
+          s=s[:a]+js+s[b:]
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validate generated source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert 'window.AdamarketState' in s
+          assert '()}renderHome()})();' not in s
+          assert s.count('(async()=>{const {data}=await sb.auth.getSession();') == 1
+          PY
+      - name: Commit generated source
+        run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
