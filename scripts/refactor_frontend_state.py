@@ -15,7 +15,6 @@ if old in text:
 start = text.index('<script>') + len('<script>')
 end = text.index('</script>', start)
 js = text[start:end]
-
 for name in ('session', 'profile', 'places', 'myAds', 'favorites', 'plans', 'signup', 'lang'):
     js = re.sub(rf'(?<![.$\\w]){name}(?![\\w$])', f'S.{name}', js)
 js = js.replace('const S = S.AdamarketState', 'const S = AdamarketState')
