@@ -14,9 +14,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import androidx.webkit.WebViewAssetLoader;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -49,7 +47,11 @@ public class MainActivity extends Activity {
         s.setAllowFileAccessFromFileURLs(false);
         webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+        final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder().addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this)).build();
         webView.setWebViewClient(new WebViewClient() {
+            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, android.webkit.WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
                 if (u != null && "adamarket".equalsIgnoreCase(u.getScheme())) { v.loadUrl(DEMO_URL); return true; }
@@ -57,12 +59,7 @@ public class MainActivity extends Activity {
             }
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                injectAsset("app_patch.js");
-                injectAsset("guest_fix.js");
-                injectAsset("guest_map_patch.js");
-                injectAsset("adamarket_demo_changes.js");
-                injectAsset("roles_business_patch.js");
-                injectAsset("final_ui_patch.js");
+                // The APK loads the versioned local frontend; no legacy runtime patches.
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -84,16 +81,7 @@ public class MainActivity extends Activity {
                 startActivityForResult(i, FILE_PICKER); return true;
             }
         });
-        webView.loadUrl(DEMO_URL);
-    }
-    private void injectAsset(String assetName) {
-        try {
-            InputStream in = getAssets().open(assetName); BufferedReader r = new BufferedReader(new InputStreamReader(in));
-            StringBuilder b = new StringBuilder(); String line;
-            while ((line = r.readLine()) != null) b.append(line).append('\n'); r.close();
-            String js = b.toString().replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${");
-            webView.evaluateJavascript("(function(){try{eval(`" + js + "`)}catch(e){console.error('ADAMARKET patch',e)}})();", null);
-        } catch (Exception ignored) {}
+        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
     public class AndroidBridge { @JavascriptInterface public void openUrl(String url) { try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) {} } }
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

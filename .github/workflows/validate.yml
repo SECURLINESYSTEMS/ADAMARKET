@@ -1,28 +1,24 @@
-name: ADAMARKET validation
-
+name: Validate ADAMARKET
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
-
+  push:
+    paths:
+      - 'index.html'
+      - 'tests/**'
+      - '.github/workflows/validate.yml'
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate inline JavaScript
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          html=Path("index.html").read_text(encoding="utf-8")
-          scripts=re.findall(r"<script(?:\s[^>]*)?>([\s\S]*?)</script>", html, re.I)
-          inline=[s for s in scripts if s.strip() and "src=" not in s[:100]]
-          Path("/tmp/adamarket-inline.js").write_text("\n".join(inline),encoding="utf-8")
-          print("Inline scripts:",len(inline))
-          PY
+          node - <<'NODE'
+          const fs=require('fs'), re=/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi, s=fs.readFileSync('index.html','utf8'); let m,j=''; while((m=re.exec(s))) j+=m[1]+'\n'; fs.writeFileSync('/tmp/adamarket-inline.js',j);
+          NODE
           node --check /tmp/adamarket-inline.js
-      - name: Check public API
-        run: |
-          curl -fsS "https://nmskpqugwiwdcukqckcy.supabase.co/functions/v1/adamarket-web-api?action=plans" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const x=JSON.parse(s);if(!x.ok)process.exit(1);console.log("plans:",(x.plans||[]).length)})'
-          curl -fsS "https://nmskpqugwiwdcukqckcy.supabase.co/functions/v1/adamarket-web-api?action=places" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const x=JSON.parse(s);if(!x.ok)process.exit(1);console.log("places:",(x.places||[]).length)})'
+      - name: Frontend smoke tests
+        run: node tests/frontend_smoke.js

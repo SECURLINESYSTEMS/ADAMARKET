@@ -18,9 +18,13 @@ jobs:
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Validate frontend
+        run: node tests/frontend_smoke.js
       - name: Build APK
         working-directory: android-demo
         run: ./gradlew :app:assembleDebug --no-daemon
+      - name: Verify local frontend asset
+        run: unzip -l android-demo/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/index.html'
       - name: Rename APK
         run: cp android-demo/app/build/outputs/apk/debug/app-debug.apk ADAMARKET-DEMO.apk
       - name: Upload APK

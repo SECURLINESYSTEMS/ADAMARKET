@@ -1,0 +1,5 @@
+
+# Local Android build state
+android-demo/local.properties
+android-demo/.gradle/
+android-demo/app/build/
