@@ -1,0 +1,48 @@
+name: ADAMARKET source repair
+on:
+  push:
+    branches: [manus/prod-hardening]
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/repair-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: manus/prod-hardening
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refactor source
+        run: |
+          python scripts/refactor_frontend_state.py
+          python scripts/ensure_role_flows.py
+      - name: Validate generated source
+        run: |
+          python - <<'PY' > /tmp/adamarket.js
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          a=s.index('<script>')+8
+          b=s.index('</script>',a)
+          print(s[a:b])
+          PY
+          node --check /tmp/adamarket.js
+          grep -q 'function renderProducer()' index.html
+          grep -q 'function createProducer()' index.html
+          grep -q 'window.AdamarketState' index.html
+          git diff --check
+      - name: Commit source refactor
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if ! git diff --cached --quiet; then
+            git commit -m 'refactor: add canonical producer source flow'
+            git push origin HEAD:manus/prod-hardening
+          fi

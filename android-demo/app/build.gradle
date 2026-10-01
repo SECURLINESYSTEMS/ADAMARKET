@@ -1,5 +1,35 @@
 plugins { id 'com.android.application' }
 
-android { namespace 'uz.adamarket.app'; compileSdk 35
-    defaultConfig { applicationId 'uz.adamarket.app'; minSdk 23; targetSdk 35; versionCode 1; versionName '1.0.0' }
+android {
+    namespace 'uz.adamarket.app'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'uz.adamarket.app'
+        minSdk 23
+        targetSdk 35
+        versionCode 12
+        versionName '1.1.2'
+    }
+    signingConfigs {
+        release {
+            def propsFile = rootProject.file('signing.properties')
+            if (propsFile.exists()) {
+                def props = new Properties()
+                propsFile.withInputStream { props.load(it) }
+                storeFile rootProject.file(props['storeFile'])
+                storePassword props['storePassword']
+                keyAlias props['keyAlias']
+                keyPassword props['keyPassword']
+            }
+        }
+    }
+    buildTypes {
+        debug { debuggable true }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            def propsFile = rootProject.file('signing.properties')
+            if (propsFile.exists()) signingConfig signingConfigs.release
+        }
+    }
 }
