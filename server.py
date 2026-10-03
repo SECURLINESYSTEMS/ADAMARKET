@@ -43,10 +43,11 @@ def init_db():
     CREATE TABLE IF NOT EXISTS requests (
       id INTEGER PRIMARY KEY AUTOINCREMENT, place_id INTEGER NOT NULL,
       requester_name TEXT NOT NULL, requester_contact TEXT NOT NULL,
-      message TEXT NOT NULL, budget INTEGER, created_at TEXT NOT NULL
+      message TEXT NOT NULL, budget INTEGER, status TEXT NOT NULL DEFAULT 'new', created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_places_status ON places(status);
     CREATE INDEX IF NOT EXISTS idx_places_created ON places(created_at);
+    CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status);
     """)
     c.commit(); c.close()
 
@@ -174,6 +175,11 @@ class Handler(SimpleHTTPRequestHandler):
             c = db(); row = c.execute("SELECT owner_name,owner_contact FROM places WHERE id=? AND status='approved'", (place_id,)).fetchone(); c.close()
             if not row: return json_response(self, 404, {"ok": False, "error": "Объявление не найдено"})
             return json_response(self, 200, {"ok": True, "owner_name": row["owner_name"], "contact": row["owner_contact"]})
+        if u.path == "/api/requests":
+            owner_contact = clean(parse_qs(u.query).get("owner_contact", [""])[0], 120)
+            if not owner_contact: return json_response(self, 400, {"ok": False, "error": "Укажите контакт владельца"})
+            c = db(); rows = c.execute("SELECT r.id,r.place_id,p.title,r.requester_name,r.requester_contact,r.message,r.budget,r.status,r.created_at FROM requests r JOIN places p ON p.id=r.place_id WHERE p.owner_contact=? ORDER BY r.created_at DESC LIMIT 100", (owner_contact,)).fetchall(); c.close()
+            return json_response(self, 200, {"ok": True, "requests": [dict(r) for r in rows]})
         return super().do_GET()
     def do_POST(self):
         u = urlparse(self.path)
@@ -192,6 +198,15 @@ class Handler(SimpleHTTPRequestHandler):
                 c=db(); exists=c.execute("SELECT id FROM places WHERE id=? AND status='approved'", (place_id,)).fetchone()
                 if not exists: c.close(); raise ValueError("Объявление недоступно")
                 c.execute("INSERT INTO requests(place_id,requester_name,requester_contact,message,budget,created_at) VALUES(?,?,?,?,?,?)", (place_id,name,contact,message,data.get("budget"),now())); c.commit(); c.close(); return json_response(self, 201, {"ok": True, "message": "Заявка принята и сохранена для владельца"})
+            if u.path == "/api/requests/status":
+                request_id = int(data.get("request_id")); status = clean(data.get("status"), 20)
+                if status not in {"new", "contacted", "agreed", "closed", "rejected"}: raise ValueError("Некорректный статус")
+                c=db(); c.execute("UPDATE requests SET status=? WHERE id=?", (status, request_id)); c.commit(); c.close(); return json_response(self, 200, {"ok": True})
+            if u.path == "/api/admin/moderate":
+                if not os.environ.get("ADMIN_KEY") or data.get("admin_key") != os.environ.get("ADMIN_KEY"): return json_response(self, 403, {"ok": False, "error": "Доступ запрещён"})
+                place_id=int(data.get("place_id")); status=clean(data.get("status"),20)
+                if status not in {"pending", "approved", "hidden", "rejected"}: raise ValueError("Некорректный статус объявления")
+                c=db(); c.execute("UPDATE places SET status=? WHERE id=?", (status,place_id)); c.commit(); c.close(); return json_response(self,200,{"ok":True})
             return json_response(self, 404, {"ok": False, "error": "Маршрут не найден"})
         except ValueError as e: return json_response(self, 400, {"ok": False, "error": str(e)})
         except Exception as e: return json_response(self, 500, {"ok": False, "error": "Внутренняя ошибка сервера"})
