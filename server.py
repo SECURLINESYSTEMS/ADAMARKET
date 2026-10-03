@@ -40,6 +40,11 @@ def init_db():
       id INTEGER PRIMARY KEY AUTOINCREMENT, place_id INTEGER NOT NULL,
       reason TEXT NOT NULL, created_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, place_id INTEGER NOT NULL,
+      requester_name TEXT NOT NULL, requester_contact TEXT NOT NULL,
+      message TEXT NOT NULL, budget INTEGER, created_at TEXT NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS idx_places_status ON places(status);
     CREATE INDEX IF NOT EXISTS idx_places_created ON places(created_at);
     """)
@@ -153,6 +158,12 @@ class Handler(SimpleHTTPRequestHandler):
             if u.path == "/api/ai": return json_response(self, 200, {"ok": True, **ai_answer(data.get("message", ""))})
             if u.path == "/api/reports":
                 c=db(); c.execute("INSERT INTO reports(place_id,reason,created_at) VALUES(?,?,?)", (int(data.get("place_id")), clean(data.get("reason"),300) or "Жалоба", now())); c.commit(); c.close(); return json_response(self, 201, {"ok": True})
+            if u.path == "/api/requests":
+                place_id = int(data.get("place_id")); name = clean(data.get("requester_name"),100); contact = clean(data.get("requester_contact"),120); message = clean(data.get("message"),1000)
+                if not name or not contact or not message: raise ValueError("Укажите имя, контакт и задачу")
+                c=db(); exists=c.execute("SELECT id FROM places WHERE id=? AND status='approved'", (place_id,)).fetchone()
+                if not exists: c.close(); raise ValueError("Объявление недоступно")
+                c.execute("INSERT INTO requests(place_id,requester_name,requester_contact,message,budget,created_at) VALUES(?,?,?,?,?,?)", (place_id,name,contact,message,data.get("budget"),now())); c.commit(); c.close(); return json_response(self, 201, {"ok": True, "message": "Заявка отправлена владельцу"})
             return json_response(self, 404, {"ok": False, "error": "Маршрут не найден"})
         except ValueError as e: return json_response(self, 400, {"ok": False, "error": str(e)})
         except Exception as e: return json_response(self, 500, {"ok": False, "error": "Внутренняя ошибка сервера"})
