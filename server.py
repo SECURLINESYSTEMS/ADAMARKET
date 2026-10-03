@@ -82,8 +82,8 @@ def budget_from_message(message):
     for raw in nums:
         try:
             value = float(raw.replace(" ", "").replace(",", "."))
-            if "млн" in message.lower() or "million" in message.lower(): value *= 1_000_000
-            elif "тыс" in message.lower() or re.search(r"\d\s*k", message.lower()): value *= 1_000
+            if re.search(r"(?:млн|миллион|миллионов|million)", message.lower()): value *= 1_000_000
+            elif re.search(r"(?:тыс|тысяч|тысячи|k)", message.lower()): value *= 1_000
             if value >= 10_000: values.append(int(value))
         except ValueError:
             pass
