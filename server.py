@@ -81,6 +81,26 @@ def list_places():
     return [place_obj(r) for r in rows]
 
 
+def recommend_places(data):
+    district = clean(data.get("district"), 80).lower()
+    typ = clean(data.get("type"), 40).lower()
+    try: budget = int(float(data.get("budget"))) if data.get("budget") else None
+    except Exception: budget = None
+    places = list_places()
+    scored = []
+    for p in places:
+        hay = f"{p['title']} {p['type']} {p['district']} {p['address']}".lower()
+        if district and district not in hay: continue
+        if typ and typ not in p['type'].lower() and typ not in hay: continue
+        if budget and p['price'] > budget: continue
+        score = 0
+        if district and district in hay: score += 3
+        if typ and typ in hay: score += 3
+        if budget and p['price'] <= budget: score += 2
+        scored.append((score, p))
+    return [p for _, p in sorted(scored, key=lambda x: (-x[0], -x[1]['id']))[:20]]
+
+
 def budget_from_message(message):
     nums = re.findall(r"(?<!\d)(\d[\d\s.,]*)(?:\s*(?:млн|мillion|тыс|k))?", message.lower())
     values = []
@@ -148,6 +168,12 @@ class Handler(SimpleHTTPRequestHandler):
         u = urlparse(self.path)
         if u.path == "/api/health": return json_response(self, 200, {"ok": True, "database": DB_PATH.exists(), "ai": bool(os.environ.get("OPENAI_API_KEY"))})
         if u.path == "/api/places": return json_response(self, 200, {"ok": True, "places": list_places()})
+        if u.path.startswith("/api/places/") and u.path.endswith("/contact"):
+            try: place_id = int(u.path.split("/")[3])
+            except Exception: return json_response(self, 400, {"ok": False, "error": "Некорректное объявление"})
+            c = db(); row = c.execute("SELECT owner_name,owner_contact FROM places WHERE id=? AND status='approved'", (place_id,)).fetchone(); c.close()
+            if not row: return json_response(self, 404, {"ok": False, "error": "Объявление не найдено"})
+            return json_response(self, 200, {"ok": True, "owner_name": row["owner_name"], "contact": row["owner_contact"]})
         return super().do_GET()
     def do_POST(self):
         u = urlparse(self.path)
@@ -155,6 +181,8 @@ class Handler(SimpleHTTPRequestHandler):
         except Exception as e: return json_response(self, 400, {"ok": False, "error": str(e)})
         try:
             if u.path == "/api/places": return json_response(self, 201, {"ok": True, "place": create_place(data, self.client_address[0])})
+            if u.path == "/api/recommend":
+                matches = recommend_places(data); return json_response(self, 200, {"ok": True, "places": matches, "message": "Подходящие места найдены" if matches else "Пока нет точного совпадения. Добавьте запрос — каталог пополняется."})
             if u.path == "/api/ai": return json_response(self, 200, {"ok": True, **ai_answer(data.get("message", ""))})
             if u.path == "/api/reports":
                 c=db(); c.execute("INSERT INTO reports(place_id,reason,created_at) VALUES(?,?,?)", (int(data.get("place_id")), clean(data.get("reason"),300) or "Жалоба", now())); c.commit(); c.close(); return json_response(self, 201, {"ok": True})
