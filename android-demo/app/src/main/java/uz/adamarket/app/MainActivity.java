@@ -14,15 +14,18 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.webkit.WebViewAssetLoader;
+
 public class MainActivity extends Activity {
     private WebView webView;
+    private WebViewAssetLoader assetLoader;
     private ValueCallback<Uri[]> uploadCallback;
     private GeolocationPermissions.Callback pendingGeoCallback;
     private String pendingGeoOrigin;
     private static final int FILE_PICKER = 1001;
     private static final int LOCATION = 1002;
-    private static final String DEMO_URL = "https://raw.githubusercontent.com/SECURLINESYSTEMS/ADAMARKET/manus/prod-hardening/index.html";
-    private static final String TRUSTED_PREFIX = "https://raw.githubusercontent.com/SECURLINESYSTEMS/ADAMARKET/";
+    private static final String APP_ASSET_HOST = "appassets.androidplatform.net";
+    private static final String APP_ASSET_URL = "https://appassets.androidplatform.net/assets/index.html";
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -31,6 +34,10 @@ public class MainActivity extends Activity {
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
         setContentView(webView);
+
+        assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
 
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
@@ -46,7 +53,7 @@ public class MainActivity extends Activity {
         s.setSafeBrowsingEnabled(true);
 
         webView.setWebViewClient(new WebViewClient() {
-            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, android.webkit.WebResourceRequest request) {
+            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
             }
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
@@ -54,7 +61,7 @@ public class MainActivity extends Activity {
                 if (u == null) return true;
                 String scheme = u.getScheme();
                 if (!"https".equalsIgnoreCase(scheme)) return true;
-                if (u.toString().startsWith(TRUSTED_PREFIX)) return false;
+                if (APP_ASSET_HOST.equalsIgnoreCase(u.getHost())) return false;
                 try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
                 return true;
             }
@@ -82,7 +89,7 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
-        webView.loadUrl(DEMO_URL);
+        webView.loadUrl(APP_ASSET_URL);
     }
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
