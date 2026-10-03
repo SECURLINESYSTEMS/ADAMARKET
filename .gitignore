@@ -1,7 +1,0 @@
-*.db
-__pycache__/
-*.pyc
-
-android-demo/.gradle/
-android-demo/app/build/
-android-demo/local.properties
