@@ -47,8 +47,11 @@ def init_db():
     );
     CREATE INDEX IF NOT EXISTS idx_places_status ON places(status);
     CREATE INDEX IF NOT EXISTS idx_places_created ON places(created_at);
-    CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status);
     """)
+    request_columns = {row[1] for row in c.execute("PRAGMA table_info(requests)").fetchall()}
+    if "status" not in request_columns:
+        c.execute("ALTER TABLE requests ADD COLUMN status TEXT NOT NULL DEFAULT 'new'")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status)")
     c.commit(); c.close()
 
 
