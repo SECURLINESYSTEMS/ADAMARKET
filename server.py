@@ -77,7 +77,7 @@ def place_obj(row):
 
 
 def list_places():
-    c = db(); rows = c.execute("SELECT id,title,type,price,unit,city,district,address,latitude,longitude,description,cover_image,owner_name,created_at FROM places WHERE status='approved' ORDER BY created_at DESC LIMIT 200").fetchall(); c.close()
+    c = db(); rows = c.execute("SELECT id,title,type,price,unit,city,district,address,latitude,longitude,description,cover_image,owner_name,CASE WHEN owner_contact <> '' THEN 1 ELSE 0 END AS has_contact,created_at FROM places WHERE status='approved' ORDER BY created_at DESC LIMIT 200").fetchall(); c.close()
     return [place_obj(r) for r in rows]
 
 
@@ -163,7 +163,7 @@ class Handler(SimpleHTTPRequestHandler):
                 if not name or not contact or not message: raise ValueError("Укажите имя, контакт и задачу")
                 c=db(); exists=c.execute("SELECT id FROM places WHERE id=? AND status='approved'", (place_id,)).fetchone()
                 if not exists: c.close(); raise ValueError("Объявление недоступно")
-                c.execute("INSERT INTO requests(place_id,requester_name,requester_contact,message,budget,created_at) VALUES(?,?,?,?,?,?)", (place_id,name,contact,message,data.get("budget"),now())); c.commit(); c.close(); return json_response(self, 201, {"ok": True, "message": "Заявка отправлена владельцу"})
+                c.execute("INSERT INTO requests(place_id,requester_name,requester_contact,message,budget,created_at) VALUES(?,?,?,?,?,?)", (place_id,name,contact,message,data.get("budget"),now())); c.commit(); c.close(); return json_response(self, 201, {"ok": True, "message": "Заявка принята и сохранена для владельца"})
             return json_response(self, 404, {"ok": False, "error": "Маршрут не найден"})
         except ValueError as e: return json_response(self, 400, {"ok": False, "error": str(e)})
         except Exception as e: return json_response(self, 500, {"ok": False, "error": "Внутренняя ошибка сервера"})
