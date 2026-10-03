@@ -102,7 +102,7 @@ def ai_answer(message):
     key, base = os.environ.get("OPENAI_API_KEY"), os.environ.get("OPENAI_API_BASE")
     if not key or not base:
         return {"answer":"AI временно работает в демо-режиме. Каталог доступен через поиск, а подключение серверного AI будет активировано в публичной инфраструктуре.", "places": places[:8]}
-    payload = {"model":"gpt-5-mini","messages":[{"role":"system","content":"Ты AI-помощник ADAMARKET по рекламным местам Ташкента. Отвечай на языке пользователя. Используй только каталог ниже, не выдумывай места и цены. Если данных мало, честно скажи это. Дай короткий полезный ответ и до 5 подходящих ID.\nКАТАЛОГ:\n"+context},{"role":"user","content":message}],"max_completion_tokens":500}
+    payload = {"model":"gpt-5-nano","messages":[{"role":"system","content":"Ты AI-помощник ADAMARKET по рекламным местам Ташкента. Отвечай на языке пользователя. Используй только каталог ниже, не выдумывай места и цены. Если данных мало, честно скажи это. Дай короткий полезный ответ и до 5 подходящих ID.\nКАТАЛОГ:\n"+context},{"role":"user","content":message}],"max_completion_tokens":500}
     req = Request(base.rstrip("/")+"/chat/completions", data=json.dumps(payload).encode(), headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"}, method="POST")
     try:
         with urlopen(req, timeout=25) as r: result = json.loads(r.read().decode())
