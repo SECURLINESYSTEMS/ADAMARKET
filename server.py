@@ -76,6 +76,29 @@ def list_places():
     return [place_obj(r) for r in rows]
 
 
+def budget_from_message(message):
+    nums = re.findall(r"(?<!\d)(\d[\d\s.,]*)(?:\s*(?:млн|мillion|тыс|k))?", message.lower())
+    values = []
+    for raw in nums:
+        try:
+            value = float(raw.replace(" ", "").replace(",", "."))
+            if "млн" in message.lower() or "million" in message.lower(): value *= 1_000_000
+            elif "тыс" in message.lower() or re.search(r"\d\s*k", message.lower()): value *= 1_000
+            if value >= 10_000: values.append(int(value))
+        except ValueError:
+            pass
+    return max(values) if values else None
+
+
+def empty_catalog_advice(message):
+    budget = budget_from_message(message)
+    budget_text = f"Ваш бюджет — до {budget:,} сум в месяц.".replace(",", " ") if budget else "Бюджет пока не указан."
+    return (f"{budget_text}\n\nСейчас в каталоге ещё нет опубликованных рекламных мест, поэтому я не буду придумывать конкретный адрес или цену. "
+            "Для такого бюджета в Ташкенте стоит рассмотреть LED-экран, билборд 6×3 м, световую вывеску или несколько баннерных размещений. "
+            "Оставьте запрос: район, формат, срок и контакт — мы добавим подходящие варианты, когда владельцы разместят объявления.\n\n"
+            "Пока можно бесплатно добавить своё рекламное место или пригласить владельца места в ADAMARKET.")
+
+
 def create_place(data, ip):
     title = clean(data.get("title"), 120); typ = clean(data.get("type"), 40)
     if len(title) < 3: raise ValueError("Укажите название объявления")
@@ -98,6 +121,8 @@ def ai_answer(message):
     message = clean(message, 1200)
     if not message: raise ValueError("Напишите вопрос")
     places = list_places()
+    if not places:
+        return {"answer": empty_catalog_advice(message), "places": [], "catalog_empty": True, "request_prompt": "Укажите район, формат рекламы, срок и контакт для подбора места."}
     context = "\n".join(f"#{p['id']} | {p['title']} | {p['type']} | {p['price']} сум/месяц | {p['district']} | {p['address']}" for p in places[:80]) or "Каталог пока пуст."
     key, base = os.environ.get("OPENAI_API_KEY"), os.environ.get("OPENAI_API_BASE")
     if not key or not base:
