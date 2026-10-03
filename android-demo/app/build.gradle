@@ -1,4 +1,5 @@
 plugins { id 'com.android.application' }
+
 android {
     namespace 'uz.adamarket.app'
     compileSdk 35
@@ -6,14 +7,31 @@ android {
         applicationId 'uz.adamarket.app'
         minSdk 23
         targetSdk 35
-        versionCode 3
-        versionName '1.2.0'
+        versionCode 12
+        versionName '1.1.2'
+    }
+    signingConfigs {
+        release {
+            def propsFile = rootProject.file('signing.properties')
+            if (propsFile.exists()) {
+                def props = new Properties()
+                propsFile.withInputStream { props.load(it) }
+                storeFile rootProject.file(props['storeFile'])
+                storePassword props['storePassword']
+                keyAlias props['keyAlias']
+                keyPassword props['keyPassword']
+            }
+        }
     }
     buildTypes {
         debug { debuggable true }
-        release { minifyEnabled false; shrinkResources false }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            def propsFile = rootProject.file('signing.properties')
+            if (propsFile.exists()) signingConfig signingConfigs.release
+        }
     }
-    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
 
 

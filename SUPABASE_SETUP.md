@@ -1,53 +1,42 @@
-# ADAMARKET — Supabase setup
+# Supabase setup for ADAMARKET
 
-Этот файл описывает настройки, которые нужно проверить владельцу проекта Supabase. Секреты и `service_role` ключи не должны находиться в `index.html` или GitHub.
+Project: `nmskpqugwiwdcukqckcy`
 
-## Уже используется приложением
+## What is already applied
 
-- Project URL: `https://nmskpqugwiwdcukqckcy.supabase.co`
-- Edge Function: `adamarket-web-api`
-- Web client использует только publishable/anon key.
+The project already contains the ADAMARKET core schema, storage buckets, favorites RLS, moderation protection and prior security migrations. The new `prod_hardening_roles_and_rls` migration additionally:
 
-## Что проверить в Supabase
+- adds validated 9–14 digit INN format checking;
+- prevents ordinary users from changing `account_type` through profile updates;
+- adds private security-definer role helpers with an empty search path;
+- restricts advertising-place creation to `business` (or `admin`);
+- restricts producer creation to `manufacturer` (or `admin`);
+- restricts advertiser requests to `advertiser` (or `admin`);
+- keeps ownership checks for updates/deletes;
+- restricts subscriptions created directly by users to `pending` status.
 
-1. **Authentication → URL Configuration**
-   - добавить production URL GitHub Pages;
-   - добавить URL локальной разработки;
-   - включить подтверждение email только если это ожидаемое поведение продукта.
-2. **Database → Tables**
-   - `profiles` — профиль и роль пользователя;
-   - таблица рекламных мест;
-   - избранное;
-   - планы и заявки на оплату;
-   - сообщения/заявки между пользователями.
-3. **Storage**
-   - отдельный bucket для фотографий объявлений;
-   - ограничить MIME-типы изображений;
-   - ограничить размер файла;
-   - запретить анонимную запись.
-4. **RLS**
-   - публично читать только одобренные объявления;
-   - пользователь видит и изменяет только собственные объявления;
-   - рекламодатель не может создавать рекламные площади;
-   - модератор/администратор — единственный, кто меняет статус модерации;
-   - заявки на тариф создаются только авторизованным пользователем.
-5. **Edge Function**
-   - проверять JWT на каждой защищённой операции;
-   - повторно проверять роль на сервере;
-   - не доверять `role`, `account_type`, цене и `owner_id` из браузера;
-   - возвращать единый JSON-формат ошибок и HTTP-коды 4xx/5xx.
+## Edge Function
 
-## Временный безопасный процесс без доступа к Supabase
+`adamarket-web-api` is deployed with `verify_jwt=false` because the endpoint has public GET actions for approved places and plans. All POST actions perform explicit bearer-token validation with `supabase.auth.getUser()` and then enforce the profile role on the server.
 
-Пока доступ к Supabase не предоставлен, изменения frontend и Android можно проверять локально и через GitHub Actions. После получения доступа нужно отдельно проверить схему, RLS и Edge Function — клиентский код не заменяет эти проверки.
+The function reads `SUPABASE_SERVICE_ROLE_KEY` only from the Edge Function environment. Never put that secret in frontend code, Android assets, GitHub source, or documentation.
 
-## Секреты
+## Storage
 
-Не коммитить:
+The existing `adamarket` and `ad-images` buckets allow JPEG/PNG/WebP and cap individual files at 10 MB. Uploads through `adamarket-web-api` are stored under `<user-id>/<uuid>.<ext>` and require a valid authenticated session.
 
-- `service_role` key;
-- database password;
-- JWT secret;
-- приватные ключи подписи Android.
+## Required production secrets
 
-Для локальной разработки использовать `.env`/секреты CI. Публичный publishable/anon key допустим в браузерном клиенте только вместе с корректными RLS-политиками.
+Configure these as GitHub Actions Secrets/Environment Variables when release signing or server-side CI is enabled:
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+- `SUPABASE_SERVICE_ROLE_KEY` (server/Edge Function only)
+
+Do not commit any of these values.
+
+## Release signing
+
+The current workflow intentionally produces an installable debug APK and an unsigned release APK. A production release APK/AAB should be added only after the keystore secrets are configured in GitHub Actions. The keystore must never be committed to the repository.

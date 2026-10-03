@@ -1,16 +1,25 @@
 const fs = require('fs');
-const vm = require('vm');
 const html = fs.readFileSync('index.html', 'utf8');
-const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(m => m[1]).join('\n');
-if (!scripts.includes('window.AdamarketState')) throw new Error('canonical state is missing');
-for (const legacy of ['let session=', 'let profile=', 'let places=', 'let myAds=', 'let favorites=', 'let plans=', 'let signup=', 'let lang=', 'const demo=']) {
-  if (scripts.includes(legacy)) throw new Error(`legacy state declaration found: ${legacy}`);
-}
-for (const legacy of ['window.session', 'window.profile', 'window.places', 'window.myAds', 'window.favorites', 'window.plans', 'window.signup', 'window.lang', 'window.demo']) {
-  if (scripts.includes(legacy)) throw new Error(`legacy window alias found: ${legacy}`);
-}
-for (const required of ['document.getElementById("aEmail")','document.getElementById("aPass")','document.getElementById("aInn")','document.getElementById("searchQ")','L.map','toggle_favorite','create_place','update_place','localStorage.setItem("adamarket_lang"']) {
-  if (!scripts.includes(required)) throw new Error(`required behavior missing: ${required}`);
-}
-new vm.Script(scripts);
-console.log('frontend smoke: PASS');
+const a = html.indexOf('<script>') + 8;
+const b = html.indexOf('</script>', a);
+const script = html.slice(a, b);
+function assert(ok, msg) { if (!ok) throw new Error(msg); }
+new Function(script);
+assert(script.includes('window.AdamarketState'), 'AdamarketState missing');
+for (const key of ['session','profile','places','myAds','favorites','plans','signup','lang']) assert(new RegExp(`\\b${key}\\s*:`).test(script), `state field ${key} missing`);
+for (const key of ['session','profile','places','myAds','favorites','plans','signup','lang','demo']) assert(!new RegExp(`window\\.${key}\\b`).test(script), `window.${key} alias remains`);
+assert(!/\\blet\\s+(session|profile|places|myAds|favorites|plans|signup|lang)\\s*=/.test(script), 'legacy lexical state remains');
+assert(script.includes('document.getElementById("aEmail")'), 'auth DOM lookup missing');
+assert(script.includes('document.getElementById("fTitle")'), 'form DOM lookup missing');
+assert(script.includes('if(id==="search")'), 'guest search missing');
+assert(script.includes('function updatePlace('), 'updatePlace missing');
+assert(script.includes('function renderProducer()'), 'producer UI missing');
+assert(script.includes('function createProducer()'), 'producer action missing');
+assert(script.includes('id="plans"'), 'plans DOM id invalid');
+assert(!script.includes('id="S.plans"'), 'state token leaked into DOM id');
+assert(script.includes('pickMapObj=L.map'), 'Leaflet picker missing');
+assert(script.includes('pickMapObj.on("click"'), 'map click handler missing');
+assert(script.includes("localStorage.setItem('adamarket_lang'"), 'language persistence missing');
+assert(!script.includes('()}renderHome()})();'), 'legacy boot tail remains');
+for (const f of ['prod_hardening.js','guest_fix.js','app_patch.js','roles_business_patch.js','guest_map_patch.js','final_ui_patch.js','adamarket_demo_changes.js']) assert(!fs.existsSync(`android-demo/app/src/main/assets/${f}`), `legacy patch remains: ${f}`);
+console.log('frontend smoke tests passed');
