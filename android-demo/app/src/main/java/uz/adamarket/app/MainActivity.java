@@ -21,8 +21,8 @@ public class MainActivity extends Activity {
     private String pendingGeoOrigin;
     private static final int FILE_PICKER = 1001;
     private static final int LOCATION = 1002;
-    private static final String DEMO_URL = "https://raw.githubusercontent.com/SECURLINESYSTEMS/ADAMARKET/manus/prod-hardening/index.html";
-    private static final String TRUSTED_PREFIX = "https://raw.githubusercontent.com/SECURLINESYSTEMS/ADAMARKET/";
+    private static final String DEMO_URL = "https://adamarket.uz/";
+    private static final String TRUSTED_PREFIX = "https://adamarket.uz/";
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
