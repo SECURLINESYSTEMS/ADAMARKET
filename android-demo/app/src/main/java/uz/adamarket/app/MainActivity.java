@@ -46,9 +46,6 @@ public class MainActivity extends Activity {
         s.setSafeBrowsingEnabled(true);
 
         webView.setWebViewClient(new WebViewClient() {
-            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, android.webkit.WebResourceRequest request) {
-                return assetLoader.shouldInterceptRequest(request.getUrl());
-            }
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
                 if (u == null) return true;
