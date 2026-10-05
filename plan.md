@@ -34,3 +34,11 @@ ADAMARKET uses publicly observable marketplace patterns as product inspiration, 
 - **Layout:** asymmetric hero/search entry, compact filter rail, dense listing cards, and bottom navigation on mobile.
 - **Signature elements:** glossy category icons, skyline hero, and consistent verification/status chips.
 - **Voice:** direct and helpful; e.g. “Найдём место под ваш бюджет” and “Разместите рекламное место бесплатно в beta”.
+
+## External benchmark sources
+
+- OLX Uzbekistan homepage: https://www.olx.uz/ — category discovery, location context, search and VIP listing areas.
+- OLX Uzbekistan Android listing: https://play.google.com/store/apps/details?id=com.torg.torg&hl=en_US — search, saved ads/searches, notifications, photo posting, listing management, sharing, chat, image/location sharing.
+- OLX Uzbekistan promotion page: https://www.olx.uz/landingbundles/ — future promotion concepts such as raising listings and bundles; intentionally disabled for ADAMARKET Free Beta.
+- OLX Uzbekistan help article (mobile posting): https://help.olx.uz/olxuzhelp/s/article/%D0%BA%D0%B0%D0%BA-%D0%BF%D0%BE%D0%B4%D0%B0%D1%82%D1%8C-%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D0%BC%D0%BE%D0%B1%D0%B8%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-V7 — official posting-flow reference; dynamic help page did not expose full text to the fetcher.
+- OLX Uzbekistan help article (listing limits): https://help.olx.uz/olxuzhelp/s/article/%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-3-%D0%BB%D0%B8%D0%BC%D0%B8%D1%82%D1%8B-%D0%BE%D0%B1%D1%8A%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B9-V37 — official moderation/limits reference; dynamic help page did not expose full text to the fetcher.
