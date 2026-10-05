@@ -19,7 +19,7 @@ assert(script.includes('id="plans"'), 'plans DOM id invalid');
 assert(!script.includes('id="S.plans"'), 'state token leaked into DOM id');
 assert(script.includes('pickMapObj=L.map'), 'Leaflet picker missing');
 assert(script.includes('pickMapObj.on("click"'), 'map click handler missing');
-assert(script.includes("localStorage.setItem('adamarket_lang'"), 'language persistence missing');
+assert(/localStorage\.setItem\([\"']adamarket_lang[\"']/.test(script), 'language persistence missing');
 assert(!script.includes('()}renderHome()})();'), 'legacy boot tail remains');
 for (const f of ['prod_hardening.js','guest_fix.js','app_patch.js','roles_business_patch.js','guest_map_patch.js','final_ui_patch.js','adamarket_demo_changes.js']) assert(!fs.existsSync(`android-demo/app/src/main/assets/${f}`), `legacy patch remains: ${f}`);
 console.log('frontend smoke tests passed');
