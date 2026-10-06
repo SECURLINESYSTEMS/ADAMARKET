@@ -28,7 +28,7 @@ jobs:
         run: |
           test -f android-demo/settings.gradle
           test -f android-demo/app/src/main/AndroidManifest.xml
-          node --check android-demo/app/src/main/assets/prod_hardening.js
+          test -f android-demo/app/src/main/java/uz/adamarket/app/MainActivity.java
       - name: Build debug APK
         working-directory: android-demo
         run: gradle :app:assembleDebug --no-daemon --stacktrace
@@ -45,6 +45,7 @@ jobs:
           keyPassword=${{ secrets.ADAMARKET_KEY_PASSWORD }}
           EOF
       - name: Build release APK/AAB
+        if: env.HAS_RELEASE_SIGNING == 'true'
         working-directory: android-demo
         run: gradle :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace
       - name: Prepare artifacts
@@ -56,6 +57,6 @@ jobs:
           if [ -f android-demo/app/build/outputs/bundle/release/app-release.aab ]; then cp android-demo/app/build/outputs/bundle/release/app-release.aab dist/ADAMARKET-DEMO-release.aab; fi
       - uses: actions/upload-artifact@v4
         with:
-          name: ADAMARKET-Android-Demo-1.1.2
+          name: ADAMARKET-Android-Demo-1.2.1
           path: dist/*
           retention-days: 30

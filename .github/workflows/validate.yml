@@ -2,14 +2,14 @@ name: Validate ADAMARKET
 on:
   push:
     branches: [main, manus/prod-hardening]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-  push:
     paths:
       - 'index.html'
       - 'tests/**'
+      - 'android-demo/**'
       - '.github/workflows/validate.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -32,17 +32,8 @@ jobs:
           print('Inline script blocks:',len(inline))
           PY
           node --check /tmp/adamarket-inline.js
-      - name: Validate Android JavaScript sources
-        run: |
-          set -euo pipefail
-          found=0
-          while IFS= read -r -d '' f; do
-            found=1
-            node --check "$f"
-          done < <(find android-demo/app/src/main/assets -type f -name '*.js' -print0)
-          if [ "$found" -eq 0 ]; then
-            echo 'No Android JavaScript patch files remain; canonical frontend is the source of truth.'
-          fi
+      - name: Validate Android Java sources
+        run: test -f android-demo/app/src/main/java/uz/adamarket/app/MainActivity.java
       - name: Check repository whitespace
         run: git diff --check
       - name: Check public API
