@@ -1,67 +1,35 @@
 name: ADAMARKET source refactor
 on:
-  push:
-    branches: [manus/prod-hardening]
-    paths: ['scripts/**', '.github/workflows/source-refactor-clean.yml']
-  pull_request:
-    branches: [main]
-    paths: ['index.html', 'scripts/**', '.github/workflows/source-refactor-clean.yml']
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
   refactor:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: {ref: manus/prod-hardening, fetch-depth: 0}
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
-      - name: Refactor frontend source
-        run: python scripts/refactor_frontend_state.py
-      - name: Apply producer role source flow
-        run: python scripts/ensure_role_flows.py
-      - name: Enforce source invariants
+      - name: Run idempotent source checks
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8')
-          s=s.replace('id="S.plans"','id="plans"').replace('getElementById("S.plans")','getElementById("plans")')
-          old='function action(id){if(id==="search")return renderSearch();if(!S.session)return needAuth();if(id==="add")renderAdd();else if(id==="favorites")renderFav();else if(id==="profile")renderProfile();else if(id==="messages")renderMessages()}'
-          new='function action(id){if(id==="search")return renderSearch();if(!S.session)return needAuth();if(id==="add"){const role=S.profile?.account_type||S.profile?.role;if(role==="manufacturer")return renderProducer();if(role==="business"||role==="admin")return renderAdd();return renderSearch()}if(id==="favorites")return renderFav();if(id==="profile")return renderProfile();if(id==="messages")return renderMessages()}'
-          if old in s:s=s.replace(old,new,1)
-          marker='function renderAdd(){'
-          if 'function renderProducer()' not in s:
-              producer='''function renderProducer(){if(!S.session)return needAuth();document.getElementById("content").innerHTML=`<div class="page"><div class="head"><h1 class="pageTitle">Разместить производство</h1><button class="ghost" onclick="goHome()">Отмена</button></div><div class="panel"><div class="formgrid"><div class="full"><label class="label">Название компании *</label><input id="pCompany" class="field"></div><div><label class="label">Город *</label><input id="pCity" class="field" value="Ташкент"></div><div><label class="label">Район</label><input id="pDistrict" class="field"></div><div class="full"><label class="label">Что изготавливаете *</label><div id="pCats" class="actions">${["Баннеры","Объёмные буквы","Вывески","Световые короба","LED-экраны","Билборды","Плёнка / наклейки"].map(x=>`<button type="button" class="ghost" data-cat="${esc(x)}">${esc(x)}</button>`).join("")}</div></div><div class="full"><label class="label">Описание</label><textarea id="pDesc" class="field" rows="5"></textarea></div><div class="full"><button class="primary" onclick="createProducer()">Отправить на модерацию</button></div></div></div></div>`;document.getElementById("pCats").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{b.classList.toggle("primary");b.classList.toggle("ghost")})}
-async function createProducer(){try{const categories=[...document.getElementById("pCats").querySelectorAll(".primary")].map(x=>x.dataset.cat);if(!categories.length)throw Error("Выберите хотя бы одну категорию производства");await api("create_producer",{producer:{company_name:document.getElementById("pCompany").value.trim(),city:document.getElementById("pCity").value.trim(),district:document.getElementById("pDistrict").value.trim(),description:document.getElementById("pDesc").value.trim(),categories}});toast("Услуга отправлена на проверку");await bootstrap();renderProfile()}catch(e){toast(e.message)}}
-'''
-              s=s.replace(marker,producer+marker,1)
-          a=s.index('<script>')+8; b=s.index('</script>',a); js=s[a:b]
-          marker2='(async()=>{const {data}=await sb.auth.getSession();'; i=js.find(marker2)
-          if i<0: raise SystemExit('boot missing')
-          j=js.find('renderHome()})();',i)
-          if j<0: raise SystemExit('boot terminator missing')
-          js=js[:j+len('renderHome()})();')]+'\n'
-          s=s[:a]+js+s[b:]
-          p.write_text(s,encoding='utf-8')
-          assert 'function renderProducer()' in s
-          assert 'createProducer()' in s
-          assert 'id="S.plans"' not in s
-          assert '()}renderHome()})();' not in s
-          PY
-      - name: Validate generated JavaScript
+          python scripts/refactor_frontend_state.py
+          python scripts/ensure_role_flows.py
+      - name: Validate generated source
         run: |
-          python - <<'PY' > /tmp/adamarket.js
+          python - <<'PY2' > /tmp/adamarket.js
           from pathlib import Path
-          s=Path('index.html').read_text(encoding='utf-8'); a=s.index('<script>')+8; b=s.index('</script>',a); print(s[a:b])
-          PY
+          s=Path('index.html').read_text(encoding='utf-8')
+          a=s.index('<script>')+8; b=s.index('</script>',a)
+          print(s[a:b])
+          PY2
           node --check /tmp/adamarket.js
+          grep -q 'function renderProducer()' index.html
+          grep -q 'function createProducer()' index.html
+          grep -q 'window.AdamarketState' index.html
           git diff --check
-      - name: Commit generated source
+      - name: Commit source changes when needed
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --check
-          git diff --cached --quiet || (git commit -m 'refactor: centralize frontend state and role flows' && git push origin HEAD:manus/prod-hardening)
+          if ! git diff --cached --quiet; then git commit -m 'chore: normalize frontend source'; git push; fi

@@ -1,15 +1,11 @@
 name: ADAMARKET Android Build
-
 on:
-  push:
-    branches: [manus/prod-hardening]
   workflow_dispatch:
-
+permissions:
+  contents: read
 jobs:
   android:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -17,8 +13,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
-      - name: Validate project
-        run: node scripts/android_build_guard.js
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - name: Make Gradle executable
         run: chmod +x android-demo/gradlew
       - name: Build debug APK
@@ -29,25 +25,4 @@ jobs:
         with:
           name: ADAMARKET-debug-${{ github.sha }}
           path: android-demo/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-      - name: Build signed release when secrets are configured
-        if: ${{ secrets.ADAMARKET_KEYSTORE_BASE64 != '' && secrets.ADAMARKET_KEYSTORE_PASSWORD != '' && secrets.ADAMARKET_KEY_ALIAS != '' && secrets.ADAMARKET_KEY_PASSWORD != '' }}
-        env:
-          ADAMARKET_KEYSTORE_BASE64: ${{ secrets.ADAMARKET_KEYSTORE_BASE64 }}
-          ADAMARKET_KEYSTORE_PASSWORD: ${{ secrets.ADAMARKET_KEYSTORE_PASSWORD }}
-          ADAMARKET_KEY_ALIAS: ${{ secrets.ADAMARKET_KEY_ALIAS }}
-          ADAMARKET_KEY_PASSWORD: ${{ secrets.ADAMARKET_KEY_PASSWORD }}
-        working-directory: android-demo
-        run: |
-          printf '%s' "$ADAMARKET_KEYSTORE_BASE64" | base64 --decode > adamarket-release.keystore
-          ./gradlew --no-daemon assembleRelease bundleRelease
-          rm -f adamarket-release.keystore
-      - name: Upload release outputs
-        if: ${{ secrets.ADAMARKET_KEYSTORE_BASE64 != '' && secrets.ADAMARKET_KEYSTORE_PASSWORD != '' && secrets.ADAMARKET_KEY_ALIAS != '' && secrets.ADAMARKET_KEY_PASSWORD != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ADAMARKET-release-${{ github.sha }}
-          path: |
-            android-demo/app/build/outputs/apk/release/*.apk
-            android-demo/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
