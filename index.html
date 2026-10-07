@@ -251,7 +251,8 @@ function toggleLang(){let m=document.getElementById("langmenu");m.style.display=
   try{
     applyLanguage();
     await loadPlaces();
-    renderHome();
+    const adFromUrl=new URLSearchParams(location.search).get("ad");
+    if(adFromUrl)renderAdDetail(adFromUrl);else renderHome();
     applyStaticI18n();
     setupPlacesRealtime();
     await bootstrap();
