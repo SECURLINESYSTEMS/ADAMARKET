@@ -164,7 +164,19 @@ function applyLanguage(){document.documentElement.lang=state.lang;document.getEl
 const cats=[["assets/icon-banners.png","banners"],["assets/icon-signage.png","signage"],["assets/icon-business.png","letters"],["assets/icon-advertisers.png","lightbox"],["assets/icon-led.png","led"],["assets/icon-billboard.png","billboard"],["assets/icon-ad-places.png","film"],["assets/icon-producers.png","other"]];
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function money(v){return Number(v||0).toLocaleString("ru-RU")+" сум"}function unit(v){return v==="day"?"день":v==="week"?"неделя":"месяц"}function toast(t){let x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2400)}
 async function api(action,data={}){let {data:s}=await sb.auth.getSession();if(!s.session)throw Error("Сначала войдите в аккаунт");let r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+s.session.access_token},body:JSON.stringify({action,...data})});let d=await r.json();if(!r.ok||d.ok===false)throw Error(d.error||"Ошибка сервера");return d}
-function goHome(){renderHome();scrollTo(0,0)}async function jsonFetch(url,opts={}){let r=await fetch(url,opts),raw=await r.text(),d;try{d=JSON.parse(raw)}catch(_){throw Error("Постоянная версия сайта сейчас не подключена к серверу объявлений. Попробуйте позже.")}if(!r.ok||d.ok===false)throw Error(d.error||"Сервис временно недоступен");return d}function isPrivileged(){const email=state.session?.user?.email?.toLowerCase();const role=String(state.profile?.role||state.profile?.account_type||"").toLowerCase();return email===ADMIN_EMAIL||role==="admin"||role==="moderator"}
+function goHome(){renderHome();scrollTo(0,0)}
+function adSlug(p){
+  const raw=String(p?.slug||p?.title||p?.owner_name||("ad-"+p?.id||"")).trim().toLowerCase();
+  return raw.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9а-яё]+/gi,"-").replace(/[а-яё]/g,ch=>({"а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"yo","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"c","ч":"ch","ш":"sh","щ":"sch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya"}[ch]||"")).replace(/-+/g,"-").replace(/^-|-$/g,"")||("ad-"+p.id);
+}
+function adFromPath(){
+  const m=location.pathname.match(/^\/profil\/([^/]+)\/?$/i);
+  return m?decodeURIComponent(m[1]).toLowerCase():null;
+}
+function findAdByRoute(route){
+  if(!route)return null;
+  return [...state.places,...state.demo].find(p=>adSlug(p).toLowerCase()===route || String(p.id)===route) || null;
+}async function jsonFetch(url,opts={}){let r=await fetch(url,opts),raw=await r.text(),d;try{d=JSON.parse(raw)}catch(_){throw Error("Постоянная версия сайта сейчас не подключена к серверу объявлений. Попробуйте позже.")}if(!r.ok||d.ok===false)throw Error(d.error||"Сервис временно недоступен");return d}function isPrivileged(){const email=state.session?.user?.email?.toLowerCase();const role=String(state.profile?.role||state.profile?.account_type||"").toLowerCase();return email===ADMIN_EMAIL||role==="admin"||role==="moderator"}
 function isAdmin(){const email=state.session?.user?.email?.toLowerCase();const role=String(state.profile?.role||state.profile?.account_type||"").toLowerCase();return email===ADMIN_EMAIL||role==="admin"}
 function action(id){if(id==="add"){if(!state.session)return needAuth();renderAdd()}else if(id==="search"){loadPlaces().finally(renderSearch)}else if(id==="favorites")renderFav();else if(id==="profile")state.session?renderProfile():needAuth();else if(id==="messages")renderMessages()}
 function needAuth(){document.getElementById("auth").classList.remove("hidden");authMode(false)}function closeAuth(){document.getElementById("auth").classList.add("hidden")}
@@ -180,12 +192,20 @@ function showContact(id,kind){if(!state.session){needAuth();toast("Войдит�
 function closeModal(){document.getElementById("modal").classList.remove("show") }
 function openModal(html){document.getElementById("modalBody").innerHTML=html;document.getElementById("modal").classList.add("show")}
 function adCard(p){let isNew=p.created_at&&((Date.now()-new Date(p.created_at).getTime())<14*86400000),cover=p.cover_image||"assets/tashkent-hero.jpg";return `<article class="ad" onclick="openPlace(${p.id})"><img src="${esc(cover)}" onerror="this.src='assets/tashkent-hero.jpg'"><button class="heart" aria-label="Добавить в избранное" onclick="event.stopPropagation();toggleFav(${p.id})">${state.favorites.has(p.id)?"♥":"♡"}</button><div class="adbody"><div class="badges"><span class="badge">${esc(p.type)}</span><span class="trust">✓ Проверено</span>${p.has_contact?`<span class="trust">Контакт указан</span>`:""}${isNew?`<span class="trust new">Новое</span>`:""}</div><h3>${esc(p.title)}</h3><div class="meta">⌖ Ташкент, ${esc(p.district)}</div><div class="price">от ${money(p.price)}</div><div class="contactBtns"><button class="primary requestBtn" onclick="event.stopPropagation();requestOwner(${p.id})">Оставить заявку</button><button class="ghost miniBtn" onclick="event.stopPropagation();showContact(${p.id},'phone')">Позвонить</button><button class="ghost miniBtn" onclick="event.stopPropagation();showContact(${p.id},'telegram')">Telegram</button></div></div></article>`}
-function openPlace(id){renderAdDetail(id);history.pushState({ad:id},"","?ad="+encodeURIComponent(id));scrollTo(0,0)}
+function openPlace(id){
+ const p=[...state.places,...state.demo].find(x=>x.id==id);if(!p)return;
+ const url="/profil/"+encodeURIComponent(adSlug(p))+"/";
+ if(location.pathname!==url){
+   history.pushState({page:"ad",ad:id},"",url);
+ }
+ renderAdDetail(id);
+ scrollTo(0,0);
+}
 function renderAdDetail(id){
  const p=[...state.places,...state.demo].find(x=>x.id==id);if(!p)return;
  const cover=p.cover_image||"assets/tashkent-hero.jpg";
  document.getElementById("content").innerHTML=`<div class="adDetailPage">
- <button class="adDetailBack" onclick="goHome();history.replaceState({},"",location.pathname)">← <span>Назад</span></button>
+ <button class="adDetailBack" onclick="history.back()">← <span>Назад</span></button>
  <div class="adDetailGrid">
   <div class="adDetailGallery"><img src="${esc(cover)}" onerror="this.src='assets/tashkent-hero.jpg'" alt="${esc(p.title||"")}"></div>
   <article class="adDetailInfo">
@@ -199,7 +219,12 @@ function renderAdDetail(id){
  </div></div>`;
  applyStaticI18n();
 }
-window.addEventListener("popstate",()=>{const m=new URLSearchParams(location.search).get("ad");if(m)renderAdDetail(m);else renderHome()})
+window.addEventListener("popstate",()=>{
+  const route=adFromPath();
+  const p=findAdByRoute(route);
+  if(p){renderAdDetail(p.id);scrollTo(0,0);}
+  else{renderHome();scrollTo(0,0);}
+})
 function renderSearch(){let a=state.places.length?state.places:state.demo;document.getElementById("content").innerHTML=`<div class="page"><div class="head"><h1 class="pageTitle">${t("searchTitle")}</h1><button class="ghost" onclick="goHome()">${t("home")}</button></div><div class="panel"><input id="searchQ" class="field" placeholder="${t("searchPlaceholder")}" oninput="filterSearch()"><div class="matchGrid" style="margin-top:10px"><select id="filterType" class="field" onchange="filterSearch()"><option value="">Все форматы</option><option>Баннер</option><option>Билборд</option><option>LED-экран</option><option>Вывеска</option><option>Световой короб</option></select><input id="filterDistrict" class="field" placeholder="Район" oninput="filterSearch()"><input id="filterMax" class="field" type="number" placeholder="До суммы" oninput="filterSearch()"><select id="filterSort" class="field" onchange="filterSearch()"><option value="new">Сначала новые</option><option value="price">Сначала дешевле</option><option value="price_desc">Сначала дороже</option></select></div></div><div id="results" class="list">${a.map(adCard).join("")}</div></div>`}
 function filterSearch(){let q=(document.getElementById("searchQ")?.value||"").toLowerCase(),type=(document.getElementById("filterType")?.value||"").toLowerCase(),district=(document.getElementById("filterDistrict")?.value||"").toLowerCase(),max=Number(document.getElementById("filterMax")?.value)||0,sort=document.getElementById("filterSort")?.value||"new";let a=(state.places.length?state.places:state.demo).filter(p=>(p.title+" "+p.type+" "+p.city+" "+p.district+" "+(p.address||"")).toLowerCase().includes(q)&&(!type||(p.type||"").toLowerCase().includes(type))&&(!district||((p.district||"")+" "+(p.address||"")).toLowerCase().includes(district))&&(!max||Number(p.price||0)<=max));a.sort((x,y)=>sort==="price"?Number(x.price||0)-Number(y.price||0):sort==="price_desc"?Number(y.price||0)-Number(x.price||0):new Date(y.created_at||0)-new Date(x.created_at||0));document.getElementById("results").innerHTML=a.length?a.map(adCard).join(""): '<div class="panel empty">'+t('nothing')+'</div>'}
 function renderFav(){let a=[...state.places,...state.demo].filter(p=>state.favorites.has(p.id));document.getElementById("content").innerHTML=`<div class="page"><h1 class="pageTitle">Избранное</h1>${a.length?'<div class="list">'+a.map(adCard).join('')+'</div>':'<div class="panel empty">Здесь появятся сохранённые рекламные места.</div>'}</div>`}
@@ -251,8 +276,22 @@ function toggleLang(){let m=document.getElementById("langmenu");m.style.display=
   try{
     applyLanguage();
     await loadPlaces();
-    const adFromUrl=new URLSearchParams(location.search).get("ad");
-    if(adFromUrl)renderAdDetail(adFromUrl);else renderHome();
+    const legacyAd=new URLSearchParams(location.search).get("ad");
+    const route=adFromPath();
+    const routed=findAdByRoute(route);
+    if(legacyAd){
+      const legacy=[...state.places,...state.demo].find(x=>x.id==legacyAd);
+      if(legacy){
+        history.replaceState({page:"ad",ad:legacy.id},"","/profil/"+encodeURIComponent(adSlug(legacy))+"/");
+        renderAdDetail(legacy.id);
+      }else renderHome();
+    }else if(routed){
+      history.replaceState({page:"ad",ad:routed.id},"","/profil/"+encodeURIComponent(adSlug(routed))+"/");
+      renderAdDetail(routed.id);
+    }else{
+      history.replaceState({page:"home"},"",location.pathname==="/" ? "/" : "/");
+      renderHome();
+    }
     applyStaticI18n();
     setupPlacesRealtime();
     await bootstrap();
