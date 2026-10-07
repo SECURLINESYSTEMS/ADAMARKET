@@ -176,6 +176,18 @@ function adFromPath(){
 function findAdByRoute(route){
   if(!route)return null;
   return [...state.places,...state.demo].find(p=>adSlug(p).toLowerCase()===route || String(p.id)===route) || null;
+}
+function adSlug(p){
+  const raw=String(p?.slug||p?.title||p?.owner_name||("ad-"+p?.id||"")).trim().toLowerCase();
+  return raw.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9а-яё]+/gi,"-").replace(/[а-яё]/g,ch=>({"а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"yo","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"c","ч":"ch","ш":"sh","щ":"sch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya"}[ch]||"")).replace(/-+/g,"-").replace(/^-|-$/g,"")||("ad-"+p.id);
+}
+function adFromPath(){
+  const m=location.pathname.match(/^\/profil\/([^/]+)\/?$/i);
+  return m?decodeURIComponent(m[1]).toLowerCase():null;
+}
+function findAdByRoute(route){
+  if(!route)return null;
+  return [...state.places,...state.demo].find(p=>adSlug(p).toLowerCase()===route || String(p.id)===route) || null;
 }async function jsonFetch(url,opts={}){let r=await fetch(url,opts),raw=await r.text(),d;try{d=JSON.parse(raw)}catch(_){throw Error("Постоянная версия сайта сейчас не подключена к серверу объявлений. Попробуйте позже.")}if(!r.ok||d.ok===false)throw Error(d.error||"Сервис временно недоступен");return d}function isPrivileged(){const email=state.session?.user?.email?.toLowerCase();const role=String(state.profile?.role||state.profile?.account_type||"").toLowerCase();return email===ADMIN_EMAIL||role==="admin"||role==="moderator"}
 function isAdmin(){const email=state.session?.user?.email?.toLowerCase();const role=String(state.profile?.role||state.profile?.account_type||"").toLowerCase();return email===ADMIN_EMAIL||role==="admin"}
 function action(id){if(id==="add"){if(!state.session)return needAuth();renderAdd()}else if(id==="search"){loadPlaces().finally(renderSearch)}else if(id==="favorites")renderFav();else if(id==="profile")state.session?renderProfile():needAuth();else if(id==="messages")renderMessages()}
