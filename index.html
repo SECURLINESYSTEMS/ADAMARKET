@@ -288,6 +288,8 @@ function toggleLang(){let m=document.getElementById("langmenu");m.style.display=
   try{
     applyLanguage();
     await loadPlaces();
+    const savedRoute=sessionStorage.getItem("adamarket_route");
+    if(savedRoute){sessionStorage.removeItem("adamarket_route");history.replaceState({page:"route"},"",savedRoute);}
     const legacyAd=new URLSearchParams(location.search).get("ad");
     const route=adFromPath();
     const routed=findAdByRoute(route);
