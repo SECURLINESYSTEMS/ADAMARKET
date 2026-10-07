@@ -69,6 +69,22 @@ html,body{background:#061221;color:#f7fbff}.app{background:radial-gradient(circl
 .homeTools{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 16px 18px}.homeTool{border:1px solid #dbe6f2;background:#fff;border-radius:14px;padding:14px;text-align:left;color:#132238}.homeTool b{display:block;font-size:14px}.homeTool span{display:block;color:#71849a;font-size:11px;margin-top:4px;line-height:1.35}
 @media(min-width:900px){.homeSearch{margin-left:0;margin-right:0}.homeLocation,.serviceSection,.homeListings,.homeTools{padding-left:0;padding-right:0}.homeAds{grid-template-columns:repeat(4,minmax(0,1fr))}.homeAd img{height:170px}}
 @media(max-width:420px){.homeAd img{height:126px}.serviceItem{flex-basis:84px}.serviceIcon{width:60px;height:60px}.homeListings{padding-top:18px}}
+
+/* Full listing page — OLX-style detail flow, no small modal */
+.adDetailPage{padding:18px 16px 100px;max-width:1080px;margin:0 auto}
+.adDetailBack{display:inline-flex;align-items:center;gap:7px;background:none;color:#72bfff;font-weight:800;padding:8px 0;margin-bottom:12px}
+.adDetailGrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:18px;align-items:start}
+.adDetailGallery,.adDetailInfo{background:#0b2037;border:1px solid #1b3e61;border-radius:16px;overflow:hidden}
+.adDetailGallery img{width:100%;height:460px;object-fit:cover;display:block}
+.adDetailInfo{padding:20px;position:sticky;top:92px}
+.adDetailInfo h1{font-size:30px;line-height:1.08;margin:10px 0}
+.adDetailMeta{color:#92a7bf;font-size:13px;margin:8px 0 16px}
+.adDetailPrice{font-size:25px;font-weight:950;margin:14px 0 20px}
+.adDetailDesc{color:#c5d4e5;line-height:1.65;font-size:14px;border-top:1px solid #244766;padding-top:18px}
+.adDetailActions{display:grid;gap:9px;margin-top:20px}
+.adDetailActions button{width:100%}
+.adDetailTrust{display:inline-flex;gap:6px;align-items:center;color:#7af0bd;background:#123f36;border:1px solid #226e56;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:800}
+@media(max-width:800px){.adDetailGrid{grid-template-columns:1fr}.adDetailInfo{position:static}.adDetailGallery img{height:320px}.adDetailInfo h1{font-size:25px}}
 </style>
 </head>
 <body>
@@ -84,6 +100,64 @@ const ADMIN_EMAIL="kasfuri377@gmail.com"; const SUPA_URL="https://nmskpqugwiwdcu
 window.AdamarketState=window.AdamarketState||{session:null,profile:null,places:[],myAds:[],favorites:new Set(),plans:[],signup:false,lang:localStorage.getItem("adamarket_lang")||"ru",demo:[{id:-1,title:"Световой короб",type:"Баннеры",city:"Ташкент",district:"Юнусабадский",price:250000,unit:"month",cover_image:"https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=900&q=80"},{id:-2,title:"Билборд 6×3 м",type:"Билборды",city:"Ташкент",district:"Шайхантахурский",price:1200000,unit:"month",cover_image:"https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=80"},{id:-3,title:"LED-экран на проспекте",type:"LED экраны",city:"Ташкент",district:"Мирабадский",price:950000,unit:"month",cover_image:"https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80"}]};
 const state=window.AdamarketState;
 const I18N={ru:{heroTitle:'Свободное место — новый',heroAccent:'клиент!',heroText:'Находите рекламные места, производителей и клиентов в одном месте.',find:'Найти место',popular:'Популярные категории',all:'Все категории',top:'Топ объявления',allShort:'Все',search:'Поиск',favorites:'Избранное',messages:'Сообщения',profile:'Профиль',places:'Рекламные места',producers:'Производители',advertisers:'Рекламодатели',business:'Бизнес',freeAdd:'Добавить рекламное место бесплатно',cancel:'Отмена',freePublish:'Разместить бесплатно',searchTitle:'Поиск рекламных мест',home:'Главная',searchPlaceholder:'Название, район, адрес...',nothing:'Ничего не найдено.',banners:'Баннеры',signage:'Вывески',letters:'Объёмные буквы',lightbox:'Световые короба',led:'LED экраны',billboard:'Билборды',film:'Плёнка / наклейки',other:'Другие'},uz:{heroTitle:'Reklama sizning',heroAccent:'biznesingiz uchun!',heroText:'Reklama joylari, ishlab chiqaruvchilar va mijozlarni bir joydan toping.',find:'Joy topish',popular:'Mashhur kategoriyalar',all:'Barcha kategoriyalar',top:'Top e’lonlar',allShort:'Barchasi',search:'Qidiruv',favorites:'Saralanganlar',messages:'Xabarlar',profile:'Profil',places:'Reklama joylari',producers:'Ishlab chiqaruvchilar',advertisers:'Reklama beruvchilar',business:'Biznes',freeAdd:'Reklama joyini bepul qo‘shish',cancel:'Bekor qilish',freePublish:'Bepul joylashtirish',searchTitle:'Reklama joylarini qidirish',home:'Bosh sahifa',searchPlaceholder:'Nomi, tuman, manzil...',nothing:'Hech narsa topilmadi.',banners:'Bannerlar',signage:'Peshlavhalar',letters:'Hajmli harflar',lightbox:'Yorug‘ qutilar',led:'LED ekranlar',billboard:'Bilbordlar',film:'Plyonka / stikerlar',other:'Boshqa'},en:{heroTitle:'Advertising works for your',heroAccent:'business!',heroText:'Find advertising spaces, producers and clients in one place.',find:'Find a place',popular:'Popular categories',all:'All categories',top:'Top listings',allShort:'All',search:'Search',favorites:'Favorites',messages:'Messages',profile:'Profile',places:'Ad spaces',producers:'Producers',advertisers:'Advertisers',business:'Business',freeAdd:'Add an ad space for free',cancel:'Cancel',freePublish:'Publish for free',searchTitle:'Search advertising spaces',home:'Home',searchPlaceholder:'Name, district, address...',nothing:'Nothing found.',banners:'Banners',signage:'Signage',letters:'3D letters',lightbox:'Lightboxes',led:'LED screens',billboard:'Billboards',film:'Film / stickers',other:'Other'}};
+
+const STATIC_I18N={
+"ОФИЦИАЛЬНЫЙ ПАРТНЁР":{"uz":"RASMIY HAMKOR","en":"OFFICIAL PARTNER"},
+"Ташкентская площадка для рекламы":{"uz":"Toshkentdagi reklama platformasi","en":"Advertising platform in Tashkent"},
+"Что ищете? Например: LED-экран, баннер, вывеска":{"uz":"Nimani qidiryapsiz? Masalan: LED ekran, banner, peshlavha","en":"What are you looking for? E.g. LED screen, banner, sign"},
+"Ташкент":{"uz":"Toshkent","en":"Tashkent"},
+"рекламные места рядом с вами":{"uz":"yaqiningizdagi reklama joylari","en":"advertising spaces near you"},
+"Все услуги":{"uz":"Barcha xizmatlar","en":"All services"},
+"Объявления пользователей":{"uz":"Foydalanuvchi e’lonlari","en":"User listings"},
+"Найти рекламное место":{"uz":"Reklama joyini topish","en":"Find an advertising space"},
+"Разместить объявление":{"uz":"E’lon joylashtirish","en":"Post an ad"},
+"Добавьте своё рекламное место бесплатно.":{"uz":"Reklama joyingizni bepul qo‘shing.","en":"Add your advertising space for free."},
+"Ищите по формату, району и цене.":{"uz":"Format, tuman va narx bo‘yicha qidiring.","en":"Search by format, district and price."},
+"Подробнее":{"uz":"Batafsil","en":"Details"},
+"Все →":{"uz":"Barchasi →","en":"All →"},
+"Видеонаблюдение":{"uz":"Videokuzatuv","en":"Video surveillance"},
+"Пожарная сигнализация":{"uz":"Yong‘in signalizatsiyasi","en":"Fire alarm"},
+"Пожарная безопасность":{"uz":"Yong‘in xavfsizligi","en":"Fire safety"},
+"СКУД":{"uz":"Kirish nazorati","en":"Access control"},
+"Домофония":{"uz":"Domofoniya","en":"Intercom"},
+"Слаботочные системы":{"uz":"Past tokli tizimlar","en":"Low-voltage systems"},
+"Обслуживание":{"uz":"Texnik xizmat","en":"Maintenance"},
+"Системы безопасности для бизнеса, домов и объектов в Ташкенте.":{"uz":"Toshkentdagi biznes, uylar va obyektlar uchun xavfsizlik tizimlari.","en":"Security systems for businesses, homes and facilities in Tashkent."},
+"Поиск рекламных мест":{"uz":"Reklama joylarini qidirish","en":"Search advertising spaces"},
+"Главная":{"uz":"Bosh sahifa","en":"Home"},
+"Избранное":{"uz":"Saralanganlar","en":"Favorites"},
+"Сообщения":{"uz":"Xabarlar","en":"Messages"},
+"Профиль":{"uz":"Profil","en":"Profile"},
+"Оставить заявку":{"uz":"Ariza qoldirish","en":"Send request"},
+"Оставить заявку бесплатно":{"uz":"Bepul ariza qoldirish","en":"Send request for free"},
+"Заявка:":{"uz":"Ariza:","en":"Request:"},
+"Владелец пока не добавил описание.":{"uz":"Egasi hozircha tavsif qo‘shmagan.","en":"The owner has not added a description yet."},
+"Назад":{"uz":"Orqaga","en":"Back"},
+"Проверено":{"uz":"Tekshirilgan","en":"Verified"},
+"Реклама":{"uz":"Reklama","en":"Advertising"},
+"Рекламное место":{"uz":"Reklama joyi","en":"Advertising space"},
+"от":{"uz":"dan","en":"from"},
+"месяц":{"uz":"oy","en":"month"},
+"день":{"uz":"kun","en":"day"},
+"неделя":{"uz":"hafta","en":"week"}
+};
+function applyStaticI18n(){
+  const lang=state.lang||"ru";
+  document.querySelectorAll("body *").forEach(el=>{
+    for(const n of [...el.childNodes]){
+      if(n.nodeType===3){
+        const raw=n.nodeValue.trim();
+        if(!raw)continue;
+        const hit=STATIC_I18N[raw];
+        if(hit&&lang!=="ru"){n.nodeValue=n.nodeValue.replace(raw,hit[lang]||raw)}
+      }
+    }
+    if(el.placeholder){
+      const hit=STATIC_I18N[el.placeholder];
+      if(hit&&lang!=="ru")el.placeholder=hit[lang]||el.placeholder;
+    }
+  });
+}
 function t(k){return (I18N[state.lang]||I18N.ru)[k]||k}
 function applyLanguage(){document.documentElement.lang=state.lang;document.getElementById('navSearch').innerHTML='<i>⌕</i><span>'+t('search')+'</span>';document.getElementById('navFav').innerHTML='<i>♡</i><span>'+t('favorites')+'</span>';document.getElementById('navMsg').innerHTML='<i>▢</i><span>'+t('messages')+'</span>';document.getElementById('navProfile').innerHTML='<i>♙</i><span>'+t('profile')+'</span>';}
 
@@ -106,7 +180,26 @@ function showContact(id,kind){if(!state.session){needAuth();toast("Войдит�
 function closeModal(){document.getElementById("modal").classList.remove("show") }
 function openModal(html){document.getElementById("modalBody").innerHTML=html;document.getElementById("modal").classList.add("show")}
 function adCard(p){let isNew=p.created_at&&((Date.now()-new Date(p.created_at).getTime())<14*86400000),cover=p.cover_image||"assets/tashkent-hero.jpg";return `<article class="ad" onclick="openPlace(${p.id})"><img src="${esc(cover)}" onerror="this.src='assets/tashkent-hero.jpg'"><button class="heart" aria-label="Добавить в избранное" onclick="event.stopPropagation();toggleFav(${p.id})">${state.favorites.has(p.id)?"♥":"♡"}</button><div class="adbody"><div class="badges"><span class="badge">${esc(p.type)}</span><span class="trust">✓ Проверено</span>${p.has_contact?`<span class="trust">Контакт указан</span>`:""}${isNew?`<span class="trust new">Новое</span>`:""}</div><h3>${esc(p.title)}</h3><div class="meta">⌖ Ташкент, ${esc(p.district)}</div><div class="price">от ${money(p.price)}</div><div class="contactBtns"><button class="primary requestBtn" onclick="event.stopPropagation();requestOwner(${p.id})">Оставить заявку</button><button class="ghost miniBtn" onclick="event.stopPropagation();showContact(${p.id},'phone')">Позвонить</button><button class="ghost miniBtn" onclick="event.stopPropagation();showContact(${p.id},'telegram')">Telegram</button></div></div></article>`}
-function openPlace(id){const p=[...state.places,...state.demo].find(x=>x.id===id);if(!p)return;const cover=p.cover_image||"assets/tashkent-hero.jpg";openModal(`<img src="${esc(cover)}" onerror="this.src='assets/tashkent-hero.jpg'" style="width:100%;height:210px;object-fit:cover;border-radius:16px"><div class="badges" style="margin-top:12px"><span class="badge">${esc(p.type||"Реклама")}</span><span class="trust">✓ Проверено</span></div><h2>${esc(p.title)}</h2><div class="meta">⌖ Ташкент, ${esc(p.district||"Район не указан")}</div><div class="price">от ${money(p.price)} / ${unit(p.unit)}</div><p class="note">${esc(p.description||"Владелец пока не добавил описание.")}</p><button class="primary" style="width:100%" onclick="closeModal();requestOwner(${p.id})">Оставить заявку бесплатно</button>`)}
+function openPlace(id){renderAdDetail(id);history.pushState({ad:id},"","?ad="+encodeURIComponent(id));scrollTo(0,0)}
+function renderAdDetail(id){
+ const p=[...state.places,...state.demo].find(x=>x.id==id);if(!p)return;
+ const cover=p.cover_image||"assets/tashkent-hero.jpg";
+ document.getElementById("content").innerHTML=`<div class="adDetailPage">
+ <button class="adDetailBack" onclick="goHome();history.replaceState({},"",location.pathname)">← <span>Назад</span></button>
+ <div class="adDetailGrid">
+  <div class="adDetailGallery"><img src="${esc(cover)}" onerror="this.src='assets/tashkent-hero.jpg'" alt="${esc(p.title||"")}"></div>
+  <article class="adDetailInfo">
+   <div class="badges"><span class="badge">${esc(p.type||"Реклама")}</span><span class="adDetailTrust">✓ <span>Проверено</span></span></div>
+   <h1>${esc(p.title||"Рекламное место")}</h1>
+   <div class="adDetailMeta">⌖ ${esc(p.city||"Ташкент")}${p.district?", "+esc(p.district):""}</div>
+   <div class="adDetailPrice">${money(p.price)} / ${unit(p.unit)}</div>
+   <div class="adDetailDesc">${esc(p.description||"Владелец пока не добавил описание.")}</div>
+   <div class="adDetailActions"><button class="primary" onclick="requestOwner(${p.id})">Оставить заявку бесплатно</button><button class="ghost" onclick="toggleFav(${p.id})">♡ В избранное</button></div>
+  </article>
+ </div></div>`;
+ applyStaticI18n();
+}
+window.addEventListener("popstate",()=>{const m=new URLSearchParams(location.search).get("ad");if(m)renderAdDetail(m);else renderHome()})
 function renderSearch(){let a=state.places.length?state.places:state.demo;document.getElementById("content").innerHTML=`<div class="page"><div class="head"><h1 class="pageTitle">${t("searchTitle")}</h1><button class="ghost" onclick="goHome()">${t("home")}</button></div><div class="panel"><input id="searchQ" class="field" placeholder="${t("searchPlaceholder")}" oninput="filterSearch()"><div class="matchGrid" style="margin-top:10px"><select id="filterType" class="field" onchange="filterSearch()"><option value="">Все форматы</option><option>Баннер</option><option>Билборд</option><option>LED-экран</option><option>Вывеска</option><option>Световой короб</option></select><input id="filterDistrict" class="field" placeholder="Район" oninput="filterSearch()"><input id="filterMax" class="field" type="number" placeholder="До суммы" oninput="filterSearch()"><select id="filterSort" class="field" onchange="filterSearch()"><option value="new">Сначала новые</option><option value="price">Сначала дешевле</option><option value="price_desc">Сначала дороже</option></select></div></div><div id="results" class="list">${a.map(adCard).join("")}</div></div>`}
 function filterSearch(){let q=(document.getElementById("searchQ")?.value||"").toLowerCase(),type=(document.getElementById("filterType")?.value||"").toLowerCase(),district=(document.getElementById("filterDistrict")?.value||"").toLowerCase(),max=Number(document.getElementById("filterMax")?.value)||0,sort=document.getElementById("filterSort")?.value||"new";let a=(state.places.length?state.places:state.demo).filter(p=>(p.title+" "+p.type+" "+p.city+" "+p.district+" "+(p.address||"")).toLowerCase().includes(q)&&(!type||(p.type||"").toLowerCase().includes(type))&&(!district||((p.district||"")+" "+(p.address||"")).toLowerCase().includes(district))&&(!max||Number(p.price||0)<=max));a.sort((x,y)=>sort==="price"?Number(x.price||0)-Number(y.price||0):sort==="price_desc"?Number(y.price||0)-Number(x.price||0):new Date(y.created_at||0)-new Date(x.created_at||0));document.getElementById("results").innerHTML=a.length?a.map(adCard).join(""): '<div class="panel empty">'+t('nothing')+'</div>'}
 function renderFav(){let a=[...state.places,...state.demo].filter(p=>state.favorites.has(p.id));document.getElementById("content").innerHTML=`<div class="page"><h1 class="pageTitle">Избранное</h1>${a.length?'<div class="list">'+a.map(adCard).join('')+'</div>':'<div class="panel empty">Здесь появятся сохранённые рекламные места.</div>'}</div>`}
@@ -151,7 +244,7 @@ function setupPlacesRealtime(){
     });
 }
 async function logout(){try{await sb.auth.signOut()}finally{state.session=null;state.profile=null;state.myAds=[];state.favorites=new Set();renderHome();toast("Вы вышли из аккаунта")}}
-function toggleLang(){let m=document.getElementById("langmenu");m.style.display=m.style.display==="block"?"none":"block"}function setLang(l,f){state.lang=l;localStorage.setItem("adamarket_lang",l);document.getElementById("flag").textContent=f;document.getElementById("langmenu").style.display="none";applyLanguage();renderHome();toast(l==="ru"?"Русский":l==="uz"?"O‘zbek":"English")}
+function toggleLang(){let m=document.getElementById("langmenu");m.style.display=m.style.display==="block"?"none":"block"}function setLang(l,f){state.lang=l;localStorage.setItem("adamarket_lang",l);document.getElementById("flag").textContent=f;document.getElementById("langmenu").style.display="none";renderHome();applyLanguage();applyStaticI18n();toast(l==="ru"?"Русский":l==="uz"?"O‘zbek":"English")}
 
 // ADAMARKET app bootstrap — keep the page usable even when the user is logged out.
 (async function initAdamarket(){
@@ -159,6 +252,7 @@ function toggleLang(){let m=document.getElementById("langmenu");m.style.display=
     applyLanguage();
     await loadPlaces();
     renderHome();
+    applyStaticI18n();
     setupPlacesRealtime();
     await bootstrap();
   }catch(e){
