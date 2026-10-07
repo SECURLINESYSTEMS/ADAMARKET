@@ -152,3 +152,24 @@ function setupPlacesRealtime(){
 }
 async function logout(){try{await sb.auth.signOut()}finally{state.session=null;state.profile=null;state.myAds=[];state.favorites=new Set();renderHome();toast("Вы вышли из аккаунта")}}
 function toggleLang(){let m=document.getElementById("langmenu");m.style.display=m.style.display==="block"?"none":"block"}function setLang(l,f){state.lang=l;localStorage.setItem("adamarket_lang",l);document.getElementById("flag").textContent=f;document.getElementById("langmenu").style.display="none";applyLanguage();renderHome();toast(l==="ru"?"Русский":l==="uz"?"O‘zbek":"English")}
+
+// ADAMARKET app bootstrap — keep the page usable even when the user is logged out.
+(async function initAdamarket(){
+  try{
+    applyLanguage();
+    await loadPlaces();
+    renderHome();
+    setupPlacesRealtime();
+    await bootstrap();
+  }catch(e){
+    console.error("ADAMARKET init:",e);
+    try{ renderHome(); }catch(_){ document.getElementById("content").innerHTML='<div class="panel empty">Не удалось загрузить ADAMARKET. Обновите страницу.</div>'; }
+  }
+  sb.auth.onAuthStateChange((event,next)=>{
+    state.session=next;
+    if(event==="PASSWORD_RECOVERY")setTimeout(showPasswordUpdate,150);
+  });
+})();
+</script>
+</body>
+</html>
