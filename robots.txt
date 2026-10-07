@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://adamarket.uz/sitemap.xml
+Host: https://adamarket.uz
