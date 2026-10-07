@@ -78,7 +78,7 @@ function renderProducts(){const grid=document.getElementById("productGrid");let 
 document.addEventListener("input",e=>{if(e.target&&e.target.id==="catalogSearch")renderProducts()});document.addEventListener("change",e=>{if(e.target&&e.target.id==="catalogSort")renderProducts()});
 function closeCategory(){history.pushState({page:"home"},"","/partners/securlineuz.html");showHome()}
 function showHome(){document.querySelector(".hero").style.display="";document.querySelector(".services").style.display="";document.querySelector(".partners").style.display="";document.querySelector(".partner").style.display="";document.querySelector(".catalog").classList.remove("active")}
-function routeFromPath(){const m=location.pathname.match(//partners/securlineuz.html/([^/]+)/?$/);return m?m[1]:null}
+function routeFromPath(){const m=location.pathname.match(/\/partners\/securlineuz\.html\/([^/]+)\/?$/);return m?m[1]:null}
 window.addEventListener("popstate",()=>{const s=routeFromPath();s?renderCategory(s):showHome()});
 (function(){const q=new URLSearchParams(location.search);const r=q.get("route");if(r){history.replaceState({category:r},"","/partners/securlineuz.html/"+r+"/");renderCategory(r)}else{const s=routeFromPath();if(s)renderCategory(s)}})();
 </script></body></html>
