@@ -11,7 +11,7 @@ on:
       - '.github/workflows/android-demo.yml'
       - '.github/workflows/validate.yml'
 permissions:
-  contents: read
+  contents: write
 env:
   HAS_RELEASE_SIGNING: ${{ secrets.ADAMARKET_KEYSTORE_BASE64 != '' && secrets.ADAMARKET_KEYSTORE_PASSWORD != '' && secrets.ADAMARKET_KEY_ALIAS != '' && secrets.ADAMARKET_KEY_PASSWORD != '' }}
 jobs:
@@ -75,6 +75,20 @@ jobs:
             fi
           fi
           printf 'Signing configured: %s\n' "$HAS_RELEASE_SIGNING" > dist/RELEASE-STATUS.txt
+      - name: Publish public Android APK download
+        if: env.HAS_RELEASE_SIGNING == 'true' && github.ref == 'refs/heads/release/google-play'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v1.3.0
+          name: ADAMARKET Android 1.3.0
+          target_commitish: ${{ github.sha }}
+          body: |
+            Официальная Android-версия ADAMARKET 1.3.0.
+
+            Установочный APK предназначен для устройств Android. Скачивайте приложение только с официального сайта adamarket.uz.
+          files: dist/ADAMARKET-release.apk
+          fail_on_unmatched_files: true
+          make_latest: false
       - uses: actions/upload-artifact@v4
         with:
           name: ADAMARKET-Android-Release-1.3.0
