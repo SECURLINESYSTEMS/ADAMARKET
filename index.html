@@ -238,7 +238,7 @@ window.addEventListener("popstate",()=>{
   const route=adFromPath();
   const p=findAdByRoute(route);
   if(p){renderAdDetail(p.id);scrollTo(0,0);}
-  else{renderHome();scrollTo(0,0);}
+  else{renderRouteFromPath(location.pathname);scrollTo(0,0);}
 })
 function renderSearch(){let a=state.places.length?state.places:state.demo;document.getElementById("content").innerHTML=`<div class="page"><div class="head"><h1 class="pageTitle">${t("searchTitle")}</h1><button class="ghost" onclick="goHome()">${t("home")}</button></div><div class="panel"><input id="searchQ" class="field" placeholder="${t("searchPlaceholder")}" oninput="filterSearch()"><div class="matchGrid" style="margin-top:10px"><select id="filterType" class="field" onchange="filterSearch()"><option value="">Все форматы</option><option>Баннер</option><option>Билборд</option><option>LED-экран</option><option>Вывеска</option><option>Световой короб</option></select><input id="filterDistrict" class="field" placeholder="Район" oninput="filterSearch()"><input id="filterMax" class="field" type="number" placeholder="До суммы" oninput="filterSearch()"><select id="filterSort" class="field" onchange="filterSearch()"><option value="new">Сначала новые</option><option value="price">Сначала дешевле</option><option value="price_desc">Сначала дороже</option></select></div></div><div id="results" class="list">${a.map(adCard).join("")}</div></div>`}
 function filterSearch(){let q=(document.getElementById("searchQ")?.value||"").toLowerCase(),type=(document.getElementById("filterType")?.value||"").toLowerCase(),district=(document.getElementById("filterDistrict")?.value||"").toLowerCase(),max=Number(document.getElementById("filterMax")?.value)||0,sort=document.getElementById("filterSort")?.value||"new";let a=(state.places.length?state.places:state.demo).filter(p=>(p.title+" "+p.type+" "+p.city+" "+p.district+" "+(p.address||"")).toLowerCase().includes(q)&&(!type||(p.type||"").toLowerCase().includes(type))&&(!district||((p.district||"")+" "+(p.address||"")).toLowerCase().includes(district))&&(!max||Number(p.price||0)<=max));a.sort((x,y)=>sort==="price"?Number(x.price||0)-Number(y.price||0):sort==="price_desc"?Number(y.price||0)-Number(x.price||0):new Date(y.created_at||0)-new Date(x.created_at||0));document.getElementById("results").innerHTML=a.length?a.map(adCard).join(""): '<div class="panel empty">'+t('nothing')+'</div>'}
@@ -341,6 +341,53 @@ function setupPlacesRealtime(){
 async function logout(){try{await sb.auth.signOut()}finally{state.session=null;state.profile=null;state.myAds=[];state.favorites=new Set();renderHome();toast("Вы вышли из аккаунта")}}
 function toggleLang(){let m=document.getElementById("langmenu");m.style.display=m.style.display==="block"?"none":"block"}function setLang(l,f){state.lang=l;localStorage.setItem("adamarket_lang",l);document.getElementById("flag").textContent=f;document.getElementById("langmenu").style.display="none";renderHome();applyLanguage();applyStaticI18n();toast(l==="ru"?"Русский":l==="uz"?"O‘zbek":"English")}
 
+// Clean, persistent URL routing for every main marketplace screen.
+let adamarketRoutingBoot=true;
+const ADAMARKET_PAGE_ROUTES={
+  "/":renderHome,
+  "/poisk/":renderSearch,
+  "/izbrannoe/":renderFav,
+  "/obyavlenie/":renderAdd,
+  "/soobshcheniya/":renderMessages,
+  "/profil/":renderProfile,
+  "/nastroyki/":renderSettings,
+  "/moi-obyavleniya/":renderMyAds,
+  "/proizvoditeli/":renderProducer,
+  "/tarify/":renderPlans,
+  "/beta/":renderFreeBeta,
+  "/moderaciya/":renderAdminPanel
+};
+function renderRouteFromPath(path){
+  const normalized=path==="/"?"/":(path.endsWith("/")?path:path+"/");
+  const render=ADAMARKET_PAGE_ROUTES[normalized];
+  if(render){render();return;}
+  if(/^\/profil\/[^/]+\/?$/i.test(normalized)){
+    const p=findAdByRoute(adFromPath());
+    if(p){renderAdDetail(p.id);return;}
+  }
+  history.replaceState({page:"home"},"","/");
+  renderHome();
+}
+function bindAdamarketPageRoutes(){
+  Object.entries(ADAMARKET_PAGE_ROUTES).forEach(([path,render])=>{
+    const name=render.name;
+    if(!name||render.__adamarketRouted)return;
+    const original=window[name];
+    if(typeof original!=="function")return;
+    const wrapped=function(...args){
+      const result=original.apply(this,args);
+      if(!adamarketRoutingBoot){
+        const target=path;
+        if(location.pathname!==target)history.pushState({page:name},"",target);
+      }
+      return result;
+    };
+    wrapped.__adamarketRouted=true;
+    window[name]=wrapped;
+  });
+}
+bindAdamarketPageRoutes();
+
 // ADAMARKET app bootstrap — keep the page usable even when the user is logged out.
 (async function initAdamarket(){
   try{
@@ -356,17 +403,21 @@ function toggleLang(){let m=document.getElementById("langmenu");m.style.display=
       if(legacy){
         history.replaceState({page:"ad",ad:legacy.id},"","/profil/"+encodeURIComponent(adSlug(legacy))+"/");
         renderAdDetail(legacy.id);
-      }else renderHome();
+      }else{
+        history.replaceState({page:"home"},"","/");
+        renderHome();
+      }
     }else if(routed){
       history.replaceState({page:"ad",ad:routed.id},"","/profil/"+encodeURIComponent(adSlug(routed))+"/");
       renderAdDetail(routed.id);
     }else{
-      history.replaceState({page:"home"},"",location.pathname==="/" ? "/" : "/");
       renderHome();
     }
     applyStaticI18n();
     setupPlacesRealtime();
     await bootstrap();
+    adamarketRoutingBoot=false;
+    if(!legacyAd&&!routed)renderRouteFromPath(location.pathname);
   }catch(e){
     console.error("ADAMARKET init:",e);
     try{ renderHome(); }catch(_){ document.getElementById("content").innerHTML='<div class="panel empty">Не удалось загрузить ADAMARKET. Обновите страницу.</div>'; }
