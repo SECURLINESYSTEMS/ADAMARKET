@@ -199,11 +199,17 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
   .bottom{display:none!important}
 }
 
+
+/* Official Android app download entry */
+.app-download-strip{margin:12px 16px 0;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid #cfe0f4;border-radius:16px;background:linear-gradient(110deg,#edf5ff,#fff);color:#172b45;box-shadow:0 8px 24px #1b42670b}
+.app-download-copy{display:flex;align-items:center;gap:11px;min-width:0}.app-download-icon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:linear-gradient(145deg,#318bff,#075be8);display:grid;place-items:center;color:#fff;font-size:22px;font-weight:900}.app-download-copy b{display:block;font-size:14px;line-height:1.25}.app-download-copy span{display:block;margin-top:3px;color:#647b94;font-size:12px;line-height:1.3}.app-download-link{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border-radius:11px;background:#126cff;color:#fff!important;text-decoration:none;font-size:13px;font-weight:850;white-space:nowrap;box-shadow:0 5px 14px #126cff25}
+@media(max-width:520px){.app-download-strip{margin:10px 12px 0;padding:11px;gap:8px}.app-download-icon{width:36px;height:36px;flex-basis:36px;font-size:19px}.app-download-copy b{font-size:12px}.app-download-copy span{font-size:10px}.app-download-link{padding:10px 11px;font-size:12px}}
 </style>
 </head>
 <body>
 <div id="app" class="app"><div class="shell">
 <header class="top"><div class="brand" onclick="goHome()" style="cursor:pointer"><div class="brandmark">A</div><div><div class="logo">ADA<span>MARKET</span></div><div class="tag">Ташкентская площадка для рекламы</div></div></div><div class="toptools"><div style="position:relative"><button class="iconbtn lang" onclick="toggleLang()"><span class="flag" id="flag">🇷🇺</span><span>⌄</span></button><div id="langmenu" class="langmenu"><button onclick="setLang('ru','🇷🇺')">🇷🇺 Русский</button><button onclick="setLang('uz','🇺🇿')">🇺🇿 O‘zbek</button><button onclick="setLang('en','🇬🇧')">🇬🇧 English</button></div></div><button class="iconbtn" onclick="state.session?renderSettings():needAuth()" aria-label="Настройки">⚙</button></div></header>
+<div class="app-download-strip" role="region" aria-label="Приложение ADAMARKET"><div class="app-download-copy"><div class="app-download-icon" aria-hidden="true">A</div><div><b>ADAMARKET для Android</b><span>Удобный доступ к объявлениям с телефона</span></div></div><a class="app-download-link" href="/download.html">Скачать приложение ↓</a></div>
 <main id="content"></main>
 <nav class="bottom"><button id="navSearch" class="nav active" data-nav="search" onclick="action('search')"><i>⌕</i><span>Поиск</span></button><button id="navFav" class="nav" data-nav="fav" onclick="action('favorites')"><i>♡</i><span>Избранное</span></button><button class="plus" onclick="action('add')">＋</button><button id="navMsg" class="nav" data-nav="msg" onclick="action('messages')"><i>▢</i><span>Сообщения</span></button><button id="navProfile" class="nav" data-nav="profile" onclick="action('profile')"><i>♙</i><span>Профиль</span></button></nav>
 </div></div>
