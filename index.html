@@ -331,7 +331,14 @@ function setupPlacesRealtime(){
     .on("postgres_changes",{event:"*",schema:"public",table:"ad_places"},async(payload)=>{
       try{
         await loadPlaces();
-        if(typeof renderHome==="function")renderHome();
+        // Refresh the homepage only when the user is actually on it.
+        // A background realtime update must never add a fake history entry.
+        if(location.pathname==="/" && typeof renderHome==="function"){
+          const wasBooting=adamarketRoutingBoot;
+          adamarketRoutingBoot=true;
+          renderHome();
+          adamarketRoutingBoot=wasBooting;
+        }
       }catch(e){console.warn("ADAMARKET realtime sync:",e)}
     })
     .subscribe((status,err)=>{
@@ -391,6 +398,15 @@ bindAdamarketPageRoutes();
 // ADAMARKET app bootstrap — keep the page usable even when the user is logged out.
 (async function initAdamarket(){
   try{
+    // If a deep link is opened directly (or refreshed), create an in-site
+    // home entry before it so the first Back action stays inside ADAMARKET.
+    const initialPath=location.pathname;
+    if(initialPath!=="/" && !history.state?.adamarketInitialRoute){
+      history.replaceState({page:"home",adamarketFallback:true},"","/");
+      history.pushState({page:"initial",path:initialPath,adamarketInitialRoute:true},"",initialPath);
+    }else{
+      history.replaceState({...history.state,page:history.state?.page||"home",adamarketInitialRoute:true},"",location.href);
+    }
     applyLanguage();
     await loadPlaces();
     const savedRoute=sessionStorage.getItem("adamarket_route");
