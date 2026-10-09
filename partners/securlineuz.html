@@ -237,6 +237,18 @@ footer a{color:#46515e}
 .brandWordmark small{margin-top:0;line-height:1.35}
 @media(max-width:560px){.brandWordmark .wordmark{font-size:15px}.brandWordmark .smarttech{font-size:13px}}
 </style>
+
+<style id="securline-photo-grid-fix">
+/* One stable photo frame for every catalogue item, regardless of source aspect ratio. */
+.productGrid{align-items:stretch}
+.product{height:100%;min-height:0}
+.productVisual{height:auto;min-height:0;aspect-ratio:4 / 3;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#eef2f5}
+.productVisual img{display:block;width:100%;height:100%;padding:14px;object-fit:contain;object-position:center;background:#eef2f5;filter:none}
+.productVisual .photoFallback{width:100%;height:100%;display:none;place-items:center}
+.detailVisual{background:#eef2f5}
+.detailVisual img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#eef2f5}
+@media (max-width:560px){.productVisual{aspect-ratio:4 / 3;min-height:0}.productVisual img{padding:10px}}
+</style>
 </head>
 <body>
 <header class="topbar">
@@ -395,7 +407,7 @@ function renderProducts(){
  if(sort!=="default")items.sort(function(a,b){var n=function(x){return parseInt((x[6]||"").replace(/[^0-9]/g,""))||0};return sort==="low"?n(a)-n(b):n(b)-n(a)});
  grid.innerHTML=items.length?items.map(function(x){
    var i=(PRODUCTS[currentCategory]||[]).indexOf(x),img=productImage(x,currentCategory),fav=isFav(x);
-   return '<article class="product"><div class="productVisual"><span class="photoChip">Фото оборудования</span><img src="'+img+'" alt="'+x[0]+' '+x[1]+'" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'"><div class="photoFallback">'+productSvg(x[2])+'</div></div><div class="productBody"><div class="productBrand">'+x[0]+'</div><h3>'+x[1]+'</h3><div style="font-size:11px;color:#718197">'+x[2]+'</div><div class="productSpecs"><div class="spec"><b>'+x[3]+'</b>Основной параметр</div><div class="spec"><b>'+x[4]+'</b>Тип / формат</div><div class="spec"><b>'+x[5]+'</b>Дальность / интерфейс</div><div class="spec"><b>Проф.</b>Оборудование</div></div><div style="font-size:11px;color:#607286">'+x[7]+'</div><div class="price">$'+x[6]+' <small>USD</small></div><div class="productActions"><button class="favoriteBtn '+(fav?"active":"")+'" onclick="toggleFav('+i+')">'+(fav?"♥":"♡")+'</button><a class="order productOpen" href="#" onclick="openProduct(\''+encodeURIComponent(x[1])+'\');return false">Подробнее</a></div></div></article>'
+   return '<article class="product"><div class="productVisual"><span class="photoChip">Фото оборудования</span><img src="'+img+'" alt="'+x[0]+' '+x[1]+'" loading="lazy" decoding="async" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'"><div class="photoFallback">'+productSvg(x[2])+'</div></div><div class="productBody"><div class="productBrand">'+x[0]+'</div><h3>'+x[1]+'</h3><div style="font-size:11px;color:#718197">'+x[2]+'</div><div class="productSpecs"><div class="spec"><b>'+x[3]+'</b>Основной параметр</div><div class="spec"><b>'+x[4]+'</b>Тип / формат</div><div class="spec"><b>'+x[5]+'</b>Дальность / интерфейс</div><div class="spec"><b>Проф.</b>Оборудование</div></div><div style="font-size:11px;color:#607286">'+x[7]+'</div><div class="price">$'+x[6]+' <small>USD</small></div><div class="productActions"><button class="favoriteBtn '+(fav?"active":"")+'" onclick="toggleFav('+i+')">'+(fav?"♥":"♡")+'</button><a class="order productOpen" href="#" onclick="openProduct(\''+encodeURIComponent(x[1])+'\');return false">Подробнее</a></div></div></article>'
  }).join(""):'<div class="emptyCatalog" style="grid-column:1/-1"><strong>Ничего не найдено.</strong><br>Попробуйте изменить запрос.</div>';
 }
 function openProduct(encoded){var f=productByModel(decodeURIComponent(encoded));if(!f)return;currentCategory=f.cat;history.pushState({product:f.x[1]},"","/partners/securlineuz.html?route="+encodeURIComponent(f.cat)+"&product="+encodeURIComponent(f.x[1]));renderProductDetail(f.x,f.cat);scrollTo(0,0)}
