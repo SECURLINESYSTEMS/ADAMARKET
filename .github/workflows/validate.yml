@@ -4,6 +4,9 @@ on:
     branches: [main, manus/prod-hardening]
     paths:
       - 'index.html'
+      - '404.html'
+      - 'partners/**'
+      - 'supabase/migrations/**'
       - 'tests/**'
       - 'android-demo/**'
       - '.github/workflows/validate.yml'
@@ -26,8 +29,8 @@ jobs:
           from pathlib import Path
           import re
           html=Path('index.html').read_text(encoding='utf-8')
-          scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html, re.I)
-          inline=[s for s in scripts if s.strip()]
+          scripts=re.findall(r'<script([^>]*)>([\s\S]*?)</script>', html, re.I)
+          inline=[body for attrs,body in scripts if 'application/ld+json' not in attrs.lower() and body.strip()]
           Path('/tmp/adamarket-inline.js').write_text('\n'.join(inline),encoding='utf-8')
           print('Inline script blocks:',len(inline))
           PY
