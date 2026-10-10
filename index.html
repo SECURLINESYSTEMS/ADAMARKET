@@ -209,9 +209,9 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
 @media(max-width:520px){.app-download-strip{margin:10px 12px 0;padding:11px;gap:8px}.app-download-icon{width:36px;height:36px;flex-basis:36px;font-size:19px}.app-download-copy b{font-size:12px}.app-download-copy span{font-size:10px}.app-download-link{padding:10px 11px;font-size:12px}}
 
 /* Compact sign-in icons */
-.authProvidersCompact{grid-template-columns:repeat(2,44px);justify-content:center;gap:10px;margin-top:10px}
-.authProvidersCompact .authProvider{width:44px;height:44px;min-height:44px;padding:0;border-radius:10px;justify-content:center;box-shadow:none;transition:background .15s ease,border-color .15s ease}
-.authProvidersCompact .authProvider svg{width:18px;height:18px;display:block;flex:0 0 auto}
+.authProvidersCompact{display:grid!important;grid-template-columns:repeat(2,36px)!important;justify-content:center!important;gap:8px!important;margin-top:10px!important}
+.authProvidersCompact .authProvider,.authProvidersCompact button.authProvider{box-sizing:border-box!important;width:36px!important;height:36px!important;min-width:36px!important;max-width:36px!important;min-height:36px!important;max-height:36px!important;padding:0!important;border-radius:9px!important;justify-content:center!important;align-items:center!important;gap:0!important;box-shadow:none!important;transform:none!important;overflow:hidden!important}
+.authProvidersCompact .authProvider svg,.authProvidersCompact button.authProvider svg{display:block!important;width:16px!important;height:16px!important;min-width:16px!important;max-width:16px!important;min-height:16px!important;max-height:16px!important;flex:0 0 16px!important}
 .authProvidersCompact .authProvider.google{background:#fff;border-color:#d5dfeb}
 .authProvidersCompact .authProvider.phone{background:#123b35;border-color:#246d60;color:#fff}
 .authProvidersCompact .authProvider:hover{transform:none;box-shadow:none}
