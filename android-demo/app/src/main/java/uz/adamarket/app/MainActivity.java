@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
+import android.window.OnBackInvokedDispatcher;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -36,6 +38,15 @@ public class MainActivity extends Activity {
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
         setContentView(webView);
+
+        // Android 13+ routes system Back through the predictive-back dispatcher.
+        // Register explicitly so Back is handled by the WebView instead of closing the app.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                () -> handleBack()
+            );
+        }
 
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
@@ -130,11 +141,24 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override public void onBackPressed() {
+    private void handleBack() {
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
-        } else {
-            Toast.makeText(this, "Вы на главной странице ADAMARKET", Toast.LENGTH_SHORT).show();
+        } else if (webView != null) {
+            // Some SPA transitions are represented by the History API and may not
+            // appear as a normal WebView navigation entry on every Android version.
+            webView.evaluateJavascript(
+                "(function(){if(location.pathname !== '/' && history.length > 1){history.back();return 'back';}return 'home';})()",
+                result -> {
+                    if ("\\"home\\"".equals(result)) {
+                        Toast.makeText(MainActivity.this, "Вы на главной странице ADAMARKET", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            );
         }
+    }
+
+    @Override public void onBackPressed() {
+        handleBack();
     }
 }
