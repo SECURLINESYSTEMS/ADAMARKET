@@ -150,7 +150,7 @@ public class MainActivity extends Activity {
             webView.evaluateJavascript(
                 "(function(){if(location.pathname !== '/' && history.length > 1){history.back();return 'back';}return 'home';})()",
                 result -> {
-                    if ("\\"home\\"".equals(result)) {
+                    if ("\"home\"".equals(result)) {
                         Toast.makeText(MainActivity.this, "Вы на главной странице ADAMARKET", Toast.LENGTH_SHORT).show();
                     }
                 }
