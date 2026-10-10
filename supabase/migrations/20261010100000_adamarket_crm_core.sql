@@ -71,7 +71,7 @@ alter table public.crm_deals enable row level security;
 alter table public.crm_tasks enable row level security;
 alter table public.crm_activities enable row level security;
 
-revoke all on public.crm_leads, public.crm_deals, public.crm_tasks, public.crm_activities from anon;
+revoke all on public.crm_leads, public.crm_deals, public.crm_tasks, public.crm_activities from public, anon;
 grant select, insert, update, delete on public.crm_leads, public.crm_deals, public.crm_tasks, public.crm_activities to authenticated;
 
 drop policy if exists crm_leads_admin_all on public.crm_leads;
