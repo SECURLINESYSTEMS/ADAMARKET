@@ -302,7 +302,7 @@ function findAdByRoute(route){
   if(!route)return null;
   return [...state.places,...state.demo].find(p=>adSlug(p).toLowerCase()===route || String(p.id)===route) || null;
 }
-async function jsonFetch(url,opts={}){let r=await fetch(url,opts),raw=await r.text(),d;try{d=JSON.parse(raw)}catch(_){throw Error("Постоянная версия сайта сейчас не подключена к серверу объявлений. Попробуйте позже.")}if(!r.ok||d.ok===false)throw Error(d.error||"Сервис временно недоступен");return d}function isPrivileged(){const email=state.session?.user?.email?.toLowerCase();const role=String(state.profile?.role||state.profile?.account_type||"").toLowerCase();return email===ADMIN_EMAIL||role==="admin"||role==="moderator"}
+async function jsonFetch(url,opts={}){let r=await fetch(url,opts),raw=await r.text(),d;try{d=JSON.parse(raw)}catch(_){throw Error("Постоянная версия сайта сейчас не подключена к серверу объявлений. Попробуйте позже.")}if(!r.ok||d.ok===false)throw Error(d.error||"Сервис временно недоступен");return d}function isPrivileged(){const role=String(state.profile?.role||"").toLowerCase();return role==="admin"||role==="moderator"}
 function isAdmin(){const role=String(state.profile?.role||"").toLowerCase();return role==="admin"}
 function action(id){if(id==="add"){if(!state.session)return needAuth();renderAdd()}else if(id==="search"){loadPlaces().finally(renderSearch)}else if(id==="favorites")renderFav();else if(id==="profile")state.session?renderProfile():needAuth();else if(id==="messages")renderMessages()}
 function needAuth(){document.getElementById("auth").classList.remove("hidden");authMode(false)}function closeAuth(){document.getElementById("auth").classList.add("hidden")}
