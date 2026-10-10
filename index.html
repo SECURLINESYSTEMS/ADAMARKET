@@ -25,9 +25,6 @@
 <meta name="twitter:description" content="Рекламные места, баннеры, вывески, LED-экраны и билборды в Ташкенте.">
 <meta name="twitter:image" content="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&amp;fit=crop&amp;w=1200&amp;h=630&amp;q=80">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"ADAMARKET","url":"https://adamarket.uz/","description":"Площадка объявлений о рекламе в Ташкенте.","potentialAction":{"@type":"SearchAction","target":"https://adamarket.uz/?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{--bg:#071426;--panel:#0c1c32;--panel2:#102641;--line:#183453;--text:#f7fbff;--muted:#9fb1c8;--blue:#1687ff;--cyan:#18c7ff;--r:22px}
 *{box-sizing:border-box}html,body{margin:0;background:#061221;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}button:disabled{opacity:.55;cursor:not-allowed}
@@ -223,6 +220,7 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
 </div></div>
 <div id="auth" class="authBack hidden"><div class="authBox"><div class="authHead"><h2 id="authTitle">Вход</h2><button class="close" onclick="closeAuth()">✕</button></div><div class="authTabs"><button id="tabLogin" class="on" onclick="authMode(false)">Войти</button><button id="tabSignup" onclick="authMode(true)">Регистрация</button></div><p id="authSub" class="note">Войдите, чтобы добавить место, отправить заявку или сохранить вариант.</p><form id="authForm"><div id="signupFields" class="hidden"><label class="label">Имя *</label><input id="aName" class="field" required><label class="label" style="margin-top:10px">Телефон *</label><input id="aPhone" class="field" required placeholder="+998 90 000 00 00"><label class="label" style="margin-top:10px">ИНН фирмы *</label><input id="aInn" class="field" required inputmode="numeric" placeholder="9–14 цифр"></div><label class="label" style="margin-top:12px">Email *</label><input id="aEmail" class="field" type="email" required><label class="label" style="margin-top:10px">Пароль *</label><input id="aPass" class="field" type="password" minlength="6" required><button id="forgotPasswordBtn" type="button" class="link" onclick="showForgotPassword()" style="display:block;padding:8px 0;margin-top:6px">Забыли пароль?</button><label class="consent"><input id="termsAgree" type="checkbox" required> Я принимаю <a href="offer.html" target="_blank">оферту</a> и <a href="privacy.html" target="_blank">политику конфиденциальности</a>.</label><label class="consent"><input id="humanCheck" type="checkbox" required> Я не робот</label><input class="trap" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="primary" style="width:100%;margin-top:16px" id="authBtn">Войти</button></form><p class="note" style="margin-top:12px">После регистрации можно сразу добавить рекламное место или найти вариант для своей задачи.</p></div></div>
 <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()"><div class="sheet"><button class="close" style="float:right" onclick="closeModal()">✕</button><div id="modalBody"></div></div></div><div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPA_URL="https://nmskpqugwiwdcukqckcy.supabase.co",SUPA_KEY="sb_publishable_YXNc_1AIZBEuACEGDKqzGQ_U4ou5OSF",API=SUPA_URL+"/functions/v1/adamarket-web-api",sb=supabase.createClient(SUPA_URL,SUPA_KEY),LOCAL_KEY="adamarket_free_places";
 window.AdamarketState=window.AdamarketState||{session:null,profile:null,places:[],myAds:[],favorites:new Set(),plans:[],signup:false,lang:localStorage.getItem("adamarket_lang")||"ru",demo:[{id:-1,title:"Световой короб",type:"Баннеры",city:"Ташкент",district:"Юнусабадский",price:250000,unit:"month",cover_image:"https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=900&q=80"},{id:-2,title:"Билборд 6×3 м",type:"Билборды",city:"Ташкент",district:"Шайхантахурский",price:1200000,unit:"month",cover_image:"https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=80"},{id:-3,title:"LED-экран на проспекте",type:"LED экраны",city:"Ташкент",district:"Мирабадский",price:950000,unit:"month",cover_image:"https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80"}]};
@@ -397,7 +395,37 @@ async function loadModeration(){try{const d=await api("admin_list");const data=d
 async function moderatePlace(id,status){if(!isPrivileged())return;try{await api("admin_update_status",{placeId:id,status});toast("Статус объявления обновлён");loadModeration();loadPlaces()}catch(e){toast(e.message||"Не удалось изменить статус")}}
 function renderFreeBeta(){document.getElementById("content").innerHTML=`<div class="page"><h1 class="pageTitle">ADAMARKET Beta</h1><div id="plans" class="panel"><h2>Сейчас всё бесплатно</h2><p class="note">Размещение, поиск и заявки владельцам бесплатны. Платные тарифы и продвижение пока отключены до официального запуска бизнеса.</p></div></div>`}
 function renderAdd(){document.getElementById("content").innerHTML=`<div class="page"><div class="head"><h1 class="pageTitle">${t("freeAdd")}</h1><button class="ghost" onclick="goHome()">${t("cancel")}</button></div><div class="panel"><div class="formgrid"><div class="full"><label class="label">Название *</label><input id="fTitle" class="field"></div><div><label class="label">Тип *</label><select id="fType" class="field"><option>Баннер</option><option>Билборд</option><option>LED-экран</option><option>Вывеска</option><option>Световой короб</option></select></div><div><label class="label">Цена *</label><input id="fPrice" class="field" type="number"></div><div><label class="label">Город</label><input id="fCity" class="field" value="Ташкент"></div><div><label class="label">Район</label><input id="fDistrict" class="field"></div><div><label class="label">Ваше имя *</label><input id="fName" class="field" required></div><div><label class="label">Телефон или email *</label><input id="fContact" class="field" required placeholder="+998... или email"></div><div class="full"><label class="label">Адрес</label><input id="fAddress" class="field"></div><div><label class="label">Широта</label><input id="fLat" class="field" type="number" step="any"></div><div><label class="label">Долгота</label><input id="fLng" class="field" type="number" step="any"></div><div class="full"><button class="ghost" type="button" onclick="pickMap()">🗺️ Указать координаты на карте</button><div id="pick" class="hidden" style="margin-top:10px"><div id="pickMap" style="height:280px;border-radius:15px;overflow:hidden"></div></div></div><div class="full"><label class="label">Фото</label><div class="upload"><input id="fPhotos" type="file" accept="image/*" multiple></div></div><div class="full"><label class="label">Описание</label><textarea id="fDesc" class="field" rows="5"></textarea></div><div class="full"><label class="consent"><input id="freeTerms" type="checkbox" required> Я принимаю <a href="offer.html" target="_blank">оферту</a> и <a href="privacy.html" target="_blank">политику конфиденциальности</a>.</label><label class="consent"><input id="freeHuman" type="checkbox" required> Я не робот</label><input class="trap" id="freeTrap" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="primary" style="width:100%" onclick="createPlace()">${t("freePublish")}</button></div></div></div></div>`}
-let pickMapObj=null,pickMarker=null;function pickMap(){document.getElementById("pick").classList.remove("hidden");setTimeout(()=>{if(!pickMapObj){pickMapObj=L.map("pickMap").setView([41.3111,69.2797],11);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(pickMapObj);pickMapObj.on("click",e=>{document.getElementById("fLat").value=e.latlng.lat.toFixed(6);document.getElementById("fLng").value=e.latlng.lng.toFixed(6);if(pickMarker)pickMarker.setLatLng(e.latlng);else pickMarker=L.marker(e.latlng).addTo(pickMapObj)})}pickMapObj.invalidateSize()},80)}
+let pickMapObj=null,pickMarker=null,leafletPromise=null;
+function ensureLeaflet(){
+ if(window.L)return Promise.resolve();
+ if(leafletPromise)return leafletPromise;
+ leafletPromise=new Promise((resolve,reject)=>{
+  if(!document.querySelector('link[data-adamarket-leaflet]')){
+   const css=document.createElement("link");css.rel="stylesheet";css.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";css.dataset.adamarketLeaflet="1";document.head.appendChild(css);
+  }
+  const script=document.createElement("script");script.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";script.onload=resolve;script.onerror=()=>{leafletPromise=null;reject(Error("Не удалось загрузить карту"))};document.head.appendChild(script);
+ });
+ return leafletPromise;
+}
+async function pickMap(){
+ document.getElementById("pick").classList.remove("hidden");
+ const mapButton=document.querySelector('button[onclick="pickMap()"]');
+ if(mapButton)mapButton.disabled=true;
+ try{
+  await ensureLeaflet();
+  if(!pickMapObj){
+   pickMapObj=L.map("pickMap").setView([41.3111,69.2797],11);
+   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(pickMapObj);
+   pickMapObj.on("click",e=>{
+    document.getElementById("fLat").value=e.latlng.lat.toFixed(6);
+    document.getElementById("fLng").value=e.latlng.lng.toFixed(6);
+    if(pickMarker)pickMarker.setLatLng(e.latlng);else pickMarker=L.marker(e.latlng).addTo(pickMapObj);
+   });
+  }
+  setTimeout(()=>pickMapObj.invalidateSize(),80);
+ }catch(e){toast("Не удалось загрузить карту. Проверьте интернет.");}
+ finally{if(mapButton)mapButton.disabled=false;}
+}
 async function uploadListingImages(){
   const input=document.getElementById("fPhotos"),files=[...(input?.files||[])].slice(0,5);
   if(!files.length)return [];
@@ -588,7 +616,7 @@ bindAdamarketPageRoutes();
 <script>
 /* ADAMARKET build freshness guard */
 (function () {
-  var version = "2026.10.10.5";
+  var version = "2026.10.10.6";
   try {
     var key = "adamarket_build_reload";
     var stored = sessionStorage.getItem(key);
