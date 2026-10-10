@@ -220,7 +220,7 @@ body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
       sessionStorage.setItem(key, version);
       localStorage.setItem("adamarket_build_version", version);
       var url = new URL(window.location.href);
-      url.searchParams.set("v", version.replace(/\\./g, "-"));
+      url.searchParams.set("v", version.split(".").join("-"));
       window.location.replace(url.toString());
     }
   } catch (e) {
