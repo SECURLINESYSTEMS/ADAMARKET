@@ -92,3 +92,14 @@ revoke all on function public.crm_capture_buyer_request() from public, anon, aut
 drop trigger if exists crm_capture_buyer_request_after_insert on public.requests;
 create trigger crm_capture_buyer_request_after_insert after insert on public.requests
 for each row execute function public.crm_capture_buyer_request();
+
+
+-- Allow administrators to review and delete buyer requests in moderation.
+drop policy if exists requests_admin_read on public.requests;
+create policy requests_admin_read on public.requests
+for select to authenticated
+using (exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin'));
+drop policy if exists requests_admin_delete on public.requests;
+create policy requests_admin_delete on public.requests
+for delete to authenticated
+using (exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin'));
