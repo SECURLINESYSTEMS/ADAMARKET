@@ -4,6 +4,8 @@ on:
     branches: [main, manus/prod-hardening]
     paths:
       - 'index.html'
+      - 'download.html'
+      - 'sitemap.xml'
       - '404.html'
       - 'partners/**'
       - 'supabase/migrations/**'
@@ -35,6 +37,25 @@ jobs:
           print('Inline script blocks:',len(inline))
           PY
           node --check /tmp/adamarket-inline.js
+      - name: Verify Android release version consistency
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          gradle = Path('android-demo/app/build.gradle').read_text(encoding='utf-8')
+          page = Path('download.html').read_text(encoding='utf-8')
+          workflow = Path('.github/workflows/android-demo.yml').read_text(encoding='utf-8')
+          version = re.search(r"versionName\s+'([^']+)'", gradle)
+          code = re.search(r'versionCode\s+(\d+)', gradle)
+          assert version and code, 'Android versionName/versionCode not found'
+          v = version.group(1)
+          assert f'android-v{v}' in page, f'download.html release link must target android-v{v}'
+          assert f'Версия {v}' in page, f'download.html label must show {v}'
+          assert f'tag_name: android-v{v}' in workflow, f'release tag must match {v}'
+          assert f'ADAMARKET Android {v}' in workflow, f'release title must match {v}'
+          assert f'ADAMARKET-Android-Release-{v}' in workflow, f'artifact name must match {v}'
+          print(f'Android release version is consistent: {v} (versionCode {code.group(1)})')
+          PY
       - name: Validate Android Java sources
         run: test -f android-demo/app/src/main/java/uz/adamarket/app/MainActivity.java
       - name: Check repository whitespace
