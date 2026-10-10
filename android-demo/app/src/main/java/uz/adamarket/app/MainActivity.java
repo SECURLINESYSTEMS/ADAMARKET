@@ -13,6 +13,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -22,7 +23,11 @@ public class MainActivity extends Activity {
     private static final int FILE_PICKER = 1001;
     private static final int LOCATION = 1002;
     private static final String DEMO_URL = "https://adamarket.uz/";
-    private static final String TRUSTED_PREFIX = "https://adamarket.uz/";
+    private static boolean isTrustedHost(Uri uri) {
+        if (uri == null || uri.getHost() == null) return false;
+        String host = uri.getHost();
+        return "adamarket.uz".equalsIgnoreCase(host) || "www.adamarket.uz".equalsIgnoreCase(host);
+    }
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -50,9 +55,23 @@ public class MainActivity extends Activity {
                 Uri u = r.getUrl();
                 if (u == null) return true;
                 String scheme = u.getScheme();
-                if (!"https".equalsIgnoreCase(scheme)) return true;
-                if (u.toString().startsWith(TRUSTED_PREFIX)) return false;
-                try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
+                if (scheme == null) return true;
+
+                if ("https".equalsIgnoreCase(scheme) && isTrustedHost(u)) return false;
+
+                boolean webLink = "https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme);
+                boolean supportedAction = "tel".equalsIgnoreCase(scheme)
+                    || "mailto".equalsIgnoreCase(scheme)
+                    || "sms".equalsIgnoreCase(scheme)
+                    || "geo".equalsIgnoreCase(scheme);
+
+                if (webLink || supportedAction) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, u));
+                    } catch (Exception ignored) {
+                        Toast.makeText(MainActivity.this, "Не удалось открыть ссылку", Toast.LENGTH_SHORT).show();
+                    }
+                }
                 return true;
             }
         });
@@ -112,6 +131,10 @@ public class MainActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            Toast.makeText(this, "Вы на главной странице ADAMARKET", Toast.LENGTH_SHORT).show();
+        }
     }
 }
