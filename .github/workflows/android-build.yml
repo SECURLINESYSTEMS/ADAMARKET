@@ -1,6 +1,11 @@
 name: ADAMARKET Android Release Build
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android-demo/**'
+      - '.github/workflows/android-build.yml'
 permissions:
   contents: read
 jobs:
