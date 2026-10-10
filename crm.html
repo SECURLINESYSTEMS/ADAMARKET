@@ -93,7 +93,7 @@ function renderLeads(){
  const q=($("leadSearch")?.value||"").trim().toLowerCase(),f=$("leadFilter")?.value||"";
  const rows=appState.leads.filter(l=>(!f||l.status===f)&&(!q||[l.full_name,l.phone,l.email,l.company_name,l.interest].some(v=>String(v||"").toLowerCase().includes(q))));
  $("leadsBody").innerHTML=rows.map(l=>'<tr><td><div class="person">'+safe(l.full_name)+'</div><div class="tiny">'+safe(l.company_name||"Без компании")+'</div></td><td>'+safe(l.phone||"—")+'<div class="tiny">'+safe(l.email||"")+'</div></td><td>'+safe(l.source||"—")+'<div class="tiny">'+safe(l.interest||"")+'</div></td><td><select class="field" style="min-width:135px;padding:7px" data-lead-status="'+l.id+'">'+["new","contacted","qualified","proposal","won","lost"].map(s=>'<option value="'+s+'" '+(l.status===s?"selected":"")+'>'+LABELS[s]+'</option>').join("")+'</select></td><td>'+safe(dateFmt(l.next_follow_up_at))+'</td><td><button class="btn soft" data-lead-task="'+l.id+'">＋ Задача</button></td></tr>').join("");
- $("leadsEmpty").classList.toggle("hidden",rows.length>0);document.querySelector(".tablewrap")?.classList.toggle("hidden",false);
+ $("leadsEmpty").classList.toggle("hidden",rows.length>0);$("leadsBody").closest(".tablewrap").classList.toggle("hidden",rows.length===0);
 }
 function renderDeals(){
  const stages=[["qualification","Квалификация"],["proposal","Предложение"],["negotiation","Переговоры"],["won","Успешно"],["lost","Потерян"]];
