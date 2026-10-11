@@ -59,7 +59,7 @@ function makeListingPage(place) {
   const canonical = `https://adamarket.uz/profil/${slug}/`;
   const title = `${String(place.title).trim()} — ${String(place.city || "Ташкент").trim()} | ADAMARKET`;
   const location = [place.city || "Ташкент", place.district, place.address].filter(Boolean).join(", ");
-  const description = String(place.description || `${place.type || "Рекламное место"} в ${location}. ${priceText(place)}. Объявление на ADAMARKET.`).replace(/\\s+/g, " ").trim().slice(0, 300);
+  const description = String(place.description || `${place.type || "Рекламное место"} в ${location}. ${priceText(place)}. Объявление на ADAMARKET.`).replace(/\s+/g, " ").trim().slice(0, 300);
   const image = safeImage(place.cover_image || (Array.isArray(place.images) ? place.images[0] : ""));
   const price = Number(place.price);
   const schema = {
@@ -148,12 +148,12 @@ for (const entry of await readdir(profileRoot, { withFileTypes: true })) {
 }
 
 let xml = await readFile(SITEMAP_PATH, "utf8");
-const entries = [...xml.matchAll(/<url>[\\s\\S]*?<\\/url>/g)].map(m => m[0]);
+const entries = [...xml.matchAll(/<url>[\s\S]*?<\/url>/g)].map(m => m[0]);
 const staticEntries = entries.filter(entry => {
-  const loc = entry.match(/<loc>(.*?)<\\/loc>/)?.[1] || "";
+  const loc = entry.match(/<loc>(.*?)<\/loc>/)?.[1] || "";
   return !loc.includes("/profil/");
 });
 const adEntries = ads.map(p => `  <url><loc>https://adamarket.uz/profil/${xmlEscape(slugFor(p))}/</loc><lastmod>${dateOf(p)}</lastmod><priority>0.7</priority></url>`);
-const nextXml = `<?xml version="1.0" encoding="UTF-8"?>\\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n${[...staticEntries, ...adEntries].join("\\n")}\\n</urlset>\\n`;
+const nextXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...staticEntries, ...adEntries].join("\n")}\n</urlset>\n`;
 if (nextXml !== xml) await writeFile(SITEMAP_PATH, nextXml, "utf8");
 console.log(`Sitemap and SEO pages current: ${staticEntries.length} static URLs, ${ads.length} approved listing pages.`);
