@@ -298,10 +298,53 @@ function applyLanguage(){document.documentElement.lang=state.lang;document.getEl
 const cats=[["assets/icon-banners.svg","banners"],["assets/icon-signage.svg","signage"],["assets/icon-business.svg","letters"],["assets/icon-advertisers.svg","lightbox"],["assets/icon-led.svg","led"],["assets/icon-billboard.svg","billboard"],["assets/icon-ad-places.svg","film"],["assets/icon-producers.svg","other"]];
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function money(v){return Number(v||0).toLocaleString("ru-RU")+" сум"}function unit(v){return v==="day"?"день":v==="week"?"неделя":"месяц"}function toast(t){let x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2400)}
 async function api(action,data={}){let {data:s}=await sb.auth.getSession();if(!s.session)throw Error("Сначала войдите в аккаунт");let r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+s.session.access_token},body:JSON.stringify({action,...data})});let d=await r.json();if(!r.ok||d.ok===false)throw Error(d.error||"Ошибка сервера");return d}
+function setSeoMeta(selector,attr,value){
+  let node=document.head.querySelector(selector);
+  if(!node){node=document.createElement("meta");const m=selector.match(/\[(name|property)="([^"]+)"\]/);if(m)node.setAttribute(m[1],m[2]);document.head.appendChild(node);}
+  node.setAttribute("content",String(value??""));
+}
+function setPageSEO({title,description,url,image,robots="index,follow",schema=null}){
+  document.title=title;
+  setSeoMeta('meta[name="description"]',"content",description);
+  setSeoMeta('meta[name="robots"]',"content",robots);
+  setSeoMeta('meta[property="og:title"]',"content",title);
+  setSeoMeta('meta[property="og:description"]',"content",description);
+  setSeoMeta('meta[property="og:url"]',"content",url);
+  setSeoMeta('meta[property="og:type"]',"content","website");
+  setSeoMeta('meta[property="og:site_name"]',"content","ADAMARKET");
+  setSeoMeta('meta[name="twitter:card"]',"content","summary_large_image");
+  setSeoMeta('meta[name="twitter:title"]',"content",title);
+  setSeoMeta('meta[name="twitter:description"]',"content",description);
+  if(image){
+    setSeoMeta('meta[property="og:image"]',"content",image);
+    setSeoMeta('meta[name="twitter:image"]',"content",image);
+  }
+  let canonical=document.head.querySelector('link[rel="canonical"]');
+  if(!canonical){canonical=document.createElement("link");canonical.rel="canonical";document.head.appendChild(canonical);}
+  canonical.href=url;
+  let json=document.getElementById("dynamicSeoJsonLd");
+  if(!json){json=document.createElement("script");json.id="dynamicSeoJsonLd";json.type="application/ld+json";document.head.appendChild(json);}
+  json.textContent=schema?JSON.stringify(schema):"";
+}
+function setHomeSEO(){
+  setPageSEO({
+    title:"ADAMARKET — реклама и объявления в Ташкенте | Разместить бесплатно",
+    description:"ADAMARKET — площадка объявлений о рекламе в Ташкенте. Рекламные места, баннеры, вывески, LED-экраны и билборды. Размещайте объявления бесплатно.",
+    url:"https://adamarket.uz/",
+    image:"https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1200&h=630&q=80",
+    schema:{"@context":"https://schema.org","@type":"WebSite","name":"ADAMARKET","url":"https://adamarket.uz/","description":"Площадка объявлений о рекламе в Ташкенте.","potentialAction":{"@type":"SearchAction","target":"https://adamarket.uz/?q={search_term_string}","query-input":"required name=search_term_string"}}
+  });
+}
 function goHome(){renderHome();scrollTo(0,0)}
 function adSlug(p){
   const raw=String(p?.slug||p?.title||p?.owner_name||("ad-"+p?.id||"")).trim().toLowerCase();
   return raw.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9а-яё]+/gi,"-").replace(/[а-яё]/g,ch=>({"а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"yo","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"c","ч":"ch","ш":"sh","щ":"sch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya"}[ch]||"")).replace(/-+/g,"-").replace(/^-|-$/g,"")||("ad-"+p.id);
+}
+function adRouteSlug(p){
+  const slug=adSlug(p);
+  const id=Number(p?.id);
+  // Persistently unique URLs prevent two listings with the same title from colliding.
+  return Number.isSafeInteger(id)&&id>0?slug+"-"+id:slug;
 }
 function adFromPath(){
   const m=location.pathname.match(/^\/profil\/([^/]+)\/?$/i);
@@ -309,7 +352,14 @@ function adFromPath(){
 }
 function findAdByRoute(route){
   if(!route)return null;
-  return [...state.places,...state.demo].find(p=>adSlug(p).toLowerCase()===route || String(p.id)===route) || null;
+  const all=[...state.places,...state.demo];
+  // New canonical route: readable-slug-database-id. Keep legacy slug URLs working.
+  const suffix=route.match(/-(\d+)$/);
+  if(suffix){
+    const byId=all.find(p=>Number(p.id)===Number(suffix[1]));
+    if(byId && adSlug(byId).toLowerCase()===route.slice(0,-suffix[0].length))return byId;
+  }
+  return all.find(p=>adSlug(p).toLowerCase()===route || String(p.id)===route) || null;
 }
 async function jsonFetch(url,opts={}){let r=await fetch(url,opts),raw=await r.text(),d;try{d=JSON.parse(raw)}catch(_){throw Error("Постоянная версия сайта сейчас не подключена к серверу объявлений. Попробуйте позже.")}if(!r.ok||d.ok===false)throw Error(d.error||"Сервис временно недоступен");return d}function isPrivileged(){const role=String(state.profile?.role||"").toLowerCase();return role==="admin"||role==="moderator"}
 function isAdmin(){const role=String(state.profile?.role||"").toLowerCase();return role==="admin"}
@@ -323,7 +373,7 @@ async function sendPhoneLoginCode(){try{if(!authConsentOk())return;const phone=(
 async function verifyPhoneLoginCode(){try{const phone=state.phoneLoginNumber,token=(document.getElementById("phoneLoginOtp").value||"").trim();if(!phone)throw Error("Сначала запросите код");if(!/^\d{6}$/.test(token))throw Error("Введите шестизначный код из SMS");const {error}=await sb.auth.verifyOtp({phone,token,type:"sms"});if(error)throw error;closeModal();closeAuth();location.reload()}catch(e){toast(e.message||"Не удалось подтвердить код")}}
 function startExternalProvider(provider){if(!authConsentOk())return;toast(provider+" пока требует отдельной настройки безопасной авторизации. Вход не запущен.")}
 function showForgotPassword(){const email=document.getElementById("aEmail").value.trim();closeAuth();openModal('<h2>Забыли пароль?</h2><p class="note">Введите email, который использовали при регистрации. Мы отправим ссылку для восстановления пароля.</p><label class="label">Email</label><input id="resetEmail" class="field" type="email" required value="'+esc(email)+'" placeholder="you@example.com"><button class="primary" style="width:100%;margin-top:14px" onclick="sendPasswordReset()">Отправить ссылку</button>')}async function sendPasswordReset(){try{const email=document.getElementById("resetEmail").value.trim();if(!email)throw Error("Введите email");const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:"https://adamarket.uz/"});if(error)throw error;closeModal();toast("Ссылка для восстановления отправлена на email")}catch(e){toast(e.message||"Не удалось отправить письмо")}}function showPasswordUpdate(){closeAuth();openModal('<h2>Новый пароль</h2><p class="note">Введите новый пароль для вашего аккаунта ADAMARKET.</p><label class="label">Новый пароль</label><input id="recoveryPass" class="field" type="password" minlength="6" autocomplete="new-password" placeholder="Минимум 6 символов"><label class="label" style="margin-top:10px">Повторите пароль</label><input id="recoveryPass2" class="field" type="password" minlength="6" autocomplete="new-password" placeholder="Повторите пароль"><button class="primary" style="width:100%;margin-top:14px" onclick="updateRecoveryPassword()">Сохранить новый пароль</button>')}async function updateRecoveryPassword(){try{const a=document.getElementById("recoveryPass").value,b=document.getElementById("recoveryPass2").value;if(a.length<6)throw Error("Пароль должен быть не короче 6 символов");if(a!==b)throw Error("Пароли не совпадают");const {error}=await sb.auth.updateUser({password:a});if(error)throw error;closeModal();toast("Пароль успешно изменён")}catch(e){toast(e.message||"Не удалось изменить пароль")}}document.getElementById("authForm").onsubmit=async e=>{e.preventDefault();if(document.querySelector(".trap")?.value)return;if(!document.getElementById("termsAgree").checked||!document.getElementById("humanCheck").checked){toast("Подтвердите оферту и что вы не робот");return}const email=document.getElementById("aEmail").value.trim(),password=document.getElementById("aPass").value,name=document.getElementById("aName").value.trim(),phone=document.getElementById("aPhone").value.trim(),inn=document.getElementById("aInn").value.replace(/\s/g,"");try{if(state.signup){if(inn && !/^[0-9]{9,14}$/.test(inn))throw Error("ИНН: 9–14 цифр, если вы его указываете");let {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:name,phone,inn}}});if(error)throw error;if(!data.session){toast("Проверьте email для подтверждения");return}}else{let {error}=await sb.auth.signInWithPassword({email,password});if(error)throw error}closeAuth();location.reload()}catch(e){toast(e.message||"Не удалось выполнить вход")}};
-function renderHome(){const ads=(state.places.length?state.places:state.demo).slice(0,8);const services=[["assets/icon-banners.svg","Баннеры","Баннер"],["assets/icon-signage.svg","Вывески","Вывеска"],["assets/icon-led.svg","LED-экраны","LED-экран"],["assets/icon-billboard.svg","Билборды","Билборд"],["assets/icon-advertisers.svg","Световые короба","Световой короб"],["assets/icon-business.svg","Объёмные буквы","Объёмные буквы"],["assets/icon-ad-places.svg","Плёнка / наклейки","Плёнка"],["assets/icon-producers.svg","Другое",""]];document.getElementById("content").innerHTML=`<section class="homeSearch"><input id="homeSearchQ" value="" placeholder="Что ищете? Например: LED-экран, баннер, вывеска" onkeydown="if(event.key==='Enter')homeSearch()"><button onclick="homeSearch()" aria-label="Поиск">⌕</button></section><div class="homeLocation">⌖ Ташкент <span>·</span> рекламные места рядом с вами</div><section class="serviceSection"><div class="serviceHead"><h2>Все услуги</h2><button class="serviceAll" onclick="action('search')">Все →</button></div><div class="serviceScroller"><button class="serviceItem all" onclick="action('search')"><div class="serviceIcon"><span>⊞</span></div><b>Все услуги</b></button>${services.map(s=>`<button class="serviceItem" onclick="filterByCategory('${esc(s[2])}')"><div class="serviceIcon"><img src="${s[0]}" alt=""></div><b>${s[1]}</b></button>`).join("")}</div></section><section class="homeListings"><div class="head"><h2>Объявления пользователей</h2><button class="link" onclick="action('search')">Все →</button></div><div class="homeAds">${ads.length?ads.map(homeAdCard).join(""):'<div class="homeEmpty">Пока нет опубликованных объявлений. Разместите первое рекламное место бесплатно.</div>'}</div></section><section class="partnerPanel" style="margin-top:4px"><div class="partnerTop"><div class="partnerLogo">🛡️</div><div><div class="aiBadge">ОФИЦИАЛЬНЫЙ ПАРТНЁР</div><h2>SecurLineUz</h2></div></div><p>Системы безопасности для бизнеса, домов и объектов в Ташкенте.</p><div class="partnerServices"><span>📹 Видеонаблюдение</span><span>🔥 Пожарная сигнализация</span><span>🚪 СКУД</span><span>📞 Домофония</span><span>🔌 Слаботочные системы</span><span>🔧 Обслуживание</span></div><div class="partnerActions"><a class="primary" href="partners/securlineuz.html">Подробнее</a><a class="ghost" href="tel:+998950214334">+998 95 021 43 34</a></div></section>`}
+function renderHome(){setHomeSEO();const ads=(state.places.length?state.places:state.demo).slice(0,8);const services=[["assets/icon-banners.svg","Баннеры","Баннер"],["assets/icon-signage.svg","Вывески","Вывеска"],["assets/icon-led.svg","LED-экраны","LED-экран"],["assets/icon-billboard.svg","Билборды","Билборд"],["assets/icon-advertisers.svg","Световые короба","Световой короб"],["assets/icon-business.svg","Объёмные буквы","Объёмные буквы"],["assets/icon-ad-places.svg","Плёнка / наклейки","Плёнка"],["assets/icon-producers.svg","Другое",""]];document.getElementById("content").innerHTML=`<section class="homeSearch"><input id="homeSearchQ" value="" placeholder="Что ищете? Например: LED-экран, баннер, вывеска" onkeydown="if(event.key==='Enter')homeSearch()"><button onclick="homeSearch()" aria-label="Поиск">⌕</button></section><div class="homeLocation">⌖ Ташкент <span>·</span> рекламные места рядом с вами</div><section class="serviceSection"><div class="serviceHead"><h2>Все услуги</h2><button class="serviceAll" onclick="action('search')">Все →</button></div><div class="serviceScroller"><button class="serviceItem all" onclick="action('search')"><div class="serviceIcon"><span>⊞</span></div><b>Все услуги</b></button>${services.map(s=>`<button class="serviceItem" onclick="filterByCategory('${esc(s[2])}')"><div class="serviceIcon"><img src="${s[0]}" alt=""></div><b>${s[1]}</b></button>`).join("")}</div></section><section class="homeListings"><div class="head"><h2>Объявления пользователей</h2><button class="link" onclick="action('search')">Все →</button></div><div class="homeAds">${ads.length?ads.map(homeAdCard).join(""):'<div class="homeEmpty">Пока нет опубликованных объявлений. Разместите первое рекламное место бесплатно.</div>'}</div></section><section class="partnerPanel" style="margin-top:4px"><div class="partnerTop"><div class="partnerLogo">🛡️</div><div><div class="aiBadge">ОФИЦИАЛЬНЫЙ ПАРТНЁР</div><h2>SecurLineUz</h2></div></div><p>Системы безопасности для бизнеса, домов и объектов в Ташкенте.</p><div class="partnerServices"><span>📹 Видеонаблюдение</span><span>🔥 Пожарная сигнализация</span><span>🚪 СКУД</span><span>📞 Домофония</span><span>🔌 Слаботочные системы</span><span>🔧 Обслуживание</span></div><div class="partnerActions"><a class="primary" href="partners/securlineuz.html">Подробнее</a><a class="ghost" href="tel:+998950214334">+998 95 021 43 34</a></div></section>`}
 function homeSearch(){window.adamarketPendingSearchQ=(document.getElementById("homeSearchQ")?.value||"").trim();action("search")}
 function filterByCategory(type){window.adamarketPendingSearchType=type||"";action("search")}
 function homeAdCard(p){const cover=p.cover_image||"assets/tashkent-hero.svg";return `<article class="homeAd" onclick="openPlace(${p.id})"><img src="${esc(cover)}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.src='assets/tashkent-hero.svg'" alt=""><button class="homeHeart" onclick="event.stopPropagation();toggleFav(${p.id})" aria-label="В избранное">${state.favorites.has(p.id)?"♥":"♡"}</button><div class="homeAdBody"><div class="badges"><span class="badge">${esc(p.type||"Реклама")}</span>${p.created_at&&((Date.now()-new Date(p.created_at).getTime())<14*86400000)?'<span class="trust new">Новое</span>':""}</div><div class="homeAdTitle">${esc(p.title||"Рекламное место")}</div><div class="homeAdMeta">⌖ ${esc(p.city||"Ташкент")}${p.district?", "+esc(p.district):""}</div><div class="homeAdPrice">от ${money(p.price)}</div></div></article>`}
@@ -349,7 +399,7 @@ function openModal(html){document.getElementById("modalBody").innerHTML=html;doc
 function adCard(p){let isNew=p.created_at&&((Date.now()-new Date(p.created_at).getTime())<14*86400000),cover=p.cover_image||"assets/tashkent-hero.svg";return `<article class="ad" onclick="openPlace(${p.id})"><img src="${esc(cover)}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.src='assets/tashkent-hero.svg'"><button class="heart" aria-label="Добавить в избранное" onclick="event.stopPropagation();toggleFav(${p.id})">${state.favorites.has(p.id)?"♥":"♡"}</button><div class="adbody"><div class="badges"><span class="badge">${esc(p.type)}</span><span class="trust">✓ Проверено</span>${p.has_contact?`<span class="trust">Контакт указан</span>`:""}${isNew?`<span class="trust new">Новое</span>`:""}</div><h3>${esc(p.title)}</h3><div class="meta">⌖ Ташкент, ${esc(p.district)}</div><div class="price">от ${money(p.price)}</div><div class="contactBtns"><button class="primary requestBtn" onclick="event.stopPropagation();requestOwner(${p.id})">Оставить заявку</button><button class="ghost miniBtn" onclick="event.stopPropagation();showContact(${p.id},'phone')">Позвонить</button><button class="ghost miniBtn" onclick="event.stopPropagation();showContact(${p.id},'telegram')">Telegram</button></div></div></article>`}
 function openPlace(id){
  const p=[...state.places,...state.demo].find(x=>x.id==id);if(!p)return;
- const url="/profil/"+encodeURIComponent(adSlug(p))+"/";
+ const url="/profil/"+encodeURIComponent(adRouteSlug(p))+"/";
  if(location.pathname!==url){
    history.pushState({page:"ad",ad:id},"",url);
  }
@@ -358,7 +408,12 @@ function openPlace(id){
 }
 function renderAdDetail(id){
  const p=[...state.places,...state.demo].find(x=>x.id==id);if(!p)return;
- const cover=p.cover_image||"assets/tashkent-hero.svg";
+ const canonical="https://adamarket.uz/profil/"+encodeURIComponent(adRouteSlug(p))+"/";
+ const seoDescription=String(p.description||("Рекламное место "+(p.type||"")+". "+(p.city||"Ташкент")+(p.district?", район "+p.district:"")+". Цена: "+money(p.price)+" / "+unit(p.unit)+".")).replace(/\\s+/g," ").trim().slice(0,300);
+ const cover=p.cover_image||"https://adamarket.uz/assets/tashkent-hero.svg";
+ const schema={"@context":"https://schema.org","@type":"WebPage","name":String(p.title||"Рекламное место")+" — ADAMARKET","url":canonical,"description":seoDescription,"isPartOf":{"@type":"WebSite","name":"ADAMARKET","url":"https://adamarket.uz/"},"mainEntity":{"@type":"Service","name":String(p.title||"Рекламное место"),"description":seoDescription,"areaServed":{"@type":"Place","name":[p.city||"Ташкент",p.district].filter(Boolean).join(", ")},"image":cover,"offers":{"@type":"Offer","url":canonical,"price":String(Number(p.price)||0),"priceCurrency":String(p.currency||"UZS"),"availability":"https://schema.org/InStock"}}};
+ setPageSEO({title:String(p.title||"Рекламное место")+" — "+String(p.city||"Ташкент")+" | ADAMARKET",description:seoDescription,url:canonical,image:cover,schema});
+
  document.getElementById("content").innerHTML=`<div class="adDetailPage">
  <button class="adDetailBack" onclick="history.back()">← <span>Назад</span></button>
  <div class="adDetailGrid">
@@ -594,14 +649,14 @@ bindAdamarketPageRoutes();
     if(legacyAd){
       const legacy=[...state.places,...state.demo].find(x=>x.id==legacyAd);
       if(legacy){
-        history.replaceState({page:"ad",ad:legacy.id},"","/profil/"+encodeURIComponent(adSlug(legacy))+"/");
+        history.replaceState({page:"ad",ad:legacy.id},"","/profil/"+encodeURIComponent(adRouteSlug(legacy))+"/");
         renderAdDetail(legacy.id);
       }else{
         history.replaceState({page:"home"},"","/");
         renderHome();
       }
     }else if(routed){
-      history.replaceState({page:"ad",ad:routed.id},"","/profil/"+encodeURIComponent(adSlug(routed))+"/");
+      history.replaceState({page:"ad",ad:routed.id},"","/profil/"+encodeURIComponent(adRouteSlug(routed))+"/");
       renderAdDetail(routed.id);
     }else{
       renderHome();
