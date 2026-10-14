@@ -31,6 +31,18 @@ assert(/localStorage\.setItem\([\"']adamarket_lang[\"']/.test(script), 'language
 assert(script.includes('uploadListingImages'), 'listing image upload missing');
 assert(script.includes('get_ad_place_contact'), 'listing contact RPC missing');
 assert(!script.includes('/api/ai'), 'AI backend call must stay disabled in beta');
+assert(script.includes('async function submitMatchRequest()'), 'advertiser matching request handler missing');
+assert(script.includes('place_id:null'), 'matching request must work without an existing listing');
+assert(html.includes('id="matchRequest"'), 'web matching request panel missing');
+assert(android.includes('id="matchRequest"'), 'Android matching request panel missing');
+assert(html.includes('2026.10.14.1'), 'web cache freshness version was not bumped');
+assert(/versionCode\\s+16/.test(fs.readFileSync('android-demo/app/build.gradle','utf8')), 'Android version code not bumped');
+for (const f of ['seo/tashkent-obyavleniya.html','seo/bannery.html','seo/billbordy.html','seo/led-ekrany.html','seo/vyveski.html']) {
+ const page = fs.readFileSync(f, 'utf8');
+ assert(page.includes('"@type":"FAQPage"'), 'SEO FAQ schema missing: ' + f);
+ assert(page.includes('/?intent=match'), 'SEO matching CTA missing: ' + f);
+ assert(page.includes('/?intent=add'), 'SEO owner onboarding CTA missing: ' + f);
+}
 assert(fs.existsSync('404.html'), 'SPA fallback missing');
 assert(!script.includes('()}renderHome()})();'), 'legacy boot tail remains');
 for (const f of ['prod_hardening.js','guest_fix.js','app_patch.js','roles_business_patch.js','guest_map_patch.js','final_ui_patch.js','adamarket_demo_changes.js']) assert(!fs.existsSync(`android-demo/app/src/main/assets/${f}`), `legacy patch remains: ${f}`);
