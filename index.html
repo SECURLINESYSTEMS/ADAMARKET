@@ -686,7 +686,7 @@ bindAdamarketPageRoutes();
     setupPlacesRealtime();
     await bootstrap();
     adamarketRoutingBoot=false;
-    if(!legacyAd&&!routed)renderRouteFromPath(location.pathname);if(initialParams.get("intent")==="match")setTimeout(()=>document.getElementById("matchRequest")?.scrollIntoView({behavior:"smooth",block:"start"}),180);
+    if(!legacyAd&&!routed)renderRouteFromPath(location.pathname);if(initialParams.get("intent")==="match")setTimeout(()=>document.getElementById("matchRequest")?.scrollIntoView({behavior:"smooth",block:"start"}),180);else if(initialParams.get("intent")==="add")setTimeout(()=>action("add"),120);
   }catch(e){
     console.error("ADAMARKET init:",e);
     try{ renderHome(); }catch(_){ document.getElementById("content").innerHTML='<div class="panel empty">Не удалось загрузить ADAMARKET. Обновите страницу.</div>'; }
