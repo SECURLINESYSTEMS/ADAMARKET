@@ -6,6 +6,10 @@ const script = html.slice(a, b);
 function assert(ok, msg) { if (!ok) throw new Error(msg); }
 new Function(script);
 assert(script.includes('window.AdamarketState'), 'AdamarketState missing');
+assert(!script.includes('state.demo'), 'demo listings must never be shown as live inventory');
+assert(!script.includes('✓ Проверено'), 'unverified listings must not receive a hard-coded verified badge');
+assert(html.includes('ИНН компании (необязательно)'), 'INN field must be clearly optional');
+assert(!html.includes('ИНН фирмы *'), 'INN must not be presented as required for every user');
 for (const key of ['session','profile','places','myAds','favorites','plans','signup','lang']) assert(new RegExp(`\\b${key}\\s*:`).test(script), `state field ${key} missing`);
 for (const key of ['session','profile','places','myAds','favorites','plans','signup','lang','demo']) assert(!new RegExp(`window\\.${key}\\b`).test(script), `window.${key} alias remains`);
 assert(!/\\blet\\s+(session|profile|places|myAds|favorites|plans|signup|lang)\\s*=/.test(script), 'legacy lexical state remains');
