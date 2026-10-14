@@ -1,5 +1,6 @@
 const fs = require('fs');
 const html = fs.readFileSync('index.html', 'utf8');
+const android = fs.readFileSync('android-demo/app/src/main/assets/index.html', 'utf8');
 const a = html.indexOf('<script>') + 8;
 const b = html.indexOf('</script>', a);
 const script = html.slice(a, b);
@@ -10,6 +11,9 @@ assert(!script.includes('state.demo'), 'demo listings must never be shown as liv
 assert(!script.includes('✓ Проверено'), 'unverified listings must not receive a hard-coded verified badge');
 assert(html.includes('ИНН компании (необязательно)'), 'INN field must be clearly optional');
 assert(!html.includes('ИНН фирмы *'), 'INN must not be presented as required for every user');
+assert(!android.includes('state.demo'), 'Android app must not show demo listings as real inventory');
+assert(android.includes('ИНН компании (необязательно)'), 'Android INN field must be clearly optional');
+assert(!android.includes('✓ Проверено'), 'Android must not hard-code verified badges');
 for (const key of ['session','profile','places','myAds','favorites','plans','signup','lang']) assert(new RegExp(`\\b${key}\\s*:`).test(script), `state field ${key} missing`);
 for (const key of ['session','profile','places','myAds','favorites','plans','signup','lang','demo']) assert(!new RegExp(`window\\.${key}\\b`).test(script), `window.${key} alias remains`);
 assert(!/\\blet\\s+(session|profile|places|myAds|favorites|plans|signup|lang)\\s*=/.test(script), 'legacy lexical state remains');
