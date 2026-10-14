@@ -36,7 +36,7 @@ assert(script.includes('place_id:null'), 'matching request must work without an 
 assert(html.includes('id="matchRequest"'), 'web matching request panel missing');
 assert(android.includes('id="matchRequest"'), 'Android matching request panel missing');
 assert(html.includes('2026.10.14.1'), 'web cache freshness version was not bumped');
-assert(/versionCode\\s+16/.test(fs.readFileSync('android-demo/app/build.gradle','utf8')), 'Android version code not bumped');
+assert(/versionCode\s+16/.test(fs.readFileSync('android-demo/app/build.gradle','utf8')), 'Android version code not bumped');
 for (const f of ['seo/tashkent-obyavleniya.html','seo/bannery.html','seo/billbordy.html','seo/led-ekrany.html','seo/vyveski.html']) {
  const page = fs.readFileSync(f, 'utf8');
  assert(page.includes('"@type":"FAQPage"'), 'SEO FAQ schema missing: ' + f);
