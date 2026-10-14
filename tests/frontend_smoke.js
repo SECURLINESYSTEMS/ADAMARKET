@@ -33,6 +33,7 @@ assert(script.includes('get_ad_place_contact'), 'listing contact RPC missing');
 assert(!script.includes('/api/ai'), 'AI backend call must stay disabled in beta');
 assert(script.includes('async function submitMatchRequest()'), 'advertiser matching request handler missing');
 assert(script.includes('place_id:null'), 'matching request must work without an existing listing');
+assert(script.includes('const isMatch=!r.place_id'), 'admin should label matching requests without an ad');
 assert(html.includes('id="matchRequest"'), 'web matching request panel missing');
 assert(android.includes('id="matchRequest"'), 'Android matching request panel missing');
 assert(html.includes('2026.10.14.1'), 'web cache freshness version was not bumped');
