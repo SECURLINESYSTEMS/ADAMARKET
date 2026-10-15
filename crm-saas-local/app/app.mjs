@@ -25,6 +25,7 @@ let invites = [];
 let customFields = [];
 let inviteAttemptInProgress = false;
 let showArchived = false;
+let searchText = "";
 let pendingInviteToken = new URLSearchParams(window.location.search).get("invite");
 
 const WORK_STATUSES = [
@@ -150,6 +151,40 @@ function renderTable(targetId, headings, items, buildRow) {
   items.forEach((item) => tbody.append(buildRow(item)));
   table.append(tbody);
   target.append(table);
+}
+
+function matchesSearch(values) {
+  if (!searchText) return true;
+  const haystack = values.filter((value) => value !== null && value !== undefined)
+    .map((value) => typeof value === "object" ? JSON.stringify(value) : String(value))
+    .join(" ").toLocaleLowerCase();
+  return haystack.includes(searchText);
+}
+
+function csvCell(value) {
+  const text = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function exportCsv(filename, columns, rows) {
+  if (!rows.length) {
+    message("Нет записей для экспорта.", true);
+    return;
+  }
+  const content = "\uFEFF" + [
+    columns.map((column) => csvCell(column.label)).join(";"),
+    ...rows.map((row) => columns.map((column) => csvCell(row[column.key])).join(";"))
+  ].join("\r\n");
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+  message("CSV-файл подготовлен: " + filename);
 }
 
 function customerName(id) {
@@ -346,7 +381,7 @@ function renderAll() {
 }
 
 function renderCustomers() {
-  const visible = customers.filter((row) => showArchived || !row.archived_at);
+  const visible = customers.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.display_name, row.company_name, row.phone, row.email, row.notes, row.custom_data]));
   renderTable("customerList", ["Клиент", "Компания", "Телефон", "Email", "Заметки", "Состояние", "Действия"], visible, (customer) => {
     const row = document.createElement("tr");
     makeCell(row, customer.display_name);
@@ -390,7 +425,7 @@ function renderCustomers() {
 }
 
 function renderWorkItems() {
-  const visible = workItems.filter((row) => showArchived || !row.archived_at);
+  const visible = workItems.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.title, row.description, row.status, row.priority, memberName(row.assigned_to), customerName(row.customer_id), row.custom_data]));
   renderTable("workItemList", ["Заявка", "Клиент", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], visible, (item) => {
   renderTable("workItemList", ["Заявка", "Клиент", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], workItems, (item) => {
     const row = document.createElement("tr");
@@ -460,7 +495,7 @@ function renderActivities() {
 }
 
 function renderTasks() {
-  const visible = tasks.filter((row) => showArchived || !row.archived_at);
+  const visible = tasks.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.title, row.description, row.status, row.priority, memberName(row.assigned_to), row.custom_data]));
   renderTable("taskList", ["Поручение", "Заявка", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], visible, (task) => {
     const row = document.createElement("tr");
     makeCell(row, task.title);
@@ -513,7 +548,7 @@ function renderTasks() {
 }
 
 function renderDeals() {
-  const visible = deals.filter((row) => showArchived || !row.archived_at);
+  const visible = deals.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.title, row.description, row.amount, row.currency, customerName(row.customer_id), stageName(row.stage_id), memberName(row.assigned_to), row.custom_data]));
   renderTable("dealList", ["Сделка", "Клиент", "Сумма", "Этап", "Ответственный", "Дата закрытия", "Действие"], visible, (deal) => {
     const row = document.createElement("tr");
     makeCell(row, deal.title);
@@ -745,6 +780,43 @@ el("showArchivedToggle").addEventListener("change", (event) => {
   showArchived = event.target.checked;
   renderAll();
 });
+
+el("globalSearch").addEventListener("input", (event) => {
+  searchText = event.target.value.trim().toLocaleLowerCase();
+  renderAll();
+});
+
+el("exportCustomers").addEventListener("click", () => exportCsv("clients.csv", [
+  { key: "display_name", label: "Имя" }, { key: "company_name", label: "Компания" },
+  { key: "phone", label: "Телефон" }, { key: "email", label: "Email" },
+  { key: "notes", label: "Заметки" }, { key: "custom_data", label: "Дополнительные поля" },
+  { key: "created_at", label: "Создан" }, { key: "archived_at", label: "Архивирован" }
+], customers.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.display_name, row.company_name, row.phone, row.email, row.notes, row.custom_data]))));
+
+el("exportWorkItems").addEventListener("click", () => exportCsv("requests.csv", [
+  { key: "title", label: "Заявка" }, { key: "description", label: "Описание" },
+  { key: "status", label: "Статус" }, { key: "priority", label: "Приоритет" },
+  { key: "assigned_to", label: "Ответственный ID" }, { key: "due_at", label: "Срок" },
+  { key: "customer_id", label: "Клиент ID" }, { key: "custom_data", label: "Дополнительные поля" },
+  { key: "created_at", label: "Создана" }, { key: "archived_at", label: "Архивирована" }
+], workItems.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.title, row.description, row.status, row.priority, memberName(row.assigned_to), customerName(row.customer_id), row.custom_data]))));
+
+el("exportTasks").addEventListener("click", () => exportCsv("tasks.csv", [
+  { key: "title", label: "Поручение" }, { key: "description", label: "Описание" },
+  { key: "status", label: "Статус" }, { key: "priority", label: "Приоритет" },
+  { key: "assigned_to", label: "Ответственный ID" }, { key: "due_at", label: "Срок" },
+  { key: "work_item_id", label: "Заявка ID" }, { key: "custom_data", label: "Дополнительные поля" },
+  { key: "created_at", label: "Создано" }, { key: "archived_at", label: "Архивировано" }
+], tasks.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.title, row.description, row.status, row.priority, memberName(row.assigned_to), row.custom_data]))));
+
+el("exportDeals").addEventListener("click", () => exportCsv("deals.csv", [
+  { key: "title", label: "Сделка" }, { key: "description", label: "Описание" },
+  { key: "amount", label: "Сумма" }, { key: "currency", label: "Валюта" },
+  { key: "stage_id", label: "Этап ID" }, { key: "assigned_to", label: "Ответственный ID" },
+  { key: "expected_close_date", label: "Ожидаемая дата" }, { key: "customer_id", label: "Клиент ID" },
+  { key: "custom_data", label: "Дополнительные поля" }, { key: "created_at", label: "Создана" },
+  { key: "archived_at", label: "Архивирована" }
+], deals.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.title, row.description, row.amount, row.currency, customerName(row.customer_id), stageName(row.stage_id), memberName(row.assigned_to), row.custom_data]))));
 
 el("signOutButton").addEventListener("click", async () => {
   try {
