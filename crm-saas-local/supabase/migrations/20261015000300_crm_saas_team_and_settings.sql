@@ -86,7 +86,7 @@ create table crm_saas.organization_invites (
     invitee_email = lower(trim(invitee_email))
     and invitee_email ~ '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+$'
   )),
-  check (invitee_phone is null or invitee_phone ~ '^\\+[1-9][0-9]{7,14}$')
+  check (invitee_phone is null or invitee_phone ~ '^\+[1-9][0-9]{7,14}$')
 );
 
 create index organization_invites_org_created_idx
@@ -142,7 +142,7 @@ begin
   if v_email is not null and v_email !~ '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+$' then
     raise exception 'Invalid invitation email' using errcode = '22023';
   end if;
-  if v_phone is not null and v_phone !~ '^\\+[1-9][0-9]{7,14}$' then
+  if v_phone is not null and v_phone !~ '^\+[1-9][0-9]{7,14}$' then
     raise exception 'Phone must be in international E.164 format' using errcode = '22023';
   end if;
 
