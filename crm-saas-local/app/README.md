@@ -24,35 +24,44 @@ This is an intentionally plain, unstyled browser client for exercising the CRM s
 
 4. Open `http://127.0.0.1:3000`. Local email sign-in links are available in Mailpit at `http://127.0.0.1:54324`.
 
-5. To run browser-to-schema contract checks from the repository root:
+5. Run browser-to-schema contract checks from the repository root:
 
    ```bash
    node --test crm-saas-local/tests/client-contract.test.mjs
    ```
 
-6. To run database tests:
+6. Run database security tests:
 
    ```bash
    cd crm-saas-local
    npx supabase test db
    ```
 
+7. The end-to-end browser test requires the local Supabase stack, Mailpit, Playwright/Chromium and a local HTTP server. In CI these are configured by `.github/workflows/crm-saas-db-tests.yml`.
+
 ## Implemented browser workflows
 
-- Email magic-link, phone OTP and Google OAuth entry points (the provider must be configured in local/hosted Auth settings).
+- Email magic-link sign-in, phone OTP and Google OAuth entry points (phone and Google providers must be configured in the target Auth environment).
 - Company creation, selection and settings (currency, language, timezone and JSON settings).
 - Create/list, edit, archive and restore customers, work items, tasks and deals.
-- Search across the current company's records, see an operational summary, and export customers/requests/tasks/deals as CSV.
-- Configure profession-specific custom fields with text, number, date, boolean, URL and select/multiselect types; values are stored in each record's JSON metadata.
+- Search across the current company's records, view operational summary metrics, and export customers/requests/tasks/deals as CSV.
+- Configure profession-specific custom fields with text, number, date, boolean, URL and select/multiselect types; values are stored in each record's JSON metadata. Required single-select fields require an explicit selection.
 - Update work-item status, task status and deal stage.
 - Team invitations by confirmed email or phone, invitation-link copying, role changes and member activation controls.
 - Private work-item attachments: upload up to 20 MB, open via short-lived signed URL, and remove with owner/manager checks.
-- New companies receive starter custom fields for their chosen profession automatically.
-- Activity history, with entries when work items are created or their status changes.
+- New companies receive starter custom fields for their chosen profession.
+- Activity history, including entries when work items are created or their status changes.
 
-## Current limitations
+## Verification status
 
-- The app intentionally has no visual design system; that work comes after the technical flows are verified.
-- Invitation links are generated but not sent automatically by email/SMS; automated delivery, richer audit coverage, production deployment and browser end-to-end tests remain outstanding.
-- The client only uses public Auth credentials and relies on database RLS/RPC checks for authorization. The frontend is not a security boundary.
-- Archiving is reversible and does not hard-delete records. Access to edits and archive operations remains enforced by database RLS.
+The isolated GitHub Actions workflow has passed all eight CRM migrations, 40 pgTAP security assertions, browser JavaScript/schema contract checks, and the browser end-to-end flow for email magic-link authentication, company setup, customer/request/task/deal creation, CSV download, private attachment upload, and reversible customer archiving. Re-run the workflow after any subsequent changes; a previous pass is not a guarantee for future commits.
+
+## Current limitations — not production-ready
+
+- The app intentionally has no visual design system; UI/UX work follows the technical and security checks.
+- Invitation links are generated and can be copied, but are **not automatically delivered by email/SMS**.
+- The E2E test does not yet cover all invitation, role-management and cross-tenant attack scenarios; extend those checks before a production decision.
+- Production deployment, provider configuration, backup/restore rehearsal and a separate approval remain outstanding.
+- The client uses only public Auth credentials and relies on database RLS/RPC checks for authorization. The frontend is not a security boundary.
+- Archiving is reversible and does not hard-delete records. Access to edits and archive operations is enforced by database RLS.
+- Do not link this local scaffold to the hosted ADAMARKET Supabase project or run `db push` against production.
