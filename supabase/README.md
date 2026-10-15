@@ -51,7 +51,7 @@ The pgTAP test suite in `supabase/tests/crm_saas_security.test.sql` uses synthet
 - employees can create work assigned to themselves and register customers;
 - employees cannot assign work or tasks to coworkers;
 - an authenticated user can create a company through the onboarding function;
-- invitations are single-use and cannot be claimed by another account;
+- invitations are single-use, cannot be claimed by another account and cannot be reused after acceptance;
 - onboarding creates the owner membership, default pipeline and stages;
 - employees cannot promote themselves to owner.
 
