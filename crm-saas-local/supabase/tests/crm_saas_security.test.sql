@@ -227,12 +227,12 @@ select lives_ok(
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select is((select count(*)::int from crm_saas.work_items), 0, 'deactivated employee loses access to company work');
 
-select ok(has_column('crm_saas', 'customers', 'custom_data'), 'customers support profession-specific custom fields');
-select ok(has_column('crm_saas', 'work_items', 'custom_data'), 'work items support profession-specific custom fields');
-select ok(has_column('crm_saas', 'customers', 'archived_at'), 'customers support reversible archiving');
-select ok(has_column('crm_saas', 'work_items', 'archived_at'), 'work items support reversible archiving');
-select ok(has_column('crm_saas', 'tasks', 'archived_at'), 'tasks support reversible archiving');
-select ok(has_column('crm_saas', 'deals', 'archived_at'), 'deals support reversible archiving');
+select has_column('crm_saas', 'customers', 'custom_data', 'customers support profession-specific custom fields');
+select has_column('crm_saas', 'work_items', 'custom_data', 'work items support profession-specific custom fields');
+select has_column('crm_saas', 'customers', 'archived_at', 'customers support reversible archiving');
+select has_column('crm_saas', 'work_items', 'archived_at', 'work items support reversible archiving');
+select has_column('crm_saas', 'tasks', 'archived_at', 'tasks support reversible archiving');
+select has_column('crm_saas', 'deals', 'archived_at', 'deals support reversible archiving');
 
 select ok(exists(
   select 1 from crm_saas.custom_fields
