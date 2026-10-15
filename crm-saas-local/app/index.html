@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>CRM SaaS — функциональный прототип</title>
+</head>
+<body>
+  <header>
+    <h1>CRM SaaS — технический прототип</h1>
+    <p>Рабочие сценарии без финального дизайна. Данные ограничиваются правами вашей компании.</p>
+    <p id="status" role="status" aria-live="polite">Проверка подключения…</p>
+  </header>
+
+  <main>
+    <section id="authPanel" aria-labelledby="authHeading">
+      <h2 id="authHeading">Вход</h2>
+      <form id="emailLoginForm">
+        <fieldset>
+          <legend>Войти по электронной почте</legend>
+          <label>Email <input name="email" type="email" autocomplete="email" required></label>
+          <button type="submit">Отправить ссылку для входа</button>
+        </fieldset>
+      </form>
+      <form id="phoneLoginForm">
+        <fieldset>
+          <legend>Войти по телефону</legend>
+          <label>Телефон в формате +998… <input name="phone" type="tel" autocomplete="tel" placeholder="+998901234567" required></label>
+          <button type="submit">Отправить SMS-код</button>
+        </fieldset>
+      </form>
+      <form id="phoneVerifyForm">
+        <fieldset>
+          <legend>Подтвердить телефон</legend>
+          <label>Телефон <input name="phone" type="tel" autocomplete="tel" required></label>
+          <label>Код из SMS <input name="token" inputmode="numeric" autocomplete="one-time-code" minlength="6" maxlength="8" required></label>
+          <button type="submit">Подтвердить и войти</button>
+        </fieldset>
+      </form>
+      <p><button id="googleLoginButton" type="button">Войти через Google</button></p>
+      <p>Для локальной разработки ссылка из email доступна в Mailpit: <code>http://127.0.0.1:54324</code>.</p>
+    </section>
+
+    <section id="appPanel" hidden aria-labelledby="appHeading">
+      <h2 id="appHeading">Рабочая область</h2>
+      <p id="signedInUser"></p>
+      <button id="signOutButton" type="button">Выйти</button>
+
+      <hr>
+      <section aria-labelledby="companyHeading">
+        <h3 id="companyHeading">Компания</h3>
+        <form id="createOrgForm">
+          <fieldset>
+            <legend>Создать компанию</legend>
+            <label>Название <input name="name" maxlength="160" required></label>
+            <label>Короткий адрес (латиница) <input name="slug" pattern="[a-z0-9][a-z0-9-]{1,62}[a-z0-9]" placeholder="my-company" required></label>
+            <label>Сфера деятельности
+              <select name="industry_code" required>
+                <option value="professional_services">Профессиональные услуги</option>
+                <option value="service_installation">Услуги и монтаж</option>
+                <option value="general_sales">Продажи</option>
+                <option value="beauty">Красота и услуги</option>
+                <option value="real_estate">Недвижимость</option>
+                <option value="education">Обучение</option>
+                <option value="construction">Строительство</option>
+                <option value="logistics">Логистика</option>
+                <option value="retail">Торговля</option>
+              </select>
+            </label>
+            <button type="submit">Создать компанию</button>
+          </fieldset>
+        </form>
+        <label>Текущая компания
+          <select id="organizationSelect">
+            <option value="">Нет доступных компаний</option>
+          </select>
+        </label>
+        <p id="organizationInfo"></p>
+      </section>
+
+      <hr>
+      <section aria-labelledby="customerHeading">
+        <h3 id="customerHeading">Клиенты</h3>
+        <form id="customerForm">
+          <fieldset>
+            <legend>Добавить клиента</legend>
+            <label>Имя или название <input name="display_name" maxlength="200" required></label>
+            <label>Компания клиента <input name="company_name" maxlength="200"></label>
+            <label>Телефон <input name="phone" type="tel"></label>
+            <label>Email <input name="email" type="email"></label>
+            <label>Заметки <textarea name="notes" rows="2"></textarea></label>
+            <label>Дополнительные поля JSON <textarea name="custom_data" rows="2">{}</textarea></label>
+            <button type="submit">Сохранить клиента</button>
+          </fieldset>
+        </form>
+        <div id="customerList"></div>
+      </section>
+
+      <hr>
+      <section aria-labelledby="workHeading">
+        <h3 id="workHeading">Заявки и рабочие задачи</h3>
+        <form id="workItemForm">
+          <fieldset>
+            <legend>Создать заявку</legend>
+            <label>Название <input name="title" maxlength="240" required></label>
+            <label>Клиент <select name="customer_id"><option value="">Без привязки к клиенту</option></select></label>
+            <label>Описание <textarea name="description" rows="2"></textarea></label>
+            <label>Статус
+              <select name="status">
+                <option value="new">Новая</option>
+                <option value="in_progress">В работе</option>
+                <option value="waiting">Ожидает</option>
+                <option value="completed">Завершена</option>
+                <option value="cancelled">Отменена</option>
+              </select>
+            </label>
+            <label>Приоритет
+              <select name="priority">
+                <option value="1">1 — срочно</option>
+                <option value="2">2</option>
+                <option value="3" selected>3 — обычный</option>
+                <option value="4">4</option>
+                <option value="5">5 — низкий</option>
+              </select>
+            </label>
+            <label>Ответственный <select name="assigned_to"></select></label>
+            <label>Срок <input name="due_at" type="date"></label>
+            <label>Дополнительные поля JSON <textarea name="custom_data" rows="2">{}</textarea></label>
+            <button type="submit">Создать заявку</button>
+          </fieldset>
+        </form>
+        <div id="workItemList"></div>
+      </section>
+
+      <hr>
+      <section aria-labelledby="taskHeading">
+        <h3 id="taskHeading">Поручения</h3>
+        <form id="taskForm">
+          <fieldset>
+            <legend>Создать поручение</legend>
+            <label>Заявка <select name="work_item_id" required></select></label>
+            <label>Название <input name="title" maxlength="240" required></label>
+            <label>Описание <textarea name="description" rows="2"></textarea></label>
+            <label>Приоритет
+              <select name="priority">
+                <option value="1">1 — срочно</option><option value="2">2</option>
+                <option value="3" selected>3 — обычный</option><option value="4">4</option><option value="5">5 — низкий</option>
+              </select>
+            </label>
+            <label>Ответственный <select name="assigned_to"></select></label>
+            <label>Срок <input name="due_at" type="date"></label>
+            <label>Дополнительные поля JSON <textarea name="custom_data" rows="2">{}</textarea></label>
+            <button type="submit">Создать поручение</button>
+          </fieldset>
+        </form>
+        <div id="taskList"></div>
+      </section>
+
+      <hr>
+      <section aria-labelledby="dealHeading">
+        <h3 id="dealHeading">Сделки и воронка продаж</h3>
+        <form id="dealForm">
+          <fieldset>
+            <legend>Создать сделку</legend>
+            <label>Название <input name="title" maxlength="240" required></label>
+            <label>Клиент <select name="customer_id"><option value="">Без привязки к клиенту</option></select></label>
+            <label>Воронка <select name="pipeline_id" required></select></label>
+            <label>Этап <select name="stage_id" required></select></label>
+            <label>Сумма <input name="amount" type="number" min="0" step="0.01" value="0" required></label>
+            <label>Валюта <input name="currency" pattern="[A-Z]{3}" maxlength="3" value="UZS" required></label>
+            <label>Ожидаемая дата закрытия <input name="expected_close_date" type="date"></label>
+            <label>Описание <textarea name="description" rows="2"></textarea></label>
+            <label>Ответственный <select name="assigned_to"></select></label>
+            <label>Дополнительные поля JSON <textarea name="custom_data" rows="2">{}</textarea></label>
+            <button type="submit">Создать сделку</button>
+          </fieldset>
+        </form>
+        <div id="dealList"></div>
+      </section>
+
+      <hr>
+      <section aria-labelledby="teamHeading">
+        <h3 id="teamHeading">Команда и приглашения</h3>
+        <form id="inviteForm">
+          <fieldset>
+            <legend>Пригласить сотрудника</legend>
+            <label>Email сотрудника <input name="invitee_email" type="email"></label>
+            <label>Или подтверждённый телефон <input name="invitee_phone" type="tel" placeholder="+998901234567"></label>
+            <label>Роль
+              <select name="role"><option value="member">Сотрудник</option><option value="admin">Администратор</option></select>
+            </label>
+            <button type="submit">Создать приглашение</button>
+          </fieldset>
+        </form>
+        <p>Система создаёт защищённую одноразовую ссылку. Автоматическая отправка email/SMS пока не подключена — ссылку нужно передать сотруднику.</p>
+        <p id="inviteResult"></p>
+        <div id="inviteList"></div>
+        <div id="memberList"></div>
+      </section>
+
+      <hr>
+      <section aria-labelledby="fieldsHeading">
+        <h3 id="fieldsHeading">Дополнительные поля под профессию</h3>
+        <form id="customFieldForm">
+          <fieldset>
+            <legend>Добавить поле</legend>
+            <label>Для сущности
+              <select name="entity_type">
+                <option value="customer">Клиент</option>
+                <option value="work_item">Заявка</option>
+                <option value="deal">Сделка</option>
+              </select>
+            </label>
+            <label>Ключ (латиница, например object_area) <input name="field_key" pattern="[a-z][a-z0-9_]{1,62}" required></label>
+            <label>Название <input name="label" maxlength="100" required></label>
+            <label>Тип
+              <select name="field_type">
+                <option value="text">Текст</option><option value="number">Число</option>
+                <option value="date">Дата</option><option value="boolean">Да/нет</option>
+                <option value="select">Список</option><option value="multiselect">Множественный список</option>
+                <option value="url">Ссылка</option>
+              </select>
+            </label>
+            <label>Варианты для списка (JSON-массив) <textarea name="options" rows="2">[]</textarea></label>
+            <label><input name="is_required" type="checkbox"> Обязательное поле</label>
+            <button type="submit">Добавить поле</button>
+          </fieldset>
+        </form>
+        <div id="customFieldList"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>
