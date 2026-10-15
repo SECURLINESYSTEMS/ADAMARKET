@@ -47,6 +47,7 @@
       <p id="signedInUser"></p>
       <button id="signOutButton" type="button">Выйти</button>
       <label><input id="showArchivedToggle" type="checkbox"> Показывать архивные записи</label>
+      <label>Поиск по текущей компании <input id="globalSearch" type="search" placeholder="Клиент, заявка, сотрудник…"></label>
 
       <hr>
       <section aria-labelledby="companyHeading">
@@ -95,6 +96,7 @@
       <hr>
       <section aria-labelledby="customerHeading">
         <h3 id="customerHeading">Клиенты</h3>
+        <button id="exportCustomers" type="button">Экспорт клиентов CSV</button>
         <form id="customerForm">
           <fieldset>
             <legend>Добавить клиента</legend>
@@ -116,6 +118,7 @@
       <hr>
       <section aria-labelledby="workHeading">
         <h3 id="workHeading">Заявки и рабочие задачи</h3>
+        <button id="exportWorkItems" type="button">Экспорт заявок CSV</button>
         <form id="workItemForm">
           <fieldset>
             <legend>Создать заявку</legend>
@@ -158,6 +161,7 @@
       <hr>
       <section aria-labelledby="taskHeading">
         <h3 id="taskHeading">Поручения</h3>
+        <button id="exportTasks" type="button">Экспорт поручений CSV</button>
         <form id="taskForm">
           <fieldset>
             <legend>Создать поручение</legend>
@@ -182,6 +186,7 @@
       <hr>
       <section aria-labelledby="dealHeading">
         <h3 id="dealHeading">Сделки и воронка продаж</h3>
+        <button id="exportDeals" type="button">Экспорт сделок CSV</button>
         <form id="dealForm">
           <fieldset>
             <legend>Создать сделку</legend>
