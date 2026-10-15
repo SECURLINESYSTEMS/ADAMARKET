@@ -366,6 +366,7 @@ function fillDealStages(pipelineId) {
 }
 
 function renderAll() {
+  renderSummary();
   populateFormSelects();
   renderCustomFieldInputs("customer", el("customerCustomFields"));
   renderCustomFieldInputs("work_item", el("work_itemCustomFields"));
@@ -378,6 +379,35 @@ function renderAll() {
   renderMembers();
   renderInvites();
   renderCustomFields();
+}
+
+function renderSummary() {
+  const target = el("summaryStats");
+  if (!currentOrg) {
+    target.textContent = "Выберите или создайте компанию, чтобы увидеть сводку.";
+    return;
+  }
+  const activeCustomers = customers.filter((row) => !row.archived_at).length;
+  const activeWork = workItems.filter((row) => !row.archived_at);
+  const openWork = activeWork.filter((row) => !["completed", "cancelled"].includes(row.status)).length;
+  const activeTasks = tasks.filter((row) => !row.archived_at);
+  const openTasks = activeTasks.filter((row) => !["done", "cancelled"].includes(row.status)).length;
+  const today = new Date().toISOString().slice(0, 10);
+  const overdue = [...activeWork, ...activeTasks].filter((row) => row.due_at && String(row.due_at).slice(0, 10) < today && !["completed", "cancelled", "done"].includes(row.status)).length;
+  const activeDeals = deals.filter((row) => !row.archived_at);
+  const totals = {};
+  activeDeals.forEach((deal) => {
+    const currency = deal.currency || "UZS";
+    totals[currency] = (totals[currency] || 0) + Number(deal.amount || 0);
+  });
+  const dealTotals = Object.keys(totals).length
+    ? Object.entries(totals).map(([currency, amount]) => amount.toLocaleString() + " " + currency).join(", ")
+    : "нет активных сделок";
+  target.textContent = "Клиенты: " + activeCustomers +
+    " · Открытые заявки: " + openWork +
+    " · Незавершённые поручения: " + openTasks +
+    " · Просроченные задачи: " + overdue +
+    " · Сумма сделок: " + dealTotals;
 }
 
 function renderCustomers() {
