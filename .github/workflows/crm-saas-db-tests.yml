@@ -1,0 +1,36 @@
+name: CRM SaaS database tests
+
+on:
+  pull_request:
+    branches:
+      - crm-saas-local-foundation
+      - docs/crm-saas-audit-and-roadmap
+  push:
+    branches:
+      - crm-saas-local-foundation
+
+permissions:
+  contents: read
+
+jobs:
+  supabase-local-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start isolated local Supabase stack
+        run: supabase start
+
+      - name: Apply local migrations and run pgTAP security tests
+        run: supabase test db
+
+      - name: Stop local Supabase stack
+        if: always()
+        run: supabase stop
