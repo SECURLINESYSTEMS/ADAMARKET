@@ -58,6 +58,7 @@ create table crm_saas.work_items (
   created_by uuid not null references auth.users(id) on delete restrict,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  unique (organization_id, id),
   foreign key (organization_id, customer_id)
     references crm_saas.customers(organization_id, id) on delete set null (customer_id)
 );
