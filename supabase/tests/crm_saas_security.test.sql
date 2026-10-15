@@ -1,6 +1,6 @@
 begin;
 
-select plan(14);
+select plan(16);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -78,10 +78,23 @@ select lives_ok(
 );
 
 select throws_ok(
-  $$insert into crm_saas.work_items (organization_id, title, assigned_to, created_by)
-    values ('20000000-0000-4000-8000-000000000001', 'Unauthorized assignment', '10000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002')$$,
+  $insert into crm_saas.work_items (organization_id, title, assigned_to, created_by)
+    values ('20000000-0000-4000-8000-000000000001', 'Unauthorized assignment', '10000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002')$,
   '42501', null,
   'employee cannot assign work to another employee'
+);
+
+select lives_ok(
+  $insert into crm_saas.customers (organization_id, display_name, created_by)
+    values ('20000000-0000-4000-8000-000000000001', 'Customer created by employee', '10000000-0000-4000-8000-000000000002')$,
+  'employee can register a customer during intake'
+);
+
+select throws_ok(
+  $update crm_saas.tasks set assigned_to = '10000000-0000-4000-8000-000000000003'
+    where id = '50000000-0000-4000-8000-000000000001'$,
+  '42501', null,
+  'employee cannot reassign a task to a coworker'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
