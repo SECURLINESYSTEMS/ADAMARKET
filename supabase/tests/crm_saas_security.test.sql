@@ -93,7 +93,7 @@ select lives_ok(
 
 select throws_ok(
   $$update crm_saas.tasks set assigned_to = '10000000-0000-4000-8000-000000000003'
-    where id = '50000000-0000-4000-8000-000000000001'$,
+    where id = '50000000-0000-4000-8000-000000000001'$$,
   '42501', null,
   'employee cannot reassign a task to a coworker'
 );
@@ -134,7 +134,7 @@ select is((
 select throws_ok(
   $$update crm_saas.organization_members set role = 'owner'
     where organization_id = '20000000-0000-4000-8000-000000000001'
-      and user_id = '10000000-0000-4000-8000-000000000002'$,
+      and user_id = '10000000-0000-4000-8000-000000000002'$$,
   '42501', null,
   'employee cannot promote themselves to owner'
 );
