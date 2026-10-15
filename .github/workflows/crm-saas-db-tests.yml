@@ -27,14 +27,18 @@ jobs:
           version: latest
 
       - name: Start isolated local Supabase stack
+        working-directory: crm-saas-local
         run: supabase start
 
       - name: Reset the disposable local database and apply all migrations
+        working-directory: crm-saas-local
         run: supabase db reset
 
       - name: Run pgTAP security tests
+        working-directory: crm-saas-local
         run: supabase test db
 
       - name: Stop local Supabase stack
         if: always()
+        working-directory: crm-saas-local
         run: supabase stop
