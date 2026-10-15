@@ -24,6 +24,9 @@ jobs:
       - name: Check browser client JavaScript syntax
         run: node --check crm-saas-local/app/app.mjs
 
+      - name: Check browser-to-schema contract
+        run: node --test crm-saas-local/tests/client-contract.test.mjs
+
       - name: Install Supabase CLI
         id: setup_cli
         uses: supabase/setup-cli@v1
