@@ -3,7 +3,7 @@ name: CRM SaaS database tests
 on:
   workflow_dispatch:
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened]
     branches:
       - crm-saas-local-foundation
       - docs/crm-saas-audit-and-roadmap
