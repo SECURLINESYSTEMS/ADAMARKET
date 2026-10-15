@@ -52,7 +52,7 @@ The pgTAP test suite in `supabase/tests/crm_saas_security.test.sql` uses synthet
 - onboarding creates the owner membership, default pipeline and stages;
 - employees cannot promote themselves to owner.
 
-GitHub Actions runs the local Supabase migration/test flow on the isolated branch and pull request. A test is not considered passed until the workflow result is green.
+GitHub Actions is configured to run the local Supabase migration/test flow on pushes to the isolated branch and pull requests. A test is not considered passed until the workflow result is green.
 
 ## Safety rules
 
