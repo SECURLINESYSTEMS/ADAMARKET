@@ -24,6 +24,7 @@ let stages = [];
 let invites = [];
 let customFields = [];
 let inviteAttemptInProgress = false;
+let showArchived = false;
 let pendingInviteToken = new URLSearchParams(window.location.search).get("invite");
 
 const WORK_STATUSES = [
@@ -275,11 +276,11 @@ async function loadOrgData() {
   }
   const results = await Promise.all([
     db.from("organization_members").select("user_id,role,is_active,display_name,email,phone,joined_at").eq("organization_id", orgId).order("joined_at", { ascending: true }),
-    db.from("customers").select("id,display_name,phone,email,company_name,notes,custom_data,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
-    db.from("work_items").select("id,customer_id,title,description,status,priority,assigned_to,due_at,custom_data,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
+    db.from("customers").select("id,display_name,phone,email,company_name,notes,custom_data,archived_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
+    db.from("work_items").select("id,customer_id,title,description,status,priority,assigned_to,due_at,custom_data,archived_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("activity_log").select("id,work_item_id,actor_id,activity_type,details,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
-    db.from("tasks").select("id,work_item_id,title,description,status,priority,assigned_to,due_at,completed_at,custom_data,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
-    db.from("deals").select("id,pipeline_id,stage_id,customer_id,title,amount,currency,expected_close_date,assigned_to,description,custom_data,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
+    db.from("tasks").select("id,work_item_id,title,description,status,priority,assigned_to,due_at,completed_at,custom_data,archived_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
+    db.from("deals").select("id,pipeline_id,stage_id,customer_id,title,amount,currency,expected_close_date,assigned_to,description,custom_data,archived_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("pipelines").select("id,name,is_default").eq("organization_id", orgId).order("created_at", { ascending: true }),
     db.from("pipeline_stages").select("id,pipeline_id,name,position,probability,is_won,is_lost").eq("organization_id", orgId).order("position", { ascending: true }),
     db.from("organization_invites").select("id,invitee_email,invitee_phone,role,expires_at,accepted_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
@@ -292,7 +293,7 @@ async function loadOrgData() {
 }
 
 function populateFormSelects() {
-  const customerOptions = customers.map((row) => ({ id: row.id, label: row.display_name }));
+  const customerOptions = customers.filter((row) => !row.archived_at).map((row) => ({ id: row.id, label: row.display_name }));
   fillSelect(el("workItemForm").elements.customer_id, customerOptions.map((row) => ({ id: row.id, display_name: row.label })), "id", (row) => row.display_name, "Без привязки к клиенту");
   fillSelect(el("dealForm").elements.customer_id, customerOptions.map((row) => ({ id: row.id, display_name: row.label })), "id", (row) => row.display_name, "Без привязки к клиенту");
 
@@ -317,7 +318,7 @@ function populateFormSelects() {
     (row) => row.label,
     null
   );
-  fillSelect(el("taskForm").elements.work_item_id, workItems, "id", (row) => row.title, null);
+  fillSelect(el("taskForm").elements.work_item_id, workItems.filter((row) => !row.archived_at), "id", (row) => row.title, null);
   fillSelect(el("dealForm").elements.pipeline_id, pipelines, "id", (row) => row.name, null);
   const pipelineId = el("dealForm").elements.pipeline_id.value || (pipelines[0] && pipelines[0].id);
   fillDealStages(pipelineId);
@@ -342,18 +343,52 @@ function renderAll() {
 }
 
 function renderCustomers() {
-  renderTable("customerList", ["Клиент", "Компания", "Телефон", "Email", "Заметки"], customers, (customer) => {
+  const visible = customers.filter((row) => showArchived || !row.archived_at);
+  renderTable("customerList", ["Клиент", "Компания", "Телефон", "Email", "Заметки", "Действия"], visible, (customer) => {
     const row = document.createElement("tr");
     makeCell(row, customer.display_name);
     makeCell(row, customer.company_name);
     makeCell(row, customer.phone);
     makeCell(row, customer.email);
     makeCell(row, customer.notes);
+    const actions = document.createElement("td");
+    actions.append(makeButton("Изменить", async () => {
+      const display_name = window.prompt("Имя или название клиента", customer.display_name);
+      if (display_name === null) return;
+      if (!display_name.trim()) throw new Error("Имя клиента не может быть пустым.");
+      const company_name = window.prompt("Компания клиента", customer.company_name || "");
+      if (company_name === null) return;
+      const phone = window.prompt("Телефон", customer.phone || "");
+      if (phone === null) return;
+      const email = window.prompt("Email", customer.email || "");
+      if (email === null) return;
+      const notes = window.prompt("Заметки", customer.notes || "");
+      if (notes === null) return;
+      const { error } = await db.from("customers").update({
+        display_name: display_name.trim(), company_name: company_name.trim() || null,
+        phone: phone.trim() || null, email: email.trim() || null, notes: notes.trim() || null
+      }).eq("organization_id", currentOrgId()).eq("id", customer.id);
+      if (error) throw error;
+      await loadOrgData();
+      message("Данные клиента обновлены.");
+    }));
+    actions.append(makeButton(customer.archived_at ? "Восстановить" : "В архив", async () => {
+      const action = customer.archived_at ? "восстановить" : "переместить в архив";
+      if (!window.confirm("Вы уверены, что хотите " + action + " клиента «" + customer.display_name + "»?")) return;
+      const { error } = await db.from("customers").update({ archived_at: customer.archived_at ? null : new Date().toISOString() }).eq("organization_id", currentOrgId()).eq("id", customer.id);
+      if (error) throw error;
+      await loadOrgData();
+      message(customer.archived_at ? "Клиент восстановлен." : "Клиент перемещён в архив.");
+    }));
+    makeCell(row, customer.archived_at ? "В архиве" : "Активен");
+    row.append(actions);
     return row;
   });
 }
 
 function renderWorkItems() {
+  const visible = workItems.filter((row) => showArchived || !row.archived_at);
+  renderTable("workItemList", ["Заявка", "Клиент", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], visible, (item) => {
   renderTable("workItemList", ["Заявка", "Клиент", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], workItems, (item) => {
     const row = document.createElement("tr");
     makeCell(row, item.title);
@@ -368,6 +403,30 @@ function renderWorkItems() {
     makeCell(row, memberName(item.assigned_to));
     makeCell(row, item.due_at ? String(item.due_at).slice(0, 10) : "");
     const actionCell = document.createElement("td");
+    actionCell.append(makeButton("Изменить", async () => {
+      const title = window.prompt("Название заявки", item.title);
+      if (title === null) return;
+      if (!title.trim()) throw new Error("Название заявки не может быть пустым.");
+      const description = window.prompt("Описание", item.description || "");
+      if (description === null) return;
+      const priorityText = window.prompt("Приоритет от 1 до 5", String(item.priority));
+      if (priorityText === null) return;
+      const priority = Number(priorityText);
+      if (!Number.isInteger(priority) || priority < 1 || priority > 5) throw new Error("Приоритет должен быть целым числом от 1 до 5.");
+      const due = window.prompt("Срок (ГГГГ-ММ-ДД), пусто — без срока", item.due_at ? String(item.due_at).slice(0, 10) : "");
+      if (due === null) return;
+      const { error } = await db.from("work_items").update({ title: title.trim(), description: description.trim() || null, priority, due_at: due.trim() || null }).eq("organization_id", currentOrgId()).eq("id", item.id);
+      if (error) throw error;
+      await loadOrgData();
+      message("Заявка обновлена.");
+    }));
+    actionCell.append(makeButton(item.archived_at ? "Восстановить" : "В архив", async () => {
+      if (!window.confirm(item.archived_at ? "Восстановить заявку?" : "Переместить заявку в архив?")) return;
+      const { error } = await db.from("work_items").update({ archived_at: item.archived_at ? null : new Date().toISOString() }).eq("organization_id", currentOrgId()).eq("id", item.id);
+      if (error) throw error;
+      await loadOrgData();
+      message(item.archived_at ? "Заявка восстановлена." : "Заявка перемещена в архив.");
+    }));
     actionCell.append(makeButton("Сохранить статус", async () => {
       const { error } = await db.from("work_items").update({ status: statusSelect.value }).eq("organization_id", currentOrgId()).eq("id", item.id);
       if (error) throw error;
@@ -398,7 +457,8 @@ function renderActivities() {
 }
 
 function renderTasks() {
-  renderTable("taskList", ["Поручение", "Заявка", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], tasks, (task) => {
+  const visible = tasks.filter((row) => showArchived || !row.archived_at);
+  renderTable("taskList", ["Поручение", "Заявка", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], visible, (task) => {
     const row = document.createElement("tr");
     makeCell(row, task.title);
     const parent = workItems.find((item) => item.id === task.work_item_id);
@@ -413,6 +473,30 @@ function renderTasks() {
     makeCell(row, memberName(task.assigned_to));
     makeCell(row, task.due_at ? String(task.due_at).slice(0, 10) : "");
     const actionCell = document.createElement("td");
+    actionCell.append(makeButton("Изменить", async () => {
+      const title = window.prompt("Название поручения", task.title);
+      if (title === null) return;
+      if (!title.trim()) throw new Error("Название поручения не может быть пустым.");
+      const description = window.prompt("Описание", task.description || "");
+      if (description === null) return;
+      const priorityText = window.prompt("Приоритет от 1 до 5", String(task.priority));
+      if (priorityText === null) return;
+      const priority = Number(priorityText);
+      if (!Number.isInteger(priority) || priority < 1 || priority > 5) throw new Error("Приоритет должен быть целым числом от 1 до 5.");
+      const due = window.prompt("Срок (ГГГГ-ММ-ДД), пусто — без срока", task.due_at ? String(task.due_at).slice(0, 10) : "");
+      if (due === null) return;
+      const { error } = await db.from("tasks").update({ title: title.trim(), description: description.trim() || null, priority, due_at: due.trim() || null }).eq("organization_id", currentOrgId()).eq("id", task.id);
+      if (error) throw error;
+      await loadOrgData();
+      message("Поручение обновлено.");
+    }));
+    actionCell.append(makeButton(task.archived_at ? "Восстановить" : "В архив", async () => {
+      if (!window.confirm(task.archived_at ? "Восстановить поручение?" : "Переместить поручение в архив?")) return;
+      const { error } = await db.from("tasks").update({ archived_at: task.archived_at ? null : new Date().toISOString() }).eq("organization_id", currentOrgId()).eq("id", task.id);
+      if (error) throw error;
+      await loadOrgData();
+      message(task.archived_at ? "Поручение восстановлено." : "Поручение перемещено в архив.");
+    }));
     actionCell.append(makeButton("Сохранить", async () => {
       const updates = { status: statusSelect.value, completed_at: statusSelect.value === "done" ? new Date().toISOString() : null };
       const { error } = await db.from("tasks").update(updates).eq("organization_id", currentOrgId()).eq("id", task.id);
@@ -426,7 +510,8 @@ function renderTasks() {
 }
 
 function renderDeals() {
-  renderTable("dealList", ["Сделка", "Клиент", "Сумма", "Этап", "Ответственный", "Дата закрытия", "Действие"], deals, (deal) => {
+  const visible = deals.filter((row) => showArchived || !row.archived_at);
+  renderTable("dealList", ["Сделка", "Клиент", "Сумма", "Этап", "Ответственный", "Дата закрытия", "Действие"], visible, (deal) => {
     const row = document.createElement("tr");
     makeCell(row, deal.title);
     makeCell(row, customerName(deal.customer_id));
@@ -440,6 +525,33 @@ function renderDeals() {
     makeCell(row, memberName(deal.assigned_to));
     makeCell(row, deal.expected_close_date);
     const actionCell = document.createElement("td");
+    actionCell.append(makeButton("Изменить", async () => {
+      const title = window.prompt("Название сделки", deal.title);
+      if (title === null) return;
+      if (!title.trim()) throw new Error("Название сделки не может быть пустым.");
+      const amountText = window.prompt("Сумма сделки", String(deal.amount));
+      if (amountText === null) return;
+      const amount = Number(amountText);
+      if (!Number.isFinite(amount) || amount < 0) throw new Error("Сумма должна быть неотрицательным числом.");
+      const currency = window.prompt("Валюта (ISO, например UZS)", deal.currency);
+      if (currency === null) return;
+      if (!/^[A-Za-z]{3}$/.test(currency.trim())) throw new Error("Укажите трёхбуквенный код валюты.");
+      const expected = window.prompt("Ожидаемая дата закрытия (ГГГГ-ММ-ДД), пусто — без даты", deal.expected_close_date || "");
+      if (expected === null) return;
+      const description = window.prompt("Описание", deal.description || "");
+      if (description === null) return;
+      const { error } = await db.from("deals").update({ title: title.trim(), amount, currency: currency.trim().toUpperCase(), expected_close_date: expected.trim() || null, description: description.trim() || null }).eq("organization_id", currentOrgId()).eq("id", deal.id);
+      if (error) throw error;
+      await loadOrgData();
+      message("Сделка обновлена.");
+    }));
+    actionCell.append(makeButton(deal.archived_at ? "Восстановить" : "В архив", async () => {
+      if (!window.confirm(deal.archived_at ? "Восстановить сделку?" : "Переместить сделку в архив?")) return;
+      const { error } = await db.from("deals").update({ archived_at: deal.archived_at ? null : new Date().toISOString() }).eq("organization_id", currentOrgId()).eq("id", deal.id);
+      if (error) throw error;
+      await loadOrgData();
+      message(deal.archived_at ? "Сделка восстановлена." : "Сделка перемещена в архив.");
+    }));
     actionCell.append(makeButton("Сохранить этап", async () => {
       const { error } = await db.from("deals").update({ stage_id: stageSelect.value }).eq("organization_id", currentOrgId()).eq("id", deal.id);
       if (error) throw error;
@@ -565,6 +677,11 @@ el("googleLoginButton").addEventListener("click", async () => {
   } catch (error) {
     message(error.message || String(error), true);
   }
+});
+
+el("showArchivedToggle").addEventListener("change", (event) => {
+  showArchived = event.target.checked;
+  renderAll();
 });
 
 el("signOutButton").addEventListener("click", async () => {
