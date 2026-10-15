@@ -332,6 +332,9 @@ function fillDealStages(pipelineId) {
 
 function renderAll() {
   populateFormSelects();
+  renderCustomFieldInputs("customer", el("customerCustomFields"));
+  renderCustomFieldInputs("work_item", el("work_itemCustomFields"));
+  renderCustomFieldInputs("deal", el("dealCustomFields"));
   renderCustomers();
   renderWorkItems();
   renderActivities();
@@ -613,6 +616,65 @@ function renderInvites() {
   });
 }
 
+function renderCustomFieldInputs(entityType, target) {
+  target.replaceChildren();
+  const fields = customFields.filter((field) => field.entity_type === entityType && field.is_active);
+  if (fields.length === 0) return;
+  const heading = document.createElement("fieldset");
+  const legend = document.createElement("legend");
+  legend.textContent = "Поля по сфере деятельности";
+  heading.append(legend);
+  for (const field of fields) {
+    const label = document.createElement("label");
+    label.textContent = field.label + (field.is_required ? " *" : "");
+    let control;
+    if (field.field_type === "boolean") {
+      control = document.createElement("input");
+      control.type = "checkbox";
+    } else if (field.field_type === "select" || field.field_type === "multiselect") {
+      control = document.createElement("select");
+      if (field.field_type === "multiselect") control.multiple = true;
+      if (!field.is_required && field.field_type === "select") addOption(control, "", "— Не выбрано —");
+      const options = Array.isArray(field.options) ? field.options : [];
+      options.forEach((option) => {
+        if (typeof option === "string") addOption(control, option, option);
+        else if (option && typeof option === "object" && option.value != null) addOption(control, option.value, option.label == null ? String(option.value) : String(option.label));
+      });
+    } else {
+      control = document.createElement("input");
+      control.type = field.field_type === "number" ? "number" : field.field_type === "date" ? "date" : field.field_type === "url" ? "url" : "text";
+      if (field.field_type === "number") control.step = "any";
+    }
+    control.dataset.customKey = field.field_key;
+    control.dataset.customType = field.field_type;
+    control.name = "custom_field_" + field.field_key;
+    control.required = Boolean(field.is_required);
+    label.append(control);
+    heading.append(label);
+  }
+  target.append(heading);
+}
+
+function collectCustomData(entityType, rawJson, form) {
+  const result = parseJsonObject(rawJson, "Дополнительные поля");
+  const fields = customFields.filter((field) => field.entity_type === entityType && field.is_active);
+  for (const field of fields) {
+    const control = Array.from(form.querySelectorAll("[data-custom-key]")).find((node) => node.dataset.customKey === field.field_key);
+    if (!control) continue;
+    let value;
+    if (field.field_type === "boolean") value = Boolean(control.checked);
+    else if (field.field_type === "multiselect") value = Array.from(control.selectedOptions).map((option) => option.value).filter(Boolean);
+    else if (field.field_type === "number") value = control.value === "" ? null : Number(control.value);
+    else value = control.value.trim();
+    if (field.is_required && (value === "" || value === null || (Array.isArray(value) && value.length === 0))) {
+      throw new Error("Заполните обязательное поле: " + field.label);
+    }
+    if (value !== "" && value !== null && !(Array.isArray(value) && value.length === 0)) result[field.field_key] = value;
+    else delete result[field.field_key];
+  }
+  return result;
+}
+
 function renderCustomFields() {
   renderTable("customFieldList", ["Сущность", "Поле", "Ключ", "Тип", "Статус"], customFields, (field) => {
     const row = document.createElement("tr");
@@ -744,7 +806,7 @@ submitForm(el("customerForm"), async (values, form) => {
     phone: values.phone.trim() || null,
     email: values.email.trim() || null,
     notes: values.notes.trim() || null,
-    custom_data: parseJsonObject(values.custom_data, "Дополнительные поля"),
+    custom_data: collectCustomData("customer", values.custom_data, form),
     created_by: currentUser.id
   });
   if (error) throw error;
@@ -764,7 +826,7 @@ submitForm(el("workItemForm"), async (values, form) => {
     priority: Number(values.priority),
     assigned_to: values.assigned_to || currentUser.id,
     due_at: values.due_at || null,
-    custom_data: parseJsonObject(values.custom_data, "Дополнительные поля"),
+    custom_data: collectCustomData("work_item", values.custom_data, form),
     created_by: currentUser.id
   }).select("id,title,status").single();
   if (error) throw error;
@@ -810,7 +872,7 @@ submitForm(el("dealForm"), async (values, form) => {
     expected_close_date: values.expected_close_date || null,
     assigned_to: values.assigned_to || currentUser.id,
     description: values.description.trim() || null,
-    custom_data: parseJsonObject(values.custom_data, "Дополнительные поля"),
+    custom_data: collectCustomData("deal", values.custom_data, form),
     created_by: currentUser.id
   });
   if (error) throw error;
