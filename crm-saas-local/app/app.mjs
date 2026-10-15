@@ -438,9 +438,12 @@ function renderCustomers() {
       if (email === null) return;
       const notes = window.prompt("Заметки", customer.notes || "");
       if (notes === null) return;
+      const customDataText = window.prompt("Дополнительные поля JSON", JSON.stringify(customer.custom_data || {}, null, 2));
+      if (customDataText === null) return;
+      const custom_data = parseJsonObject(customDataText, "Дополнительные поля");
       const { error } = await db.from("customers").update({
         display_name: display_name.trim(), company_name: company_name.trim() || null,
-        phone: phone.trim() || null, email: email.trim() || null, notes: notes.trim() || null
+        phone: phone.trim() || null, email: email.trim() || null, notes: notes.trim() || null, custom_data
       }).eq("organization_id", currentOrgId()).eq("id", customer.id);
       if (error) throw error;
       await loadOrgData();
@@ -488,7 +491,10 @@ function renderWorkItems() {
       if (!Number.isInteger(priority) || priority < 1 || priority > 5) throw new Error("Приоритет должен быть целым числом от 1 до 5.");
       const due = window.prompt("Срок (ГГГГ-ММ-ДД), пусто — без срока", item.due_at ? String(item.due_at).slice(0, 10) : "");
       if (due === null) return;
-      const { error } = await db.from("work_items").update({ title: title.trim(), description: description.trim() || null, priority, due_at: due.trim() || null }).eq("organization_id", currentOrgId()).eq("id", item.id);
+      const customDataText = window.prompt("Дополнительные поля JSON", JSON.stringify(item.custom_data || {}, null, 2));
+      if (customDataText === null) return;
+      const custom_data = parseJsonObject(customDataText, "Дополнительные поля");
+      const { error } = await db.from("work_items").update({ title: title.trim(), description: description.trim() || null, priority, due_at: due.trim() || null, custom_data }).eq("organization_id", currentOrgId()).eq("id", item.id);
       if (error) throw error;
       await loadOrgData();
       message("Заявка обновлена.");
@@ -558,7 +564,10 @@ function renderTasks() {
       if (!Number.isInteger(priority) || priority < 1 || priority > 5) throw new Error("Приоритет должен быть целым числом от 1 до 5.");
       const due = window.prompt("Срок (ГГГГ-ММ-ДД), пусто — без срока", task.due_at ? String(task.due_at).slice(0, 10) : "");
       if (due === null) return;
-      const { error } = await db.from("tasks").update({ title: title.trim(), description: description.trim() || null, priority, due_at: due.trim() || null }).eq("organization_id", currentOrgId()).eq("id", task.id);
+      const customDataText = window.prompt("Дополнительные поля JSON", JSON.stringify(task.custom_data || {}, null, 2));
+      if (customDataText === null) return;
+      const custom_data = parseJsonObject(customDataText, "Дополнительные поля");
+      const { error } = await db.from("tasks").update({ title: title.trim(), description: description.trim() || null, priority, due_at: due.trim() || null, custom_data }).eq("organization_id", currentOrgId()).eq("id", task.id);
       if (error) throw error;
       await loadOrgData();
       message("Поручение обновлено.");
@@ -613,7 +622,10 @@ function renderDeals() {
       if (expected === null) return;
       const description = window.prompt("Описание", deal.description || "");
       if (description === null) return;
-      const { error } = await db.from("deals").update({ title: title.trim(), amount, currency: currency.trim().toUpperCase(), expected_close_date: expected.trim() || null, description: description.trim() || null }).eq("organization_id", currentOrgId()).eq("id", deal.id);
+      const customDataText = window.prompt("Дополнительные поля JSON", JSON.stringify(deal.custom_data || {}, null, 2));
+      if (customDataText === null) return;
+      const custom_data = parseJsonObject(customDataText, "Дополнительные поля");
+      const { error } = await db.from("deals").update({ title: title.trim(), amount, currency: currency.trim().toUpperCase(), expected_close_date: expected.trim() || null, description: description.trim() || null, custom_data }).eq("organization_id", currentOrgId()).eq("id", deal.id);
       if (error) throw error;
       await loadOrgData();
       message("Сделка обновлена.");
