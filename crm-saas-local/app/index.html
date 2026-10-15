@@ -77,6 +77,18 @@
           </select>
         </label>
         <p id="organizationInfo"></p>
+        <form id="orgSettingsForm">
+          <fieldset>
+            <legend>Настройки компании</legend>
+            <label>Валюта (ISO-код) <input name="default_currency" pattern="[A-Z]{3}" maxlength="3" value="UZS" required></label>
+            <label>Язык интерфейса
+              <select name="locale"><option value="ru">Русский</option><option value="uz">O‘zbekcha</option><option value="en">English</option></select>
+            </label>
+            <label>Часовой пояс <input name="timezone" maxlength="64" value="Asia/Tashkent" required></label>
+            <label>Дополнительные настройки JSON <textarea name="settings" rows="3">{}</textarea></label>
+            <button type="submit">Сохранить настройки</button>
+          </fieldset>
+        </form>
       </section>
 
       <hr>
@@ -131,6 +143,12 @@
           </fieldset>
         </form>
         <div id="workItemList"></div>
+      </section>
+
+      <hr>
+      <section aria-labelledby="activityHeading">
+        <h3 id="activityHeading">История действий</h3>
+        <div id="activityList"></div>
       </section>
 
       <hr>
