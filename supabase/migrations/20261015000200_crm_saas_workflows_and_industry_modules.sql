@@ -107,7 +107,7 @@ grant select, insert, update on crm_saas.custom_fields to authenticated;
 
 -- A reusable active-membership check. It is intentionally narrowly scoped and
 -- does not expose member lists or private organization data.
-create or replace function crm_saas.is_active_org_member(target_org uuid, target_user uuid)
+create or replace function crm_saas_private.is_active_org_member(target_org uuid, target_user uuid)
 returns boolean
 language sql
 stable
@@ -122,7 +122,7 @@ as $$
       and m.is_active
       and (
         target_user = (select auth.uid())
-        or crm_saas.has_org_role(
+        or crm_saas_private.has_org_role(
           target_org,
           array['owner','admin']::crm_saas.organization_role[]
         )
@@ -130,8 +130,8 @@ as $$
   );
 $;
 
-revoke all on function crm_saas.is_active_org_member(uuid, uuid) from public, anon;
-grant execute on function crm_saas.is_active_org_member(uuid, uuid) to authenticated;
+revoke all on function crm_saas_private.is_active_org_member(uuid, uuid) from public, anon;
+grant execute on function crm_saas_private.is_active_org_member(uuid, uuid) to authenticated;
 
 -- Replace the initial work-item write rules with member-aware rules. Employees
 -- can create work assigned to themselves and edit only work assigned to them.
@@ -142,11 +142,11 @@ create policy work_items_member_insert
 on crm_saas.work_items for insert to authenticated
 with check (
   created_by = (select auth.uid())
-  and crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  and crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
   and (
     (
-      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
-      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+      crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas_private.is_active_org_member(organization_id, assigned_to))
     )
     or assigned_to = (select auth.uid())
   )
@@ -155,18 +155,18 @@ with check (
 create policy work_items_update_assigned_or_admin
 on crm_saas.work_items for update to authenticated
 using (
-  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
   and (
-    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
     or assigned_to = (select auth.uid())
   )
 )
 with check (
-  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
   and (
     (
-      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
-      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+      crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas_private.is_active_org_member(organization_id, assigned_to))
     )
     or assigned_to = (select auth.uid())
   )
@@ -182,8 +182,8 @@ with check (
   and crm_saas.can_access_work_item(organization_id, work_item_id)
   and (
     (
-      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
-      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+      crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas_private.is_active_org_member(organization_id, assigned_to))
     )
     or assigned_to = (select auth.uid())
   )
@@ -197,13 +197,13 @@ create policy pipelines_insert_admin
 on crm_saas.pipelines for insert to authenticated
 with check (
   created_by = (select auth.uid())
-  and crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+  and crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
 );
 
 create policy pipelines_update_admin
 on crm_saas.pipelines for update to authenticated
-using (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]))
-with check (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
+using (crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]))
+with check (crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
 
 create policy pipeline_stages_read_member
 on crm_saas.pipeline_stages for select to authenticated
@@ -211,19 +211,19 @@ using (crm_saas.is_org_member(organization_id));
 
 create policy pipeline_stages_insert_admin
 on crm_saas.pipeline_stages for insert to authenticated
-with check (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
+with check (crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
 
 create policy pipeline_stages_update_admin
 on crm_saas.pipeline_stages for update to authenticated
-using (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]))
-with check (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
+using (crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]))
+with check (crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
 
 create policy deals_read_assigned_or_admin
 on crm_saas.deals for select to authenticated
 using (
-  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
   and (
-    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
     or assigned_to = (select auth.uid())
   )
 );
@@ -232,10 +232,10 @@ create policy deals_insert_member
 on crm_saas.deals for insert to authenticated
 with check (
   created_by = (select auth.uid())
-  and crm_saas.is_active_org_member(organization_id, (select auth.uid()))
-  and crm_saas.is_active_org_member(organization_id, assigned_to)
+  and crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
+  and crm_saas_private.is_active_org_member(organization_id, assigned_to)
   and (
-    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
     or assigned_to = (select auth.uid())
   )
 );
@@ -243,17 +243,17 @@ with check (
 create policy deals_update_assigned_or_admin
 on crm_saas.deals for update to authenticated
 using (
-  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
   and (
-    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
     or assigned_to = (select auth.uid())
   )
 )
 with check (
-  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
-  and crm_saas.is_active_org_member(organization_id, assigned_to)
+  crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
+  and crm_saas_private.is_active_org_member(organization_id, assigned_to)
   and (
-    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
     or assigned_to = (select auth.uid())
   )
 );
@@ -266,22 +266,22 @@ create policy custom_fields_insert_admin
 on crm_saas.custom_fields for insert to authenticated
 with check (
   created_by = (select auth.uid())
-  and crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+  and crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
 );
 
 create policy custom_fields_update_admin
 on crm_saas.custom_fields for update to authenticated
-using (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]))
-with check (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
+using (crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]))
+with check (crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
 
 -- Employees assigned to a customer through a deal should be able to view it too.
 drop policy if exists customers_read_by_work_assignment on crm_saas.customers;
 create policy customers_read_by_assignment
 on crm_saas.customers for select to authenticated
 using (
-  crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+  crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
   or (
-    crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+    crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
     and (
       exists (
         select 1 from crm_saas.work_items w
@@ -319,16 +319,16 @@ create policy customers_member_insert
 on crm_saas.customers for insert to authenticated
 with check (
   created_by = (select auth.uid())
-  and crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  and crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
 );
 
 drop policy if exists customers_admin_update on crm_saas.customers;
 create policy customers_update_assigned_or_admin
 on crm_saas.customers for update to authenticated
 using (
-  crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+  crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
   or (
-    crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+    crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
     and (
       exists (
         select 1 from crm_saas.work_items w
@@ -346,9 +346,9 @@ using (
   )
 )
 with check (
-  crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+  crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
   or (
-    crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+    crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
     and (
       exists (
         select 1 from crm_saas.work_items w
@@ -374,7 +374,7 @@ on crm_saas.tasks for update to authenticated
 using (
   crm_saas.can_access_work_item(organization_id, work_item_id)
   and (
-    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
     or assigned_to = (select auth.uid())
     or assigned_to is null
   )
@@ -383,8 +383,8 @@ with check (
   crm_saas.can_access_work_item(organization_id, work_item_id)
   and (
     (
-      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
-      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+      crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas_private.is_active_org_member(organization_id, assigned_to))
     )
     or assigned_to = (select auth.uid())
     or assigned_to is null
@@ -398,11 +398,11 @@ create policy deals_insert_member
 on crm_saas.deals for insert to authenticated
 with check (
   created_by = (select auth.uid())
-  and crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  and crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
   and (
     (
-      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
-      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+      crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas_private.is_active_org_member(organization_id, assigned_to))
     )
     or assigned_to = (select auth.uid())
   )
@@ -412,18 +412,18 @@ drop policy if exists deals_update_assigned_or_admin on crm_saas.deals;
 create policy deals_update_assigned_or_admin
 on crm_saas.deals for update to authenticated
 using (
-  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
   and (
-    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
     or assigned_to = (select auth.uid())
   )
 )
 with check (
-  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  crm_saas_private.is_active_org_member(organization_id, (select auth.uid()))
   and (
     (
-      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
-      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+      crm_saas_private.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas_private.is_active_org_member(organization_id, assigned_to))
     )
     or assigned_to = (select auth.uid())
   )
