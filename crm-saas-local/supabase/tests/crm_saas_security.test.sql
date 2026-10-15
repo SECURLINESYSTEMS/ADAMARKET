@@ -114,7 +114,9 @@ select is((
     and m.user_id = '10000000-0000-4000-8000-000000000002'
     and m.role = 'owner'
     and m.is_active
-), 1, 'organization creator becomes active owner');
+    and m.email = 'crm-member-a@example.test'
+    and m.display_name = 'crm-member-a@example.test'
+), 1, 'organization creator becomes active owner with readable contact details');
 
 select is((
   select count(*)::int
@@ -174,7 +176,9 @@ select is((
     and m.organization_id = '20000000-0000-4000-8000-000000000001'
     and m.role = 'member'
     and m.is_active
-), 1, 'accepted invite creates the invited membership');
+    and m.email = 'crm-invitee@example.test'
+    and m.display_name = 'crm-invitee@example.test'
+), 1, 'accepted invite creates membership with readable contact details');
 
 select throws_ok(
   $$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
