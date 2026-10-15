@@ -180,7 +180,7 @@ select is((
 ), 1, 'accepted invite creates membership and marks the token as used');
 
 select throws_ok(
-  $select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$,
+  $$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
   '42501', null,
   'invitation token cannot be reused after acceptance'
 );
@@ -188,11 +188,11 @@ select throws_ok(
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $select crm_saas.update_member_role(
+  $$select crm_saas.update_member_role(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000005',
     'admin'::crm_saas.organization_role
-  )$,
+  )$$,
   'owner can promote an invited member to admin'
 );
 select is((
@@ -205,22 +205,22 @@ select is((
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
 select throws_ok(
-  $select crm_saas.set_member_active(
+  $$select crm_saas.set_member_active(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000001',
     false
-  )$,
+  )$$,
   '42501', null,
   'admin cannot deactivate the organization owner'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $select crm_saas.set_member_active(
+  $$select crm_saas.set_member_active(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000002',
     false
-  )$,
+  )$$,
   'owner can deactivate an employee'
 );
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
