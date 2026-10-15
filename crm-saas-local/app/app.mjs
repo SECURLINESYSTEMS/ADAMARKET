@@ -371,6 +371,10 @@ function renderAll() {
   renderCustomFieldInputs("customer", el("customerCustomFields"));
   renderCustomFieldInputs("work_item", el("work_itemCustomFields"));
   renderCustomFieldInputs("deal", el("dealCustomFields"));
+  renderLists();
+}
+
+function renderLists() {
   renderCustomers();
   renderWorkItems();
   renderActivities();
@@ -807,12 +811,12 @@ el("googleLoginButton").addEventListener("click", async () => {
 
 el("showArchivedToggle").addEventListener("change", (event) => {
   showArchived = event.target.checked;
-  renderAll();
+  renderLists();
 });
 
 el("globalSearch").addEventListener("input", (event) => {
   searchText = event.target.value.trim().toLocaleLowerCase();
-  renderAll();
+  renderLists();
 });
 
 el("exportCustomers").addEventListener("click", () => exportCsv("clients.csv", [
