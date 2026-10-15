@@ -76,6 +76,10 @@ try {
   await page.locator("#workItemForm [name=title]").fill("E2E Test Request");
   await page.locator("#workItemForm [name=customer_id]").selectOption({ label: "E2E Test Customer" });
   await page.locator("#workItemForm [name=description]").fill("Browser end-to-end verification");
+  const serviceType = page.locator('#work_itemCustomFields [name="custom_field_service_type"]');
+  await serviceType.waitFor({ state: "visible" });
+  assert.equal(await serviceType.getAttribute("required"), "", "profession-specific required fields must be enforced by the browser");
+  await serviceType.selectOption("Монтаж");
   await page.locator("#workItemForm button[type=submit]").click();
   await waitForStatus("Заявка создана");
   const requestRow = page.locator("#workItemList tr").filter({ hasText: "E2E Test Request" });
