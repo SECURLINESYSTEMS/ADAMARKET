@@ -465,6 +465,43 @@ function renderCustomers() {
   });
 }
 
+function formatBytes(value) {
+  const bytes = Number(value || 0);
+  if (bytes < 1024) return bytes + " Б";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " КБ";
+  return (bytes / (1024 * 1024)).toFixed(1) + " МБ";
+}
+
+async function uploadWorkItemAttachment(item, fileInput) {
+  const file = fileInput.files && fileInput.files[0];
+  if (!file) throw new Error("Сначала выберите файл.");
+  if (file.size < 1) throw new Error("Пустые файлы прикреплять нельзя.");
+  if (file.size > 20 * 1024 * 1024) throw new Error("Максимальный размер файла — 20 МБ.");
+  const safeName = file.name.normalize("NFKD").replace(/[^A-Za-z0-9._-]/g, "_").slice(-100) || "file";
+  const storagePath = currentOrgId() + "/" + item.id + "/" + crypto.randomUUID() + "-" + safeName;
+  const { error: uploadError } = await client.storage.from("crm-files").upload(storagePath, file, {
+    contentType: file.type || "application/octet-stream",
+    upsert: false
+  });
+  if (uploadError) throw uploadError;
+  const { error: metadataError } = await db.from("attachments").insert({
+    organization_id: currentOrgId(),
+    work_item_id: item.id,
+    storage_path: storagePath,
+    original_filename: file.name.slice(0, 255),
+    content_type: file.type || null,
+    size_bytes: file.size,
+    uploaded_by: currentUser.id
+  });
+  if (metadataError) {
+    await client.storage.from("crm-files").remove([storagePath]);
+    throw metadataError;
+  }
+  fileInput.value = "";
+  await loadOrgData();
+  message("Файл прикреплён к заявке.");
+}
+
 function renderWorkItems() {
   const visible = workItems.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.title, row.description, row.status, row.priority, memberName(row.assigned_to), customerName(row.customer_id), row.custom_data]));
   renderTable("workItemList", ["Заявка", "Клиент", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], visible, (item) => {
@@ -518,6 +555,49 @@ function renderWorkItems() {
       await loadOrgData();
       message(log.error ? "Статус обновлён; запись истории не сохранилась: " + log.error.message : "Статус заявки обновлён.");
     }));
+
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.setAttribute("aria-label", "Файл для заявки " + item.title);
+    actionCell.append(fileInput);
+    actionCell.append(makeButton("Загрузить файл", async () => uploadWorkItemAttachment(item, fileInput)));
+
+    const itemAttachments = attachments.filter((attachment) => attachment.work_item_id === item.id);
+    if (itemAttachments.length) {
+      const filesBox = document.createElement("div");
+      const filesTitle = document.createElement("p");
+      filesTitle.textContent = "Файлы (" + itemAttachments.length + ")";
+      filesBox.append(filesTitle);
+      itemAttachments.forEach((attachment) => {
+        const fileRow = document.createElement("p");
+        fileRow.append(makeButton("Открыть: " + attachment.original_filename, async () => {
+          const popup = window.open("about:blank", "_blank");
+          if (!popup) throw new Error("Разрешите открытие новой вкладки для скачивания файла.");
+          const { data, error } = await client.storage.from("crm-files").createSignedUrl(attachment.storage_path, 60);
+          if (error) {
+            popup.close();
+            throw error;
+          }
+          popup.location.href = data.signedUrl;
+        }));
+        const size = document.createElement("span");
+        size.textContent = " (" + formatBytes(attachment.size_bytes) + ")";
+        fileRow.append(size);
+        if (attachment.uploaded_by === currentUser.id || (currentOrg && ["owner", "admin"].includes(currentOrg.role))) {
+          fileRow.append(makeButton("Удалить файл", async () => {
+            if (!window.confirm("Удалить файл «" + attachment.original_filename + "»?")) return;
+            const { error: storageError } = await client.storage.from("crm-files").remove([attachment.storage_path]);
+            if (storageError) throw storageError;
+            const { error: metadataError } = await db.from("attachments").delete().eq("organization_id", currentOrgId()).eq("id", attachment.id);
+            if (metadataError) throw new Error("Файл удалён, но запись вложения не обновилась: " + metadataError.message);
+            await loadOrgData();
+            message("Файл удалён.");
+          }));
+        }
+        filesBox.append(fileRow);
+      });
+      actionCell.append(filesBox);
+    }
     row.append(actionCell);
     return row;
   });
