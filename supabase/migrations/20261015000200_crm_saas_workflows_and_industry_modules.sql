@@ -299,6 +299,136 @@ using (
   )
 );
 
+-- Enforce same-organization assignees at the database constraint layer too.
+alter table crm_saas.work_items
+  add constraint work_items_assigned_member_fkey
+  foreign key (organization_id, assigned_to)
+  references crm_saas.organization_members(organization_id, user_id)
+  on delete set null (assigned_to);
+
+alter table crm_saas.tasks
+  add constraint tasks_assigned_member_fkey
+  foreign key (organization_id, assigned_to)
+  references crm_saas.organization_members(organization_id, user_id)
+  on delete set null (assigned_to);
+
+-- Front-line employees need to create customer records as part of intake.
+-- The record becomes visible to them only when linked to work they are assigned.
+drop policy if exists customers_admin_insert on crm_saas.customers;
+create policy customers_member_insert
+on crm_saas.customers for insert to authenticated
+with check (
+  created_by = (select auth.uid())
+  and crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+);
+
+drop policy if exists customers_admin_update on crm_saas.customers;
+create policy customers_update_assigned_or_admin
+on crm_saas.customers for update to authenticated
+using (
+  crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+  or (
+    crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+    and (
+      exists (
+        select 1 from crm_saas.work_items w
+        where w.organization_id = customers.organization_id
+          and w.customer_id = customers.id
+          and w.assigned_to = (select auth.uid())
+      )
+      or exists (
+        select 1 from crm_saas.deals d
+        where d.organization_id = customers.organization_id
+          and d.customer_id = customers.id
+          and d.assigned_to = (select auth.uid())
+      )
+    )
+  )
+)
+with check (
+  crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+  or (
+    crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+    and (
+      exists (
+        select 1 from crm_saas.work_items w
+        where w.organization_id = customers.organization_id
+          and w.customer_id = customers.id
+          and w.assigned_to = (select auth.uid())
+      )
+      or exists (
+        select 1 from crm_saas.deals d
+        where d.organization_id = customers.organization_id
+          and d.customer_id = customers.id
+          and d.assigned_to = (select auth.uid())
+      )
+    )
+  )
+);
+
+-- Employees may update their own task (or an unassigned task) on accessible
+-- work, but cannot assign tasks to a different person.
+drop policy if exists tasks_update_accessible_item on crm_saas.tasks;
+create policy tasks_update_assigned_or_admin
+on crm_saas.tasks for update to authenticated
+using (
+  crm_saas.can_access_work_item(organization_id, work_item_id)
+  and (
+    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    or assigned_to = (select auth.uid())
+    or assigned_to is null
+  )
+)
+with check (
+  crm_saas.can_access_work_item(organization_id, work_item_id)
+  and (
+    (
+      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+    )
+    or assigned_to = (select auth.uid())
+    or assigned_to is null
+  )
+);
+
+-- Managers may leave a deal unassigned; employees can only create/update their
+-- own assigned deals. Same-organization assignee membership is also FK-enforced.
+drop policy if exists deals_insert_member on crm_saas.deals;
+create policy deals_insert_member
+on crm_saas.deals for insert to authenticated
+with check (
+  created_by = (select auth.uid())
+  and crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  and (
+    (
+      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+    )
+    or assigned_to = (select auth.uid())
+  )
+);
+
+drop policy if exists deals_update_assigned_or_admin on crm_saas.deals;
+create policy deals_update_assigned_or_admin
+on crm_saas.deals for update to authenticated
+using (
+  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  and (
+    crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+    or assigned_to = (select auth.uid())
+  )
+)
+with check (
+  crm_saas.is_active_org_member(organization_id, (select auth.uid()))
+  and (
+    (
+      crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
+      and (assigned_to is null or crm_saas.is_active_org_member(organization_id, assigned_to))
+    )
+    or assigned_to = (select auth.uid())
+  )
+);
+
 -- Available industry modules are data-driven so the same core CRM can serve
 -- service businesses, sales teams, beauty, real estate, education, construction,
 -- logistics, retail and professional services without separate codebases.
