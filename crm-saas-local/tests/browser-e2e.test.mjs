@@ -68,6 +68,11 @@ try {
   await waitForStatus("Клиент сохранён");
   await page.locator("#customerList").getByText("E2E Test Customer", { exact: true }).waitFor();
 
+  const csvDownloadPromise = page.waitForEvent("download");
+  await page.locator("#exportCustomers").click();
+  const csvDownload = await csvDownloadPromise;
+  assert.equal(csvDownload.suggestedFilename(), "clients.csv", "customer CSV export should start a download");
+
   await page.locator("#workItemForm [name=title]").fill("E2E Test Request");
   await page.locator("#workItemForm [name=customer_id]").selectOption({ label: "E2E Test Customer" });
   await page.locator("#workItemForm [name=description]").fill("Browser end-to-end verification");
