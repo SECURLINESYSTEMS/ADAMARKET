@@ -120,8 +120,15 @@ as $$
     where m.organization_id = target_org
       and m.user_id = target_user
       and m.is_active
+      and (
+        target_user = (select auth.uid())
+        or crm_saas.has_org_role(
+          target_org,
+          array['owner','admin']::crm_saas.organization_role[]
+        )
+      )
   );
-$$;
+$;
 
 revoke all on function crm_saas.is_active_org_member(uuid, uuid) from public, anon;
 grant execute on function crm_saas.is_active_org_member(uuid, uuid) to authenticated;
