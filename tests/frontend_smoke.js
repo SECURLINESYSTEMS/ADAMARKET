@@ -38,7 +38,10 @@ assert(script.includes('const ADAMARKET_SUBCATEGORIES='), 'subcategory definitio
 assert(script.includes('name:"Легковые автомобили"'), 'transport subcategories missing');
 assert(script.includes('name:"Спецтехника"'), 'special machinery subcategory missing');
 assert(script.includes('id="filterSubType"'), 'subcategory filter control missing');
+assert(script.includes('id="subCategoryButtons"'), 'visible subcategory buttons missing');
+assert(script.includes('function chooseSubcategory(key)'), 'subcategory button handler missing');
 assert(android.includes('id="filterSubType"'), 'Android subcategory filter control missing');
+assert(android.includes('id="subCategoryButtons"'), 'Android visible subcategory buttons missing');
 assert(!html.includes('id="matchRequest"'), 'free matching panel must be removed from web home');
 assert(!android.includes('id="matchRequest"'), 'free matching panel must be removed from Android home');
 assert(!html.includes('Рекламные форматы в Ташкенте'), 'old advertising formats block must be removed from web home');
