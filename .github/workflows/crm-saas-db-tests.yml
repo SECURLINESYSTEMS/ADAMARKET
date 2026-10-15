@@ -21,6 +21,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check browser client JavaScript syntax
+        run: node --check crm-saas-local/app/app.mjs
+
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v1
         with:
