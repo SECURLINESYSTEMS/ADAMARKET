@@ -31,13 +31,15 @@ assert(/localStorage\.setItem\([\"']adamarket_lang[\"']/.test(script), 'language
 assert(script.includes('uploadListingImages'), 'listing image upload missing');
 assert(script.includes('get_ad_place_contact'), 'listing contact RPC missing');
 assert(!script.includes('/api/ai'), 'AI backend call must stay disabled in beta');
-assert(script.includes('async function submitMatchRequest()'), 'advertiser matching request handler missing');
-assert(script.includes('place_id:null'), 'matching request must work without an existing listing');
-assert(script.includes('const isMatch=!r.place_id'), 'admin should label matching requests without an ad');
-assert(html.includes('id="matchRequest"'), 'web matching request panel missing');
-assert(android.includes('id="matchRequest"'), 'Android matching request panel missing');
-assert(html.includes('2026.10.14.1'), 'web cache freshness version was not bumped');
-assert(/versionCode\s+16/.test(fs.readFileSync('android-demo/app/build.gradle','utf8')), 'Android version code not bumped');
+assert(script.includes('Категории ADAMARKET'), 'general categories heading missing');
+assert(script.includes('Все объявления'), 'all listings section missing');
+assert(script.includes('function categoryMatches(p,key)'), 'category filtering missing');
+assert(!html.includes('id="matchRequest"'), 'free matching panel must be removed from web home');
+assert(!android.includes('id="matchRequest"'), 'free matching panel must be removed from Android home');
+assert(!html.includes('Рекламные форматы в Ташкенте'), 'old advertising formats block must be removed from web home');
+assert(!android.includes('Рекламные форматы в Ташкенте'), 'old advertising formats block must be removed from Android home');
+assert(html.includes('2026.10.15.1'), 'web cache freshness version was not bumped');
+assert(/versionCode\s+17/.test(fs.readFileSync('android-demo/app/build.gradle','utf8')), 'Android version code not bumped');
 for (const f of ['seo/tashkent-obyavleniya.html','seo/bannery.html','seo/billbordy.html','seo/led-ekrany.html','seo/vyveski.html']) {
  const page = fs.readFileSync(f, 'utf8');
  assert(page.includes('"@type":"FAQPage"'), 'SEO FAQ schema missing: ' + f);
