@@ -43,6 +43,6 @@ test("core tables retain tenant ownership and row-level security in the foundati
 
 test("new organizations receive profession-specific starter fields", () => {
   assert.match(industryDefaults, /after insert on crm_saas\.organizations/);
-  assert.match(industryDefaults, /new\\.industry_code = 'beauty'/);
+  assert.ok(industryDefaults.includes("new.industry_code = 'beauty'"));
   assert.match(industryDefaults, /'appointment_date'/);
 });
