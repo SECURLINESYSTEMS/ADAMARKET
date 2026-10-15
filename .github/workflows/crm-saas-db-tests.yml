@@ -1,6 +1,7 @@
 name: CRM SaaS database tests
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - crm-saas-local-foundation
@@ -28,7 +29,10 @@ jobs:
       - name: Start isolated local Supabase stack
         run: supabase start
 
-      - name: Apply local migrations and run pgTAP security tests
+      - name: Reset the disposable local database and apply all migrations
+        run: supabase db reset
+
+      - name: Run pgTAP security tests
         run: supabase test db
 
       - name: Stop local Supabase stack
