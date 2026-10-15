@@ -344,7 +344,7 @@ function renderAll() {
 
 function renderCustomers() {
   const visible = customers.filter((row) => showArchived || !row.archived_at);
-  renderTable("customerList", ["Клиент", "Компания", "Телефон", "Email", "Заметки", "Действия"], visible, (customer) => {
+  renderTable("customerList", ["Клиент", "Компания", "Телефон", "Email", "Заметки", "Состояние", "Действия"], visible, (customer) => {
     const row = document.createElement("tr");
     makeCell(row, customer.display_name);
     makeCell(row, customer.company_name);
