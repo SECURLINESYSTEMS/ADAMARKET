@@ -16,6 +16,7 @@ let organizations = [];
 let members = [];
 let customers = [];
 let workItems = [];
+let activities = [];
 let tasks = [];
 let deals = [];
 let pipelines = [];
@@ -210,7 +211,7 @@ async function refreshForSession(session) {
 
 async function loadOrganizations(preferredId) {
   const { data, error } = await db.from("organization_members")
-    .select("organization_id, role, is_active, display_name, email, phone, organization:organizations(name,slug,industry_code,default_currency,locale,timezone)")
+    .select("organization_id, role, is_active, display_name, email, phone, organization:organizations(name,slug,industry_code,default_currency,locale,timezone,settings)")
     .eq("user_id", currentUser.id)
     .eq("is_active", true)
     .order("joined_at", { ascending: true });
@@ -227,7 +228,8 @@ async function loadOrganizations(preferredId) {
     industry_code: row.organization.industry_code,
     default_currency: row.organization.default_currency,
     locale: row.organization.locale,
-    timezone: row.organization.timezone
+    timezone: row.organization.timezone,
+    settings: row.organization.settings || {}
   }));
 
   const select = el("organizationSelect");
@@ -235,6 +237,7 @@ async function loadOrganizations(preferredId) {
   if (organizations.length === 0) {
     addOption(select, "", "Нет доступных компаний");
     currentOrg = null;
+    fillOrgSettingsForm();
     el("organizationInfo").textContent = "Создайте компанию или откройте ссылку-приглашение после входа.";
     await loadOrgData();
     return;
@@ -248,13 +251,24 @@ async function loadOrganizations(preferredId) {
     "; валюта: " + currentOrg.default_currency +
     "; язык: " + currentOrg.locale +
     "; часовой пояс: " + currentOrg.timezone;
+  fillOrgSettingsForm();
   await loadOrgData();
+}
+
+function fillOrgSettingsForm() {
+  const form = el("orgSettingsForm");
+  const canManage = currentOrg && ["owner", "admin"].includes(currentOrg.role);
+  form.elements.default_currency.value = currentOrg ? (currentOrg.default_currency || "UZS") : "UZS";
+  form.elements.locale.value = currentOrg ? (currentOrg.locale || "ru") : "ru";
+  form.elements.timezone.value = currentOrg ? (currentOrg.timezone || "Asia/Tashkent") : "Asia/Tashkent";
+  form.elements.settings.value = JSON.stringify(currentOrg ? (currentOrg.settings || {}) : {}, null, 2);
+  Array.from(form.elements).forEach((control) => { control.disabled = !canManage; });
 }
 
 async function loadOrgData() {
   const orgId = currentOrg ? currentOrg.organization_id : null;
   if (!orgId) {
-    members = []; customers = []; workItems = []; tasks = []; deals = [];
+    members = []; customers = []; workItems = []; activities = []; tasks = []; deals = [];
     pipelines = []; stages = []; invites = []; customFields = [];
     renderAll();
     return;
@@ -263,6 +277,7 @@ async function loadOrgData() {
     db.from("organization_members").select("user_id,role,is_active,display_name,email,phone,joined_at").eq("organization_id", orgId).order("joined_at", { ascending: true }),
     db.from("customers").select("id,display_name,phone,email,company_name,notes,custom_data,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("work_items").select("id,customer_id,title,description,status,priority,assigned_to,due_at,custom_data,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
+    db.from("activity_log").select("id,work_item_id,actor_id,activity_type,details,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("tasks").select("id,work_item_id,title,description,status,priority,assigned_to,due_at,completed_at,custom_data,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("deals").select("id,pipeline_id,stage_id,customer_id,title,amount,currency,expected_close_date,assigned_to,description,custom_data,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("pipelines").select("id,name,is_default").eq("organization_id", orgId).order("created_at", { ascending: true }),
@@ -272,7 +287,7 @@ async function loadOrgData() {
   ]);
   const firstError = results.find((result) => result.error);
   if (firstError) throw firstError.error;
-  [members, customers, workItems, tasks, deals, pipelines, stages, invites, customFields] = results.map((result) => result.data || []);
+  [members, customers, workItems, activities, tasks, deals, pipelines, stages, invites, customFields] = results.map((result) => result.data || []);
   renderAll();
 }
 
@@ -319,6 +334,7 @@ function renderAll() {
   populateFormSelects();
   renderCustomers();
   renderWorkItems();
+  renderActivities();
   renderTasks();
   renderDeals();
   renderMembers();
@@ -364,6 +380,20 @@ function renderWorkItems() {
       message(log.error ? "Статус обновлён; запись истории не сохранилась: " + log.error.message : "Статус заявки обновлён.");
     }));
     row.append(actionCell);
+    return row;
+  });
+}
+
+function renderActivities() {
+  const rows = activities;
+  renderTable("activityList", ["Дата", "Действие", "Заявка", "Кто"], rows, (activity) => {
+    const row = document.createElement("tr");
+    makeCell(row, activity.created_at ? new Date(activity.created_at).toLocaleString() : "");
+    const details = activity.details && typeof activity.details === "object" ? activity.details : {};
+    makeCell(row, activity.activity_type + (details.title ? ": " + details.title : "") + (details.status ? " — " + details.status : ""));
+    const work = workItems.find((item) => item.id === activity.work_item_id);
+    makeCell(row, work ? work.title : String(activity.work_item_id).slice(0, 8));
+    makeCell(row, memberName(activity.actor_id));
     return row;
   });
 }
@@ -561,6 +591,7 @@ submitForm(el("createOrgForm"), async (values) => {
 
 el("organizationSelect").addEventListener("change", async (event) => {
   currentOrg = organizations.find((org) => org.organization_id === event.target.value) || null;
+  fillOrgSettingsForm();
   if (currentOrg) {
     el("organizationInfo").textContent =
       "Сфера: " + currentOrg.industry_code +
@@ -574,6 +605,19 @@ el("organizationSelect").addEventListener("change", async (event) => {
   } catch (error) {
     message(error.message || String(error), true);
   }
+});
+
+submitForm(el("orgSettingsForm"), async (values) => {
+  const { error } = await db.from("organizations").update({
+    default_currency: values.default_currency.trim().toUpperCase(),
+    locale: values.locale,
+    timezone: values.timezone.trim(),
+    settings: parseJsonObject(values.settings, "Настройки компании")
+  }).eq("id", currentOrgId());
+  if (error) throw error;
+  const selectedId = currentOrgId();
+  await loadOrganizations(selectedId);
+  message("Настройки компании сохранены.");
 });
 
 submitForm(el("customerForm"), async (values, form) => {
