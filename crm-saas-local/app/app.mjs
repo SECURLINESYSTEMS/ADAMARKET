@@ -186,7 +186,8 @@ function exportCsv(filename, columns, rows) {
   document.body.append(anchor);
   anchor.click();
   anchor.remove();
-  URL.revokeObjectURL(url);
+  // Keep the object URL alive long enough for mobile browsers to begin the download.
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   message("CSV-файл подготовлен: " + filename);
 }
 
