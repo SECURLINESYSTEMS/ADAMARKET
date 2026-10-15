@@ -427,7 +427,6 @@ function renderCustomers() {
 function renderWorkItems() {
   const visible = workItems.filter((row) => (showArchived || !row.archived_at) && matchesSearch([row.title, row.description, row.status, row.priority, memberName(row.assigned_to), customerName(row.customer_id), row.custom_data]));
   renderTable("workItemList", ["Заявка", "Клиент", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], visible, (item) => {
-  renderTable("workItemList", ["Заявка", "Клиент", "Статус", "Приоритет", "Ответственный", "Срок", "Действие"], workItems, (item) => {
     const row = document.createElement("tr");
     makeCell(row, item.title);
     makeCell(row, customerName(item.customer_id));
