@@ -14,16 +14,11 @@ This directory is a **local-only development scaffold** for the planned CRM SaaS
 From the repository root:
 
 ```bash
-npm install
-npx supabase start
-```
-
-If the CLI is not yet installed in this repository, install it first:
-
-```bash
 npm install --save-dev supabase
 npx supabase start
 ```
+
+If the CLI is already installed in this repository, run only `npx supabase start`. Otherwise install it first with the commands above.
 
 The first start downloads container images and can take several minutes. The CLI prints local URLs and credentials. Supabase Studio is normally available at `http://127.0.0.1:54323`.
 
