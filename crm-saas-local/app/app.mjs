@@ -162,7 +162,9 @@ function matchesSearch(values) {
 }
 
 function csvCell(value) {
-  const text = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+  let text = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+  // Prevent spreadsheet formula execution from user-controlled cell values.
+  if (/^[=+\\-@\\t\\r]/.test(text)) text = "'" + text;
   return '"' + text.replace(/"/g, '""') + '"';
 }
 
