@@ -44,7 +44,7 @@ assert(!android.includes('id="matchRequest"'), 'free matching panel must be remo
 assert(!html.includes('Рекламные форматы в Ташкенте'), 'old advertising formats block must be removed from web home');
 assert(!android.includes('Рекламные форматы в Ташкенте'), 'old advertising formats block must be removed from Android home');
 assert(html.includes('2026.10.15.2'), 'web cache freshness version was not bumped');
-assert(/versionCode\s+17/.test(fs.readFileSync('android-demo/app/build.gradle','utf8')), 'Android version code not bumped');
+assert(/versionCode\\s+18/.test(fs.readFileSync('android-demo/app/build.gradle','utf8')), 'Android version code not bumped');
 for (const f of ['seo/tashkent-obyavleniya.html','seo/bannery.html','seo/billbordy.html','seo/led-ekrany.html','seo/vyveski.html']) {
  const page = fs.readFileSync(f, 'utf8');
  assert(page.includes('"@type":"FAQPage"'), 'SEO FAQ schema missing: ' + f);
