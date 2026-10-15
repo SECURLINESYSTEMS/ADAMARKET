@@ -1,6 +1,6 @@
 begin;
 
-select plan(40);
+select plan(46);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -187,9 +187,51 @@ select throws_ok(
 );
 
 
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
+select throws_ok(
+  $select * from crm_saas.create_invite(
+    '20000000-0000-4000-8000-000000000001',
+    'unauthorized@example.test',
+    null,
+    'member'::crm_saas.organization_role
+  )$,
+  '42501', null,
+  'ordinary employee cannot invite another user'
+);
+select throws_ok(
+  $select crm_saas.update_member_role(
+    '20000000-0000-4000-8000-000000000001',
+    '10000000-0000-4000-8000-000000000003',
+    'admin'::crm_saas.organization_role
+  )$,
+  '42501', null,
+  'ordinary employee cannot change a coworker role'
+);
+select throws_ok(
+  $select crm_saas.set_member_active(
+    '20000000-0000-4000-8000-000000000001',
+    '10000000-0000-4000-8000-000000000003',
+    false
+  )$,
+  '42501', null,
+  'ordinary employee cannot disable a coworker account'
+);
+
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
+select throws_ok(
+  $select * from crm_saas.create_invite(
+    '20000000-0000-4000-8000-000000000001',
+    'owner-role@example.test',
+    null,
+    'owner'::crm_saas.organization_role
+  )$,
+  '22023', null,
+  'owner role cannot be granted through an invitation'
+);
+
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $$select crm_saas.update_member_role(
+  $select crm_saas.update_member_role(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000005',
     'admin'::crm_saas.organization_role
@@ -235,6 +277,14 @@ select ok(
 select ok(
   not crm_saas_private.can_access_crm_file('20000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000001/report.pdf'),
   'employee cannot access files for coworker work'
+);
+select ok(
+  not crm_saas_private.can_access_crm_file('20000000-0000-4000-8000-000000000002/40000000-0000-4000-8000-000000000003/report.pdf'),
+  'employee cannot access files belonging to another company'
+);
+select ok(
+  not crm_saas_private.can_access_crm_file('not-a-company/not-a-work-item/report.pdf'),
+  'private file policy rejects malformed storage paths'
 );
 
 reset role;
