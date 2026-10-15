@@ -20,18 +20,7 @@ alter table crm_saas.tasks
   add column if not exists custom_data jsonb not null default '{}'::jsonb
     check (jsonb_typeof(custom_data) = 'object');
 
--- Enforce that assignments always point to a member of the same organization.
-alter table crm_saas.work_items
-  add constraint work_items_assigned_member_fkey
-  foreign key (organization_id, assigned_to)
-  references crm_saas.organization_members(organization_id, user_id)
-  on delete set null (assigned_to);
-
-alter table crm_saas.tasks
-  add constraint tasks_assigned_member_fkey
-  foreign key (organization_id, assigned_to)
-  references crm_saas.organization_members(organization_id, user_id)
-  on delete set null (assigned_to);
+-- Assignment foreign keys are created in the workflow migration before this one.
 
 -- Database-managed timestamps prevent stale updated_at values from clients.
 create or replace function crm_saas_private.set_updated_at()
