@@ -15,9 +15,9 @@ This directory is a **local-only development scaffold** for the planned CRM SaaS
 - Single-use, seven-day email/phone invitations bound to the invitee's confirmed Supabase identity; automatic email/SMS delivery is not yet wired.
 - Industry modules selected per company, so the same core can be configured for service/installation, sales, beauty, real estate, education, construction, logistics, retail or professional services.
 - Secure organization onboarding that creates the owner membership and a default sales pipeline.
-- RLS helper functions kept in the non-exposed `crm_saas_private` schema. Only the intentional onboarding RPC is exposed in `crm_saas`.
+- RLS helper functions kept in the non-exposed `crm_saas_private` schema. Organization onboarding, invitation and team-management RPCs are exposed in `crm_saas` with explicit role checks.
 
-This is a backend foundation, not yet a complete production application. The frontend, invitations/team management, file upload, audit completeness, recovery rehearsal and end-to-end user flows still need implementation and verification.
+This is a backend foundation, not yet a complete production application. The frontend, automatic email/SMS delivery, file upload, complete audit coverage, recovery rehearsal and end-to-end user flows still need implementation and verification.
 
 ## Requirements
 
@@ -53,6 +53,8 @@ The pgTAP test suite in `supabase/tests/crm_saas_security.test.sql` uses synthet
 - cross-company records are hidden;
 - employees can create work assigned to themselves and register customers;
 - employees cannot assign work or tasks to coworkers;
+- owners can promote/demote non-owner members; admins can manage member activation but cannot manage the owner or other admins;
+- deactivated employees lose access to company work;
 - an authenticated user can create a company through the onboarding function;
 - invitations are single-use, cannot be claimed by another account and cannot be reused after acceptance;
 - onboarding creates the owner membership, default pipeline and stages;
@@ -78,7 +80,7 @@ The `crm_saas` schema is separate from ADAMARKET's existing `public` tables. It 
 Before connecting real customer data:
 1. Confirm all local migrations and pgTAP tests pass.
 2. Complete UI/Auth integration and test owner, admin and employee flows end-to-end.
-3. Add reviewed team invitation and membership lifecycle flows.
+3. Wire email/SMS delivery for invitation links and test the full invitation and membership lifecycle.
 4. Run Supabase security/performance advisors against the isolated test environment and resolve all CRM-specific findings.
 5. Verify backup/restore for the existing project and rehearse a rollback.
 6. Obtain explicit approval for any production migration or cutover.
