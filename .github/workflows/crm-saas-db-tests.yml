@@ -28,7 +28,7 @@ jobs:
 
       - name: Start isolated local Supabase stack
         working-directory: crm-saas-local
-        run: supabase start
+        run: supabase start --exclude studio,edge-runtime,logflare,vector,imgproxy
 
       - name: Reset the disposable local database and apply all migrations
         working-directory: crm-saas-local
