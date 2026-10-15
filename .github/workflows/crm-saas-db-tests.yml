@@ -51,6 +51,41 @@ jobs:
         working-directory: crm-saas-local
         run: supabase test db
 
+      - name: Install Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Configure browser client for local Supabase
+        working-directory: crm-saas-local
+        shell: bash
+        run: |
+          STATUS="$(supabase status -o env)"
+          API_URL="$(printf '%s\n' "$STATUS" | sed -n 's/^API_URL=//p' | tr -d '"')"
+          ANON_KEY="$(printf '%s\n' "$STATUS" | sed -n 's/^ANON_KEY=//p' | tr -d '"')"
+          test -n "$API_URL"
+          test -n "$ANON_KEY"
+          printf 'window.CRM_CONFIG = { supabaseUrl: "%s", publishableKey: "%s" };\n' "$API_URL" "$ANON_KEY" > app/config.js
+
+      - name: Start static browser app
+        run: |
+          python3 -m http.server 3000 --directory crm-saas-local/app > /tmp/crm-saas-http.log 2>&1 &
+          echo $! > /tmp/crm-saas-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/crm-saas-http.log
+          exit 1
+
+      - name: Run authenticated browser end-to-end tests
+        run: node crm-saas-local/tests/browser-e2e.test.mjs
+
+      - name: Stop static browser app
+        if: always()
+        run: |
+          if [ -f /tmp/crm-saas-http.pid ]; then kill "$(cat /tmp/crm-saas-http.pid)" || true; fi
+
       - name: Stop local Supabase stack
         if: always() && steps.setup_cli.outcome == 'success'
         working-directory: crm-saas-local
