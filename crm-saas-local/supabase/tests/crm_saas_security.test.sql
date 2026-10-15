@@ -1,6 +1,6 @@
 begin;
 
-select plan(36);
+select plan(38);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -230,6 +230,8 @@ select is((select count(*)::int from crm_saas.work_items), 0, 'deactivated emplo
 reset role;
 
 select has_table('crm_saas', 'attachments', 'private attachment metadata table exists');
+select ok(exists(select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'crm_files_upload_accessible_work'), 'private file uploads have a Storage RLS policy');
+select ok(exists(select 1 from storage.buckets where id = 'crm-files' and public = false), 'CRM file bucket is private');
 select has_column('crm_saas', 'attachments', 'storage_path', 'attachments record a private storage path');
 
 select has_column('crm_saas', 'customers', 'custom_data', 'customers support profession-specific custom fields');
