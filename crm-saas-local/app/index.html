@@ -112,8 +112,6 @@
             <label>Email <input name="email" type="email"></label>
             <label>Заметки <textarea name="notes" rows="2"></textarea></label>
             <div id="customerCustomFields"></div>
-            <div id="work_itemCustomFields"></div>
-            <div id="dealCustomFields"></div>
             <label>Дополнительные поля JSON <textarea name="custom_data" rows="2">{}</textarea></label>
             <button type="submit">Сохранить клиента</button>
           </fieldset>
@@ -151,6 +149,7 @@
             </label>
             <label>Ответственный <select name="assigned_to"></select></label>
             <label>Срок <input name="due_at" type="date"></label>
+            <div id="work_itemCustomFields"></div>
             <label>Дополнительные поля JSON <textarea name="custom_data" rows="2">{}</textarea></label>
             <button type="submit">Создать заявку</button>
           </fieldset>
@@ -205,6 +204,7 @@
             <label>Ожидаемая дата закрытия <input name="expected_close_date" type="date"></label>
             <label>Описание <textarea name="description" rows="2"></textarea></label>
             <label>Ответственный <select name="assigned_to"></select></label>
+            <div id="dealCustomFields"></div>
             <label>Дополнительные поля JSON <textarea name="custom_data" rows="2">{}</textarea></label>
             <button type="submit">Создать сделку</button>
           </fieldset>
