@@ -56,16 +56,23 @@ test("attachments use a private bucket and tenant-aware storage policies", () =>
 });
 
 test("profession-specific inputs live inside the matching entity form", () => {
-  const forms = {
-    customer: html.match(/<form id="customerForm">([\\s\\S]*?)<\\/form>/)?.[1] || "",
-    work_item: html.match(/<form id="workItemForm">([\\s\\S]*?)<\\/form>/)?.[1] || "",
-    deal: html.match(/<form id="dealForm">([\\s\\S]*?)<\\/form>/)?.[1] || ""
+  const formBody = (formId) => {
+    const openingTag = '<form id="' + formId + '">';
+    const start = html.indexOf(openingTag);
+    assert.notEqual(start, -1, "form not found: " + formId);
+    const bodyStart = start + openingTag.length;
+    const end = html.indexOf("</form>", bodyStart);
+    assert.notEqual(end, -1, "form closing tag not found: " + formId);
+    return html.slice(bodyStart, end);
   };
-  assert.ok(forms.customer.includes('id="customerCustomFields"'), "customer fields must be inside customerForm");
-  assert.ok(forms.work_item.includes('id="work_itemCustomFields"'), "work-item fields must be inside workItemForm");
-  assert.ok(forms.deal.includes('id="dealCustomFields"'), "deal fields must be inside dealForm");
-  assert.ok(!forms.customer.includes('id="work_itemCustomFields"'), "work-item fields must not be captured by customerForm");
-  assert.ok(!forms.customer.includes('id="dealCustomFields"'), "deal fields must not be captured by customerForm");
+  const customer = formBody("customerForm");
+  const workItem = formBody("workItemForm");
+  const deal = formBody("dealForm");
+  assert.ok(customer.includes('id="customerCustomFields"'), "customer fields must be inside customerForm");
+  assert.ok(workItem.includes('id="work_itemCustomFields"'), "work-item fields must be inside workItemForm");
+  assert.ok(deal.includes('id="dealCustomFields"'), "deal fields must be inside dealForm");
+  assert.ok(!customer.includes('id="work_itemCustomFields"'), "work-item fields must not be captured by customerForm");
+  assert.ok(!customer.includes('id="dealCustomFields"'), "deal fields must not be captured by customerForm");
 });
 
 test("CSV download object URL is not revoked before the browser can start downloading", () => {
