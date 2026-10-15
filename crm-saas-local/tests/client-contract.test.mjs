@@ -54,3 +54,16 @@ test("attachments use a private bucket and tenant-aware storage policies", () =>
   assert.match(attachments, /can_access_crm_file\(name\)/);
   assert.match(attachments, /file_size_limit = excluded.file_size_limit/);
 });
+
+test("profession-specific inputs live inside the matching entity form", () => {
+  const forms = {
+    customer: html.match(/<form id="customerForm">([\\s\\S]*?)<\\/form>/)?.[1] || "",
+    work_item: html.match(/<form id="workItemForm">([\\s\\S]*?)<\\/form>/)?.[1] || "",
+    deal: html.match(/<form id="dealForm">([\\s\\S]*?)<\\/form>/)?.[1] || ""
+  };
+  assert.ok(forms.customer.includes('id="customerCustomFields"'), "customer fields must be inside customerForm");
+  assert.ok(forms.work_item.includes('id="work_itemCustomFields"'), "work-item fields must be inside workItemForm");
+  assert.ok(forms.deal.includes('id="dealCustomFields"'), "deal fields must be inside dealForm");
+  assert.ok(!forms.customer.includes('id="work_itemCustomFields"'), "work-item fields must not be captured by customerForm");
+  assert.ok(!forms.customer.includes('id="dealCustomFields"'), "deal fields must not be captured by customerForm");
+});
