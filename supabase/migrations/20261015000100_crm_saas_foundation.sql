@@ -54,7 +54,7 @@ create table crm_saas.work_items (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   foreign key (organization_id, customer_id)
-    references crm_saas.customers(organization_id, id) on delete set null
+    references crm_saas.customers(organization_id, id) on delete set null (customer_id)
 );
 
 create table crm_saas.tasks (
@@ -186,6 +186,17 @@ alter table crm_saas.activity_log enable row level security;
 alter table crm_saas.industry_modules enable row level security;
 alter table crm_saas.organization_modules enable row level security;
 
+-- The schema is exposed through the local API, but row access remains controlled by RLS.
+grant usage on schema crm_saas to authenticated;
+grant select, update on crm_saas.organizations to authenticated;
+grant select on crm_saas.organization_members to authenticated;
+grant select, insert, update on crm_saas.customers to authenticated;
+grant select, insert, update on crm_saas.work_items to authenticated;
+grant select, insert, update on crm_saas.tasks to authenticated;
+grant select, insert on crm_saas.activity_log to authenticated;
+grant select on crm_saas.industry_modules to authenticated;
+grant select, insert, update on crm_saas.organization_modules to authenticated;
+
 create policy organizations_read_member
 on crm_saas.organizations for select to authenticated
 using (crm_saas.is_org_member(id));
@@ -202,10 +213,8 @@ using (
   or crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[])
 );
 
-create policy organization_members_admin_manage
-on crm_saas.organization_members for all to authenticated
-using (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]))
-with check (crm_saas.has_org_role(organization_id, array['owner','admin']::crm_saas.organization_role[]));
+-- Membership writes are intentionally not exposed to client roles yet.
+-- Add a reviewed server-side invite/onboarding flow before enabling them.
 
 create policy customers_read_by_work_assignment
 on crm_saas.customers for select to authenticated
