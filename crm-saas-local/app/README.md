@@ -24,7 +24,13 @@ This is an intentionally plain, unstyled browser client for exercising the CRM s
 
 4. Open `http://127.0.0.1:3000`. Local email sign-in links are available in Mailpit at `http://127.0.0.1:54324`.
 
-5. To run database tests:
+5. To run browser-to-schema contract checks from the repository root:
+
+   ```bash
+   node --test crm-saas-local/tests/client-contract.test.mjs
+   ```
+
+6. To run database tests:
 
    ```bash
    cd crm-saas-local
