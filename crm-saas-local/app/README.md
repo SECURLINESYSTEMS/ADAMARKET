@@ -34,12 +34,12 @@ This is an intentionally plain, unstyled browser client for exercising the CRM s
 ## Implemented browser workflows
 
 - Email magic-link, phone OTP and Google OAuth entry points (the provider must be configured in local/hosted Auth settings).
-- Company creation and selection.
+- Company creation, selection and settings (currency, language, timezone and JSON settings).
 - Create/list customers, work items, tasks and deals.
 - Update work-item status, task status and deal stage.
 - Team invitations by confirmed email or phone, invitation-link copying, role changes and member activation controls.
 - Custom fields and JSON metadata for profession-specific data.
-- Activity entries when work items are created or their status changes.
+- Activity history, with entries when work items are created or their status changes.
 
 ## Current limitations
 
