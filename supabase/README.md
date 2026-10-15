@@ -11,6 +11,8 @@ This directory is a **local-only development scaffold** for the planned CRM SaaS
 - Request/work-item lifecycle, task ownership and activity history.
 - Deal pipelines with configurable stages, amounts, currency and expected close dates.
 - Organization-defined custom fields for customers, requests and deals.
+- Company-level industry, currency, timezone, locale and settings.
+- Single-use, seven-day email/phone invitations bound to the invitee's confirmed Supabase identity; automatic email/SMS delivery is not yet wired.
 - Industry modules selected per company, so the same core can be configured for service/installation, sales, beauty, real estate, education, construction, logistics, retail or professional services.
 - Secure organization onboarding that creates the owner membership and a default sales pipeline.
 - RLS helper functions kept in the non-exposed `crm_saas_private` schema. Only the intentional onboarding RPC is exposed in `crm_saas`.
@@ -49,6 +51,7 @@ The pgTAP test suite in `supabase/tests/crm_saas_security.test.sql` uses synthet
 - employees can create work assigned to themselves and register customers;
 - employees cannot assign work or tasks to coworkers;
 - an authenticated user can create a company through the onboarding function;
+- invitations are single-use and cannot be claimed by another account;
 - onboarding creates the owner membership, default pipeline and stages;
 - employees cannot promote themselves to owner.
 
