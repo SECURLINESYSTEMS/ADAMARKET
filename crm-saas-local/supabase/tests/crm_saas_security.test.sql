@@ -1,6 +1,6 @@
 begin;
 
-select plan(38);
+select plan(40);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -226,6 +226,16 @@ select lives_ok(
 );
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select is((select count(*)::int from crm_saas.work_items), 0, 'deactivated employee loses access to company work');
+
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000003', true);
+select ok(
+  crm_saas_private.can_access_crm_file('20000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000002/report.pdf'),
+  'employee can access files for assigned work'
+);
+select ok(
+  not crm_saas_private.can_access_crm_file('20000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000001/report.pdf'),
+  'employee cannot access files for coworker work'
+);
 
 reset role;
 
