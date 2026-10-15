@@ -1,6 +1,21 @@
-# CRM SaaS — local Supabase development
+# CRM SaaS — isolated local Supabase development
 
 This directory is a **local-only development scaffold** for the planned CRM SaaS. It is not connected to ADAMARKET production and must not be linked to the production Supabase project.
+
+## What the technical foundation includes
+
+- Multi-company accounts with owner/admin/member roles.
+- Tenant isolation through row-level security (RLS).
+- Employee access limited to requests, tasks and deals assigned to them.
+- Customer records visible to managers and to employees through their assigned work.
+- Request/work-item lifecycle, task ownership and activity history.
+- Deal pipelines with configurable stages, amounts, currency and expected close dates.
+- Organization-defined custom fields for customers, requests and deals.
+- Industry modules selected per company, so the same core can be configured for service/installation, sales, beauty, real estate, education, construction, logistics, retail or professional services.
+- Secure organization onboarding that creates the owner membership and a default sales pipeline.
+- RLS helper functions kept in the non-exposed `crm_saas_private` schema. Only the intentional onboarding RPC is exposed in `crm_saas`.
+
+This is a backend foundation, not yet a complete production application. The frontend, invitations/team management, file upload, audit completeness, recovery rehearsal and end-to-end user flows still need implementation and verification.
 
 ## Requirements
 
@@ -14,11 +29,9 @@ This directory is a **local-only development scaffold** for the planned CRM SaaS
 From the repository root:
 
 ```bash
-npm install --save-dev supabase
 npx supabase start
+npx supabase test db
 ```
-
-If the CLI is already installed in this repository, run only `npx supabase start`. Otherwise install it first with the commands above.
 
 The first start downloads container images and can take several minutes. The CLI prints local URLs and credentials. Supabase Studio is normally available at `http://127.0.0.1:54323`.
 
@@ -28,17 +41,38 @@ To stop the local stack without deleting its data:
 npx supabase stop
 ```
 
+## Automated security tests
+
+The pgTAP test suite in `supabase/tests/crm_saas_security.test.sql` uses synthetic users and companies. It checks:
+- employees can see only assigned work, related customers, tasks and deals;
+- cross-company records are hidden;
+- employees can create work assigned to themselves and register customers;
+- employees cannot assign work or tasks to coworkers;
+- an authenticated user can create a company through the onboarding function;
+- onboarding creates the owner membership, default pipeline and stages;
+- employees cannot promote themselves to owner.
+
+GitHub Actions runs the local Supabase migration/test flow on the isolated branch and pull request. A test is not considered passed until the workflow result is green.
+
 ## Safety rules
 
 - Do not run `supabase link` against the production ADAMARKET project.
 - Do not run `supabase db push` against any hosted project for this scaffold.
 - Never commit production credentials, service-role keys, access tokens, or real customer data.
 - Use synthetic test users and data only.
-- The migration here is a draft foundation and must be tested locally before any cloud deployment is considered.
+- The migrations are drafts until they pass the local CI workflow and receive review.
 - Production deployment requires a separate explicit approval.
 
-## Initial migration
+## Data model
 
-The first migration defines the logical multi-tenant CRM core and row-level security (RLS). It is intentionally separate from ADAMARKET's existing CRM tables and uses the `crm_saas` schema.
+The `crm_saas` schema is separate from ADAMARKET's existing `public` tables. It is intended to support organizations, members, customers, work items, tasks, activity log, pipelines, stages, deals, custom fields and per-organization industry modules. Existing marketplace tables, Auth users, storage buckets and data are not removed or modified by this scaffold.
 
-To reset the local database and reapply migrations only when you are comfortable losing local test data, use the Supabase CLI documentation first and make a backup if needed.
+## Production readiness gates
+
+Before connecting real customer data:
+1. Confirm all local migrations and pgTAP tests pass.
+2. Complete UI/Auth integration and test owner, admin and employee flows end-to-end.
+3. Add reviewed team invitation and membership lifecycle flows.
+4. Run Supabase security/performance advisors against the isolated test environment and resolve all CRM-specific findings.
+5. Verify backup/restore for the existing project and rehearse a rollback.
+6. Obtain explicit approval for any production migration or cutover.
