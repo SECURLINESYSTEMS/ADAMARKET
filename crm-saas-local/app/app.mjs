@@ -164,7 +164,7 @@ function matchesSearch(values) {
 function csvCell(value) {
   let text = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
   // Prevent spreadsheet formula execution from user-controlled cell values.
-  if (["=", "+", "-", "@", "\\t", "\\r"].includes(text[0])) text = "'" + text;
+  if (["=", "+", "-", "@"].includes(text[0]) || text.charCodeAt(0) === 9 || text.charCodeAt(0) === 13) text = "'" + text;
   return '"' + text.replace(/"/g, '""') + '"';
 }
 
