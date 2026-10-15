@@ -1032,13 +1032,17 @@ submitForm(el("inviteForm"), async (values, form) => {
 });
 
 submitForm(el("customFieldForm"), async (values, form) => {
+  const options = parseJsonArray(values.options, "Варианты");
+  if (["select", "multiselect"].includes(values.field_type) && options.length === 0) {
+    throw new Error("Для поля со списком добавьте хотя бы один вариант.");
+  }
   const { error } = await db.from("custom_fields").insert({
     organization_id: currentOrgId(),
     entity_type: values.entity_type,
     field_key: values.field_key.trim(),
     label: values.label.trim(),
     field_type: values.field_type,
-    options: parseJsonArray(values.options, "Варианты"),
+    options,
     is_required: new FormData(form).has("is_required"),
     is_active: true,
     created_by: currentUser.id
