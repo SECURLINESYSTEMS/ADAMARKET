@@ -31,7 +31,9 @@ This is a backend foundation, not yet a complete production application. The fro
 From the repository root:
 
 ```bash
+cd crm-saas-local
 npx supabase start
+npx supabase db reset
 npx supabase test db
 ```
 
@@ -40,6 +42,7 @@ The first start downloads container images and can take several minutes. The CLI
 To stop the local stack without deleting its data:
 
 ```bash
+cd crm-saas-local
 npx supabase stop
 ```
 
