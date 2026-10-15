@@ -1,6 +1,6 @@
 begin;
 
-select plan(20);
+select plan(21);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -178,6 +178,12 @@ select is((
     and i.invitee_email = 'crm-invitee@example.test'
     and i.accepted_at is not null
 ), 1, 'accepted invite creates membership and marks the token as used');
+
+select throws_ok(
+  $select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$,
+  '42501', null,
+  'invitation token cannot be reused after acceptance'
+);
 
 
 select * from finish();
