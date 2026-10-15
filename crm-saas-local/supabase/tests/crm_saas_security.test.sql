@@ -1,6 +1,6 @@
 begin;
 
-select plan(34);
+select plan(36);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -228,6 +228,9 @@ select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002
 select is((select count(*)::int from crm_saas.work_items), 0, 'deactivated employee loses access to company work');
 
 reset role;
+
+select has_table('crm_saas', 'attachments', 'private attachment metadata table exists');
+select has_column('crm_saas', 'attachments', 'storage_path', 'attachments record a private storage path');
 
 select has_column('crm_saas', 'customers', 'custom_data', 'customers support profession-specific custom fields');
 select has_column('crm_saas', 'work_items', 'custom_data', 'work items support profession-specific custom fields');
