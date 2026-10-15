@@ -7,6 +7,7 @@ const app = readFileSync(new URL("../app/app.mjs", import.meta.url), "utf8");
 const foundation = readFileSync(new URL("../supabase/migrations/20261015000100_crm_saas_foundation.sql", import.meta.url), "utf8");
 const workflow = readFileSync(new URL("../supabase/migrations/20261015000200_crm_saas_workflows_and_industry_modules.sql", import.meta.url), "utf8");
 const metadata = readFileSync(new URL("../supabase/migrations/20261015000600_crm_saas_metadata_and_archiving.sql", import.meta.url), "utf8");
+const industryDefaults = readFileSync(new URL("../supabase/migrations/20261015000700_crm_saas_industry_defaults.sql", import.meta.url), "utf8");
 
 test("every DOM id referenced by the browser client exists in the HTML", () => {
   const htmlIds = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]));
@@ -38,4 +39,10 @@ test("core tables retain tenant ownership and row-level security in the foundati
   for (const table of ["pipelines", "pipeline_stages", "deals", "custom_fields"]) {
     assert.match(workflow, new RegExp("alter table crm_saas\\." + table + " enable row level security"));
   }
+});
+
+test("new organizations receive profession-specific starter fields", () => {
+  assert.match(industryDefaults, /after insert on crm_saas\\.organizations/);
+  assert.match(industryDefaults, /new\\.industry_code = 'beauty'/);
+  assert.match(industryDefaults, /'appointment_date'/);
 });
