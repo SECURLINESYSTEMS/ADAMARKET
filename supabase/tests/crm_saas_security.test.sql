@@ -1,6 +1,6 @@
 begin;
 
-select plan(16);
+select plan(20);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -10,7 +10,8 @@ values
   ('10000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'crm-owner-a@example.test', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
   ('10000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'crm-member-a@example.test', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
   ('10000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'crm-member-b@example.test', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
-  ('10000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'crm-owner-b@example.test', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now());
+  ('10000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'crm-owner-b@example.test', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
+  ('10000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'crm-invitee@example.test', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now());
 
 insert into crm_saas.organizations (id, name, slug, created_by)
 values
@@ -130,10 +131,50 @@ select is((
   where o.slug = 'crm-onboarding-test'
 ), 5, 'onboarding creates five default pipeline stages');
 
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
+select lives_ok(
+  $select set_config(
+    'crm.test_invite_token',
+    (select i.invite_token
+     from crm_saas.create_invite(
+       '20000000-0000-4000-8000-000000000001',
+       'crm-invitee@example.test',
+       null,
+       'member'::crm_saas.organization_role
+     ) as i),
+    true
+  )$,
+  'owner can create a single-use invitation for a confirmed email identity'
+);
+
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $$update crm_saas.organization_members set role = 'owner'
+  $select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$,
+  '42501', null,
+  'invitation cannot be claimed by a different account'
+);
+
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
+select lives_ok(
+  $select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$,
+  'invited user can accept using their confirmed email account'
+);
+select is((
+  select count(*)::int
+  from crm_saas.organization_members m
+  join crm_saas.organization_invites i on i.organization_id = m.organization_id
+  where m.user_id = '10000000-0000-4000-8000-000000000005'
+    and m.organization_id = '20000000-0000-4000-8000-000000000001'
+    and m.role = 'member'
+    and m.is_active
+    and i.invitee_email = 'crm-invitee@example.test'
+    and i.accepted_at is not null
+), 1, 'accepted invite creates membership and marks the token as used');
+
+select throws_ok(
+  $update crm_saas.organization_members set role = 'owner'
     where organization_id = '20000000-0000-4000-8000-000000000001'
-      and user_id = '10000000-0000-4000-8000-000000000002'$$,
+      and user_id = '10000000-0000-4000-8000-000000000002'$,
   '42501', null,
   'employee cannot promote themselves to owner'
 );
