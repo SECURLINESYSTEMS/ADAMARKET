@@ -5896,12 +5896,12 @@ begin
   end if;
 
   if v_invite.invitee_email is not null and (
-    v_email_confirmed is null or lower(v_email) <> v_invite.invitee_email
+    v_email_confirmed is null or v_email is null or lower(v_email) <> v_invite.invitee_email
   ) then
     raise exception 'Sign in with the confirmed email address that was invited' using errcode = '42501';
   end if;
   if v_invite.invitee_phone is not null and (
-    v_phone_confirmed is null or v_phone <> v_invite.invitee_phone
+    v_phone_confirmed is null or v_phone is null or v_phone <> v_invite.invitee_phone
   ) then
     raise exception 'Sign in with the confirmed phone number that was invited' using errcode = '42501';
   end if;
