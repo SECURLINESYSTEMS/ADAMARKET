@@ -53,7 +53,6 @@ This is an intentionally plain, unstyled browser client for exercising the CRM s
 ## Current limitations
 
 - The app intentionally has no visual design system; that work comes after the technical flows are verified.
-- Invitation links are generated but not sent automatically by email/SMS.
-- The client only uses public Auth credentials and relies on database RLS/RPC checks for authorization. The frontend is not a security boundary.
 - Invitation links are generated but not sent automatically by email/SMS; automated delivery, richer audit coverage, production deployment and browser end-to-end tests remain outstanding.
+- The client only uses public Auth credentials and relies on database RLS/RPC checks for authorization. The frontend is not a security boundary.
 - Archiving is reversible and does not hard-delete records. Access to edits and archive operations remains enforced by database RLS.
