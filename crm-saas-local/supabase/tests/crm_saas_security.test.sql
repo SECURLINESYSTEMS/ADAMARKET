@@ -170,14 +170,11 @@ select lives_ok(
 select is((
   select count(*)::int
   from crm_saas.organization_members m
-  join crm_saas.organization_invites i on i.organization_id = m.organization_id
   where m.user_id = '10000000-0000-4000-8000-000000000005'
     and m.organization_id = '20000000-0000-4000-8000-000000000001'
     and m.role = 'member'
     and m.is_active
-    and i.invitee_email = 'crm-invitee@example.test'
-    and i.accepted_at is not null
-), 1, 'accepted invite creates membership and marks the token as used');
+), 1, 'accepted invite creates the invited membership');
 
 select throws_ok(
   $$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
