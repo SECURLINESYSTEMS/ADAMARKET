@@ -34,8 +34,16 @@ async function waitForMailLink() {
   throw new Error("Timed out waiting for the Supabase magic-link email in Mailpit");
 }
 
+async function waitForText(selector, text) {
+  await page.waitForFunction(
+    ({ selector, text }) => document.querySelector(selector)?.textContent?.includes(text),
+    { selector, text },
+    { timeout: 15_000 }
+  );
+}
+
 async function waitForStatus(text) {
-  await page.locator("#status").getByText(text, { exact: false }).waitFor({ state: "visible", timeout: 15_000 });
+  await waitForText("#status", text);
 }
 
 try {
@@ -52,7 +60,7 @@ try {
   await page.locator("#createOrgForm [name=industry_code]").selectOption("service_installation");
   await page.locator("#createOrgForm button[type=submit]").click();
   await waitForStatus("Компания создана");
-  await assert.doesNotReject(() => page.locator("#organizationInfo").getByText("service_installation", { exact: false }).waitFor());
+  await waitForText("#organizationInfo", "service_installation");
 
   await page.locator("#customerForm [name=display_name]").fill("E2E Test Customer");
   await page.locator("#customerForm [name=phone]").fill("+998901112233");
