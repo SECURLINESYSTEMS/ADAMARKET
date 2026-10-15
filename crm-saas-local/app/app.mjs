@@ -17,6 +17,7 @@ let members = [];
 let customers = [];
 let workItems = [];
 let activities = [];
+let attachments = [];
 let tasks = [];
 let deals = [];
 let pipelines = [];
@@ -306,7 +307,7 @@ function fillOrgSettingsForm() {
 async function loadOrgData() {
   const orgId = currentOrg ? currentOrg.organization_id : null;
   if (!orgId) {
-    members = []; customers = []; workItems = []; activities = []; tasks = []; deals = [];
+    members = []; customers = []; workItems = []; activities = []; attachments = []; tasks = []; deals = [];
     pipelines = []; stages = []; invites = []; customFields = [];
     renderAll();
     return;
@@ -316,6 +317,7 @@ async function loadOrgData() {
     db.from("customers").select("id,display_name,phone,email,company_name,notes,custom_data,archived_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("work_items").select("id,customer_id,title,description,status,priority,assigned_to,due_at,custom_data,archived_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("activity_log").select("id,work_item_id,actor_id,activity_type,details,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
+    db.from("attachments").select("id,organization_id,work_item_id,storage_path,original_filename,content_type,size_bytes,uploaded_by,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(200),
     db.from("tasks").select("id,work_item_id,title,description,status,priority,assigned_to,due_at,completed_at,custom_data,archived_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("deals").select("id,pipeline_id,stage_id,customer_id,title,amount,currency,expected_close_date,assigned_to,description,custom_data,archived_at,created_at").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(100),
     db.from("pipelines").select("id,name,is_default").eq("organization_id", orgId).order("created_at", { ascending: true }),
@@ -325,7 +327,7 @@ async function loadOrgData() {
   ]);
   const firstError = results.find((result) => result.error);
   if (firstError) throw firstError.error;
-  [members, customers, workItems, activities, tasks, deals, pipelines, stages, invites, customFields] = results.map((result) => result.data || []);
+  [members, customers, workItems, activities, attachments, tasks, deals, pipelines, stages, invites, customFields] = results.map((result) => result.data || []);
   renderAll();
 }
 
