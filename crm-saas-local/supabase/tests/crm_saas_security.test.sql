@@ -1,6 +1,6 @@
 begin;
 
-select plan(32);
+select plan(34);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -13,10 +13,10 @@ values
   ('10000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'crm-owner-b@example.test', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now()),
   ('10000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'crm-invitee@example.test', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now());
 
-insert into crm_saas.organizations (id, name, slug, created_by)
+insert into crm_saas.organizations (id, name, slug, created_by, industry_code)
 values
-  ('20000000-0000-4000-8000-000000000001', 'Test Company A', 'test-company-a', '10000000-0000-4000-8000-000000000001'),
-  ('20000000-0000-4000-8000-000000000002', 'Test Company B', 'test-company-b', '10000000-0000-4000-8000-000000000004');
+  ('20000000-0000-4000-8000-000000000001', 'Test Company A', 'test-company-a', '10000000-0000-4000-8000-000000000001', 'professional_services'),
+  ('20000000-0000-4000-8000-000000000002', 'Test Company B', 'test-company-b', '10000000-0000-4000-8000-000000000004', 'beauty');
 
 insert into crm_saas.organization_members (organization_id, user_id, role, is_active)
 values
@@ -233,6 +233,19 @@ select ok(has_column('crm_saas', 'customers', 'archived_at'), 'customers support
 select ok(has_column('crm_saas', 'work_items', 'archived_at'), 'work items support reversible archiving');
 select ok(has_column('crm_saas', 'tasks', 'archived_at'), 'tasks support reversible archiving');
 select ok(has_column('crm_saas', 'deals', 'archived_at'), 'deals support reversible archiving');
+
+select ok(exists(
+  select 1 from crm_saas.custom_fields
+  where organization_id = '20000000-0000-4000-8000-000000000001'
+    and entity_type = 'work_item' and field_key = 'service_type'
+), 'professional services company receives starter service fields');
+
+select ok(exists(
+  select 1 from crm_saas.custom_fields
+  where organization_id = '20000000-0000-4000-8000-000000000002'
+    and entity_type = 'work_item' and field_key = 'appointment_date'
+    and field_type = 'date'
+), 'beauty company receives profession-specific appointment field');
 
 select * from finish();
 rollback;
