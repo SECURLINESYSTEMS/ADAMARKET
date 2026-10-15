@@ -103,7 +103,7 @@ select is((select count(*)::int from crm_saas.work_items), 3, 'owner sees all wo
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select lives_ok(
-  $$select crm_saas.create_organization('Onboarding test company', 'crm-onboarding-test', 'professional_services')$$,
+  $$$select crm_saas.create_organization('Onboarding test company', 'crm-onboarding-test', 'professional_services')$$,
   'authenticated user can create an organization through the safe onboarding function'
 );
 select is((
@@ -143,7 +143,7 @@ select throws_ok(
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $$select set_config(
+  $$$select set_config(
     'crm.test_invite_token',
     (select i.invite_token
      from crm_saas.create_invite(
@@ -159,14 +159,14 @@ select lives_ok(
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
+  $$$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
   '42501', null,
   'invitation cannot be claimed by a different account'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
 select lives_ok(
-  $$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
+  $$$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
   'invited user can accept using their confirmed email account'
 );
 select is((
@@ -181,7 +181,7 @@ select is((
 ), 1, 'accepted invite creates membership with readable contact details');
 
 select throws_ok(
-  $$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
+  $$$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
   '42501', null,
   'invitation token cannot be reused after acceptance'
 );
@@ -189,49 +189,49 @@ select throws_ok(
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $select * from crm_saas.create_invite(
+  $$select * from crm_saas.create_invite(
     '20000000-0000-4000-8000-000000000001',
     'unauthorized@example.test',
     null,
     'member'::crm_saas.organization_role
-  )$,
+  )$$,
   '42501', null,
   'ordinary employee cannot invite another user'
 );
 select throws_ok(
-  $select crm_saas.update_member_role(
+  $$select crm_saas.update_member_role(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000003',
     'admin'::crm_saas.organization_role
-  )$,
+  )$$,
   '42501', null,
   'ordinary employee cannot change a coworker role'
 );
 select throws_ok(
-  $select crm_saas.set_member_active(
+  $$select crm_saas.set_member_active(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000003',
     false
-  )$,
+  )$$,
   '42501', null,
   'ordinary employee cannot disable a coworker account'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select throws_ok(
-  $select * from crm_saas.create_invite(
+  $$select * from crm_saas.create_invite(
     '20000000-0000-4000-8000-000000000001',
     'owner-role@example.test',
     null,
     'owner'::crm_saas.organization_role
-  )$,
+  )$$,
   '22023', null,
   'owner role cannot be granted through an invitation'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $select crm_saas.update_member_role(
+  $$select crm_saas.update_member_role(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000005',
     'admin'::crm_saas.organization_role
@@ -248,7 +248,7 @@ select is((
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
 select throws_ok(
-  $$select crm_saas.set_member_active(
+  $$$select crm_saas.set_member_active(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000001',
     false
@@ -259,7 +259,7 @@ select throws_ok(
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $$select crm_saas.set_member_active(
+  $$$select crm_saas.set_member_active(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000002',
     false
