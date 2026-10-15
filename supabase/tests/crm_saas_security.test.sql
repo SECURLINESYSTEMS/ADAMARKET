@@ -79,20 +79,20 @@ select lives_ok(
 );
 
 select throws_ok(
-  $insert into crm_saas.work_items (organization_id, title, assigned_to, created_by)
-    values ('20000000-0000-4000-8000-000000000001', 'Unauthorized assignment', '10000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002')$,
+  $$insert into crm_saas.work_items (organization_id, title, assigned_to, created_by)
+    values ('20000000-0000-4000-8000-000000000001', 'Unauthorized assignment', '10000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002')$$,
   '42501', null,
   'employee cannot assign work to another employee'
 );
 
 select lives_ok(
-  $insert into crm_saas.customers (organization_id, display_name, created_by)
-    values ('20000000-0000-4000-8000-000000000001', 'Customer created by employee', '10000000-0000-4000-8000-000000000002')$,
+  $$insert into crm_saas.customers (organization_id, display_name, created_by)
+    values ('20000000-0000-4000-8000-000000000001', 'Customer created by employee', '10000000-0000-4000-8000-000000000002')$$,
   'employee can register a customer during intake'
 );
 
 select throws_ok(
-  $update crm_saas.tasks set assigned_to = '10000000-0000-4000-8000-000000000003'
+  $$update crm_saas.tasks set assigned_to = '10000000-0000-4000-8000-000000000003'
     where id = '50000000-0000-4000-8000-000000000001'$,
   '42501', null,
   'employee cannot reassign a task to a coworker'
@@ -131,9 +131,17 @@ select is((
   where o.slug = 'crm-onboarding-test'
 ), 5, 'onboarding creates five default pipeline stages');
 
+select throws_ok(
+  $$update crm_saas.organization_members set role = 'owner'
+    where organization_id = '20000000-0000-4000-8000-000000000001'
+      and user_id = '10000000-0000-4000-8000-000000000002'$,
+  '42501', null,
+  'employee cannot promote themselves to owner'
+);
+
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select lives_ok(
-  $select set_config(
+  $$select set_config(
     'crm.test_invite_token',
     (select i.invite_token
      from crm_saas.create_invite(
@@ -143,20 +151,20 @@ select lives_ok(
        'member'::crm_saas.organization_role
      ) as i),
     true
-  )$,
+  )$$,
   'owner can create a single-use invitation for a confirmed email identity'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$,
+  $$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
   '42501', null,
   'invitation cannot be claimed by a different account'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
 select lives_ok(
-  $select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$,
+  $$select crm_saas.accept_invite(current_setting('crm.test_invite_token'))$$,
   'invited user can accept using their confirmed email account'
 );
 select is((
@@ -171,13 +179,6 @@ select is((
     and i.accepted_at is not null
 ), 1, 'accepted invite creates membership and marks the token as used');
 
-select throws_ok(
-  $update crm_saas.organization_members set role = 'owner'
-    where organization_id = '20000000-0000-4000-8000-000000000001'
-      and user_id = '10000000-0000-4000-8000-000000000002'$,
-  '42501', null,
-  'employee cannot promote themselves to owner'
-);
 
 select * from finish();
 rollback;
