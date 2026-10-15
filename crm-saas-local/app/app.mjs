@@ -799,7 +799,14 @@ function renderCustomFieldInputs(entityType, target) {
     } else if (field.field_type === "select" || field.field_type === "multiselect") {
       control = document.createElement("select");
       if (field.field_type === "multiselect") control.multiple = true;
-      if (!field.is_required && field.field_type === "select") addOption(control, "", "— Не выбрано —");
+      if (field.field_type === "select") {
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = field.is_required ? "— Выберите вариант —" : "— Не выбрано —";
+        emptyOption.selected = true;
+        if (field.is_required) emptyOption.disabled = true;
+        control.append(emptyOption);
+      }
       const options = Array.isArray(field.options) ? field.options : [];
       options.forEach((option) => {
         if (typeof option === "string") addOption(control, option, option);
