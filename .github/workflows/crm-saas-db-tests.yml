@@ -7,6 +7,7 @@ on:
     branches:
       - crm-saas-local-foundation
       - docs/crm-saas-audit-and-roadmap
+      - main
   push:
     branches:
       - crm-saas-local-foundation
