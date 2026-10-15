@@ -293,7 +293,6 @@ async function loadOrgData() {
 
 function populateFormSelects() {
   const customerOptions = customers.map((row) => ({ id: row.id, label: row.display_name }));
-  ["customerForm"].forEach(() => {});
   fillSelect(el("workItemForm").elements.customer_id, customerOptions.map((row) => ({ id: row.id, display_name: row.label })), "id", (row) => row.display_name, "Без привязки к клиенту");
   fillSelect(el("dealForm").elements.customer_id, customerOptions.map((row) => ({ id: row.id, display_name: row.label })), "id", (row) => row.display_name, "Без привязки к клиенту");
 
@@ -306,7 +305,7 @@ function populateFormSelects() {
     el("taskForm").elements.assigned_to,
     el("dealForm").elements.assigned_to
   ];
-  assigneeSelects.forEach((select) => fillSelect(select, assignees, "user_id", memberName, null));
+  assigneeSelects.forEach((select) => fillSelect(select, assignees, "user_id", (row) => memberName(row.user_id), null));
   assigneeSelects.forEach((select) => {
     if (Array.from(select.options).some((option) => option.value === currentUser.id)) select.value = currentUser.id;
   });
