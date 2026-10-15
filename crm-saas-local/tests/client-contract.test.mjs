@@ -67,3 +67,7 @@ test("profession-specific inputs live inside the matching entity form", () => {
   assert.ok(!forms.customer.includes('id="work_itemCustomFields"'), "work-item fields must not be captured by customerForm");
   assert.ok(!forms.customer.includes('id="dealCustomFields"'), "deal fields must not be captured by customerForm");
 });
+
+test("CSV download object URL is not revoked before the browser can start downloading", () => {
+  assert.match(app, /window\.setTimeout\(\(\) => URL\.revokeObjectURL\(url\), 1000\)/);
+});
