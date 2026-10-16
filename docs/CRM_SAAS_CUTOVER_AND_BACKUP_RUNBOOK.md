@@ -62,12 +62,24 @@ This refresh used read-only Supabase project inspection and SQL. It did not modi
 - [ ] Export deployment configuration where the host supports it; separately document DNS records and domain ownership settings.
 
 ### B. Supabase database
-- [ ] In Supabase Dashboard, inspect Database → Backups and record available backup timestamps and retention.
-- [ ] Determine whether a downloadable backup includes database data, schema, roles/privileges and extensions, and whether point-in-time recovery is enabled for this plan.
-- [ ] Create an independent logical export using the supported Supabase/Postgres backup route, covering required schemas and table data. Store it outside GitHub in access-controlled storage.
-- [ ] Preserve migration history and a schema-only export.
-- [ ] Capture table counts and relevant referential-integrity checks before any cutover.
-- [ ] Never export or expose password hashes, auth tokens, or secrets in logs or reports.
+- [ ] In Supabase Dashboard, inspect Database → Backups and record available backup timestamps and retention. Managed database backups do **not** include the actual Storage object bytes.
+- [ ] Determine whether the project exposes downloadable backups or uses physical backups/PITR. Do not assume a dashboard backup is a portable SQL file.
+- [ ] On a trusted workstation with the current Supabase CLI and PostgreSQL client installed, create a new backup directory **outside the Git repository** with restricted filesystem permissions. Read the current CLI help before running commands.
+- [ ] Obtain the source connection string privately from Supabase Dashboard → Connect. Set it in a local shell variable such as `SOURCE_DB_URL`; never paste the real value into chat, GitHub, issue comments, terminal transcripts, or committed scripts.
+- [ ] Using the current Supabase backup guide, export roles, schema and data as separate files. The documented CLI command shapes are:
+
+  ```sh
+  supabase db dump --db-url "$SOURCE_DB_URL" -f roles.sql --role-only
+  supabase db dump --db-url "$SOURCE_DB_URL" -f schema.sql
+  supabase db dump --db-url "$SOURCE_DB_URL" -f data.sql --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
+  ```
+
+  Run these from the protected backup directory; adapt exclusions only after reviewing the installed CLI help and the source schema. Do not upload these dumps to this repository because they may contain private customer data.
+- [ ] Preserve migration history (`supabase_migrations` schema and data) separately as described in the official backup guide, and record extension/settings requirements. Review whether custom objects exist in `auth` or `storage` that need a separate schema/policy export.
+- [ ] Capture table counts and referential-integrity checks before restore; compare them after restore.
+- [ ] Never export or expose password hashes, auth tokens, database passwords, or other secrets in logs or reports.
+
+Official procedure: [Supabase backup and restore using the CLI](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore).
 
 ### C. Auth and Storage
 - [ ] Inventory auth providers, redirect URLs, SMTP configuration, auth templates and relevant project settings. Store secret values only in an approved secret manager, if a secure export is supported.
