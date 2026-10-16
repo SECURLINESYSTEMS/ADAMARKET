@@ -99,7 +99,7 @@ select throws_ok(
 );
 
 select throws_ok(
-  $insert into crm_saas.customers (organization_id, display_name, created_by)
+  $$insert into crm_saas.customers (organization_id, display_name, created_by)
     values ('20000000-0000-4000-8000-000000000002', 'Cross-tenant customer attempt', '10000000-0000-4000-8000-000000000002')$$,
   '42501', null,
   'employee cannot create a customer in another company'
