@@ -392,31 +392,72 @@ function renderLists() {
 
 function renderSummary() {
   const target = el("summaryStats");
+  target.replaceChildren();
+  const addStat = (label, value, note = "") => {
+    const card = document.createElement("article");
+    card.className = "stat-card";
+    const title = document.createElement("span");
+    title.className = "stat-label";
+    title.textContent = label;
+    const number = document.createElement("strong");
+    number.className = "stat-value";
+    number.textContent = String(value);
+    card.append(title, number);
+    if (note) {
+      const detail = document.createElement("span");
+      detail.className = "stat-note";
+      detail.textContent = note;
+      card.append(detail);
+    }
+    target.append(card);
+  };
+
   if (!currentOrg) {
-    target.textContent = "Выберите или создайте компанию, чтобы увидеть сводку.";
+    const empty = document.createElement("p");
+    empty.className = "summary-empty";
+    empty.textContent = "Выберите или создайте компанию, чтобы увидеть сводку.";
+    target.append(empty);
     return;
   }
+
   const activeCustomers = customers.filter((row) => !row.archived_at).length;
   const activeWork = workItems.filter((row) => !row.archived_at);
   const openWork = activeWork.filter((row) => !["completed", "cancelled"].includes(row.status)).length;
   const activeTasks = tasks.filter((row) => !row.archived_at);
   const openTasks = activeTasks.filter((row) => !["done", "cancelled"].includes(row.status)).length;
-  const today = new Date().toISOString().slice(0, 10);
-  const overdue = [...activeWork, ...activeTasks].filter((row) => row.due_at && String(row.due_at).slice(0, 10) < today && !["completed", "cancelled", "done"].includes(row.status)).length;
+  let today = new Date().toISOString().slice(0, 10);
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: currentOrg.timezone || "Asia/Tashkent",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(new Date());
+    const part = (type) => parts.find((item) => item.type === type)?.value;
+    today = part("year") + "-" + part("month") + "-" + part("day");
+  } catch {
+    // Keep the UTC date fallback if the saved timezone is invalid.
+  }
+  const overdue = [...activeWork, ...activeTasks].filter((row) =>
+    row.due_at &&
+    String(row.due_at).slice(0, 10) < today &&
+    !["completed", "cancelled", "done"].includes(row.status)
+  ).length;
   const activeDeals = deals.filter((row) => !row.archived_at);
   const totals = {};
   activeDeals.forEach((deal) => {
-    const currency = deal.currency || "UZS";
+    const currency = deal.currency || currentOrg.default_currency || "UZS";
     totals[currency] = (totals[currency] || 0) + Number(deal.amount || 0);
   });
   const dealTotals = Object.keys(totals).length
     ? Object.entries(totals).map(([currency, amount]) => amount.toLocaleString() + " " + currency).join(", ")
-    : "нет активных сделок";
-  target.textContent = "Клиенты: " + activeCustomers +
-    " · Открытые заявки: " + openWork +
-    " · Незавершённые поручения: " + openTasks +
-    " · Просроченные задачи: " + overdue +
-    " · Сумма сделок: " + dealTotals;
+    : "Нет активных сделок";
+
+  addStat("Клиенты", activeCustomers, "Активная база");
+  addStat("Открытые заявки", openWork, "В работе");
+  addStat("Незавершённые задачи", openTasks, "Требуют внимания");
+  addStat("Просрочено", overdue, overdue ? "Нужна проверка" : "Нет просрочки");
+  addStat("Сумма сделок", dealTotals, "Активные сделки");
 }
 
 function renderCustomers() {
