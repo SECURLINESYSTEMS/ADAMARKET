@@ -54,6 +54,11 @@
     #organizationInfo{color:var(--muted);font-size:13px}
     #summaryStats{display:flex;flex-wrap:wrap;gap:10px}
     #summaryStats>*{flex:1 1 130px}
+    .stat-card{display:flex;flex-direction:column;gap:7px;min-width:0;padding:16px;background:#fff;border:1px solid var(--line);border-radius:12px}
+    .stat-label{color:var(--muted);font-size:12px;font-weight:700}
+    .stat-value{font-size:clamp(20px,2vw,28px);line-height:1.25;letter-spacing:-.035em;overflow-wrap:anywhere}
+    .stat-note{color:var(--muted);font-size:12px}
+    .summary-empty{flex-basis:100%;margin:0;color:var(--muted)}
     table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
     th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
     th{background:#f7f9fc;color:#475467;font-weight:700;white-space:nowrap}
@@ -186,7 +191,7 @@
       <hr>
       <section aria-labelledby="summaryHeading">
         <h3 id="summaryHeading">Рабочая сводка</h3>
-        <p id="summaryStats" aria-live="polite">Выберите компанию, чтобы увидеть сводку.</p>
+        <div id="summaryStats" aria-live="polite" aria-label="Показатели компании"><p class="summary-empty">Выберите компанию, чтобы увидеть сводку.</p></div>
       </section>
 
       <hr>
