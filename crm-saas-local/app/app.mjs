@@ -966,7 +966,7 @@ function setupWorkspaceNavigation() {
   const activate = (hash, updateHash = false) => {
     const targetId = String(hash || "#summaryHeading").replace(/^#/, "");
     const heading = el(targetId);
-    const targetSection = heading?.closest("section[aria-labelledby], details.crm-settings");
+    const targetSection = heading?.closest("details.crm-settings") || heading?.closest("section[aria-labelledby]");
     const fallback = el("summaryHeading")?.closest("section[aria-labelledby]");
     const activeSection = sections.includes(targetSection) ? targetSection : fallback;
     sections.forEach((section) => { section.hidden = section !== activeSection; });
