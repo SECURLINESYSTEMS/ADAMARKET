@@ -151,7 +151,7 @@
           <fieldset>
             <legend>Создать компанию</legend>
             <label>Название <input name="name" maxlength="160" required></label>
-            <label>Короткий адрес (латиница) <input name="slug" pattern="[a-z0-9][a-z0-9-]{1,62}[a-z0-9]" placeholder="my-company" required></label>
+            <label>Короткий адрес компании <input name="slug" pattern="[a-z0-9][a-z0-9-]{1,62}[a-z0-9]" placeholder="будет создан автоматически" minlength="3" maxlength="64" required><small>Заполняется автоматически латиницей из названия. При необходимости можно изменить вручную.</small></label>
             <label>Сфера деятельности
               <select name="industry_code" required>
                 <option value="professional_services">Профессиональные услуги</option>
