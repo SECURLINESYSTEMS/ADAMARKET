@@ -118,6 +118,15 @@ try {
   await archivedCustomer.getByRole("button", { name: "Восстановить" }).click();
   await waitForStatus("Клиент восстановлен");
 
+  await page.locator('#inviteForm [name="invitee_email"]').fill("crm-e2e-invitee@example.test");
+  await page.locator('#inviteForm [name="role"]').selectOption("member");
+  await page.locator('#inviteForm button[type=submit]').click();
+  await waitForStatus("Приглашение создано");
+  const inviteResult = page.locator("#inviteResult");
+  await inviteResult.getByText("?invite=", { exact: false }).waitFor();
+  assert.match(await inviteResult.textContent(), /crm-e2e-invitee@example\.test|invite=/,
+    "invitation should produce a shareable one-time link without sending email automatically");
+
   assert.deepEqual(pageErrors, [], "browser should not raise uncaught JavaScript errors");
   console.log("CRM browser E2E passed: email auth, company setup, customer/request/task/deal CRUD, private attachment upload, archive and restore.");
 } finally {
