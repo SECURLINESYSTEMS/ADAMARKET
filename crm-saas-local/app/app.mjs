@@ -1188,7 +1188,7 @@ submitForm(el("customFieldForm"), async (values, form) => {
 async function boot() {
   if (!client) {
     setAppVisibility(false);
-    message("Настройте crm-saas-local/app/config.js: укажите локальный Supabase URL и publishable key. Не используйте service-role key.", true);
+    message("CRM временно недоступна: проверьте подключение и настройки системы.", true);
     return;
   }
   const { data, error } = await client.auth.getSession();
