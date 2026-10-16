@@ -405,6 +405,56 @@ function renderLists() {
   renderCustomFields();
 }
 
+function renderDashboardActivity() {
+  const target = el("dashboardActivity");
+  if (!target) return;
+  target.replaceChildren();
+  if (!currentOrg) {
+    const empty = document.createElement("p");
+    empty.className = "summary-empty";
+    empty.textContent = "Выберите компанию, чтобы увидеть последние действия.";
+    target.append(empty);
+    return;
+  }
+  const recent = [...activities].sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || ""))).slice(0, 4);
+  if (!recent.length) {
+    const empty = document.createElement("p");
+    empty.className = "summary-empty";
+    empty.textContent = "Пока нет записей активности.";
+    target.append(empty);
+    return;
+  }
+  const labels = {
+    status_changed: "Изменён статус",
+    work_item_created: "Создана заявка",
+    work_item_updated: "Обновлена заявка",
+    file_uploaded: "Загружен файл",
+    file_deleted: "Удалён файл"
+  };
+  recent.forEach((activity) => {
+    const row = document.createElement("div");
+    row.className = "dashboard-activity-row";
+    const dot = document.createElement("span");
+    dot.className = "dashboard-activity-dot";
+    dot.textContent = "↻";
+    const copy = document.createElement("div");
+    copy.className = "dashboard-activity-copy";
+    const title = document.createElement("strong");
+    const details = activity.details && typeof activity.details === "object" ? activity.details : {};
+    title.textContent = labels[activity.activity_type] || String(activity.activity_type || "Действие").replace(/_/g, " ");
+    const subtitle = document.createElement("small");
+    const work = workItems.find((item) => item.id === activity.work_item_id);
+    subtitle.textContent = (details.title || (work && work.title) || "Рабочая область") + " · " + memberName(activity.actor_id);
+    copy.append(title, subtitle);
+    const time = document.createElement("time");
+    time.className = "dashboard-activity-time";
+    time.textContent = activity.created_at ? new Date(activity.created_at).toLocaleString() : "";
+    if (activity.created_at) time.dateTime = activity.created_at;
+    row.append(dot, copy, time);
+    target.append(row);
+  });
+}
+
 function renderSummary() {
   const target = el("summaryStats");
   target.replaceChildren();
@@ -432,6 +482,7 @@ function renderSummary() {
     empty.className = "summary-empty";
     empty.textContent = "Выберите или создайте компанию, чтобы увидеть сводку.";
     target.append(empty);
+    renderDashboardActivity();
     return;
   }
 
@@ -473,6 +524,7 @@ function renderSummary() {
   addStat("Незавершённые задачи", openTasks, "Требуют внимания");
   addStat("Просрочено", overdue, overdue ? "Нужна проверка" : "Нет просрочки");
   addStat("Сумма сделок", dealTotals, "Активные сделки");
+  renderDashboardActivity();
 }
 
 function renderCustomers() {
@@ -984,6 +1036,12 @@ function setupWorkspaceNavigation() {
     if (!link) return;
     event.preventDefault();
     activate(link.getAttribute("href"), true);
+    const focusId = link.dataset.focusId;
+    if (focusId) {
+      const form = el(focusId);
+      const firstField = form && form.querySelector("input:not([type=hidden]), select, textarea");
+      if (firstField) firstField.focus();
+    }
   });
   nav.addEventListener("click", (event) => {
     const link = event.target.closest("a[href^='#']");
