@@ -66,6 +66,25 @@
     .dashboard-welcome p{margin:0;color:var(--muted);font-size:13px}
     .dashboard-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--blue)}
     .dashboard-mark{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border-radius:16px;background:#245fce;color:#fff;font-size:29px;font-weight:800;box-shadow:0 8px 20px rgba(36,95,206,.2)}
+    .dashboard-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+    .dashboard-action{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#344054;text-decoration:none;font-size:12px;font-weight:700}
+    .dashboard-action:hover{border-color:#b6ccf5;background:#f8faff}
+    .dashboard-action-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+    .dashboard-action-primary:hover{background:var(--blue-dark);color:#fff}
+    .dashboard-lower{margin-top:25px;border-top:1px solid var(--line);padding-top:20px}
+    .dashboard-lower-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .dashboard-lower-heading h4{margin:0 0 3px;font-size:16px}
+    .dashboard-lower-heading p{margin:0;color:var(--muted);font-size:12px}
+    .dashboard-lower-heading>a{font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap}
+    .dashboard-activity{display:grid;gap:0}
+    .dashboard-activity-row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #edf0f4}
+    .dashboard-activity-row:last-child{border-bottom:0}
+    .dashboard-activity-dot{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:10px;background:#edf3ff;color:var(--blue);font-weight:800}
+    .dashboard-activity-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+    .dashboard-activity-copy strong{font-size:12px;font-weight:650}
+    .dashboard-activity-copy small{font-size:11px;color:var(--muted)}
+    .dashboard-activity-time{margin-left:auto;color:var(--muted);font-size:11px;white-space:nowrap}
+
     .dashboard-section-heading{display:flex;align-items:center;justify-content:space-between;margin:25px 0 12px}
     .dashboard-section-heading h4{margin:0 0 3px;font-size:16px;color:var(--ink)}
     .dashboard-section-heading p{margin:0;font-size:12px;color:var(--muted)}
@@ -118,6 +137,10 @@
       .dashboard-welcome{padding:17px}
       .dashboard-welcome h3{font-size:19px}
       .dashboard-mark{width:43px;height:43px;flex-basis:43px;border-radius:12px;font-size:23px}
+      .dashboard-actions{align-items:stretch}
+      .dashboard-action{flex:1 1 100%}
+      .dashboard-lower-heading{align-items:flex-start}
+      .dashboard-activity-time{white-space:normal;text-align:right}
       .dashboard-modules{grid-template-columns:1fr}
       .module-card{padding:12px}
       body>header{padding:14px}
@@ -243,6 +266,10 @@
             <span class="dashboard-eyebrow">ОБЗОР БИЗНЕСА</span>
             <h3 id="summaryHeading">Добро пожаловать в ADAMARKET</h3>
             <p>Ключевые показатели и быстрый доступ к ежедневной работе.</p>
+            <div class="dashboard-actions">
+              <a class="dashboard-action dashboard-action-primary" href="#customerHeading" data-workspace-link data-focus-id="customerForm">＋ Добавить клиента</a>
+              <a class="dashboard-action" href="#workHeading" data-workspace-link data-focus-id="workItemForm">＋ Создать заявку</a>
+            </div>
           </div>
           <span class="dashboard-mark" aria-hidden="true">A</span>
         </div>
@@ -255,6 +282,10 @@
           <a class="module-card" href="#dealHeading" data-workspace-link><span class="module-icon module-violet" aria-hidden="true">₽</span><span class="module-copy"><strong>Продажи</strong><small>Сделки и этапы воронки</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
           <a class="module-card" href="#activityHeading" data-workspace-link><span class="module-icon module-slate" aria-hidden="true">↻</span><span class="module-copy"><strong>История действий</strong><small>Последние изменения</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
           <a class="module-card" href="#teamHeading" data-workspace-link><span class="module-icon module-blue" aria-hidden="true">Л</span><span class="module-copy"><strong>Команда</strong><small>Сотрудники и приглашения</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+        </div>
+        <div class="dashboard-lower">
+          <div class="dashboard-lower-heading"><div><h4>Последняя активность</h4><p>Недавние изменения в рабочей области</p></div><a href="#activityHeading" data-workspace-link>Вся история →</a></div>
+          <div id="dashboardActivity" class="dashboard-activity"><p class="summary-empty">Выберите компанию, чтобы увидеть активность.</p></div>
         </div>
       </section>
 
