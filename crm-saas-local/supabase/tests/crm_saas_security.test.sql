@@ -203,14 +203,14 @@ values
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
 select throws_ok(
-  $select crm_saas.accept_invite(repeat('e', 64))$,
+  $$select crm_saas.accept_invite(repeat('e', 64))$,
   '42501', null,
   'expired invitation token cannot be accepted'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $select * from crm_saas.create_invite(
+  $$select * from crm_saas.create_invite(
     '20000000-0000-4000-8000-000000000001',
     'unauthorized@example.test',
     null,
