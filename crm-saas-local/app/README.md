@@ -54,7 +54,7 @@ This is an intentionally plain, unstyled browser client for exercising the CRM s
 
 ## Verification status
 
-The isolated GitHub Actions workflow has passed all eight CRM migrations, 40 pgTAP security assertions, browser JavaScript/schema contract checks, and the browser end-to-end flow for email magic-link authentication, company setup, customer/request/task/deal creation, CSV download, private attachment upload, and reversible customer archiving. Re-run the workflow after any subsequent changes; a previous pass is not a guarantee for future commits.
+The isolated GitHub Actions workflow has passed all eight CRM migrations, 46 pgTAP security assertions, browser JavaScript/schema contract checks, and the browser end-to-end flow for email magic-link authentication, company setup, customer/request/task/deal creation, CSV download, private attachment upload, and reversible customer archiving. Re-run the workflow after any subsequent changes; a previous pass is not a guarantee for future commits.
 
 ## Current limitations — not production-ready
 
