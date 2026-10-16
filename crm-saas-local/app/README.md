@@ -54,7 +54,7 @@ This is an intentionally plain, unstyled browser client for exercising the CRM s
 
 ## Verification status
 
-The last successful isolated GitHub Actions run passed all eight CRM migrations, 46 pgTAP security assertions, browser JavaScript/schema contract checks, and the browser end-to-end flow for email magic-link authentication, company setup, customer/request/task/deal creation, CSV download, private attachment upload, and reversible customer archiving. The SQL suite has since been expanded to 48 assertions, including cross-tenant customer-write denial and expired-invitation rejection; those two new assertions are awaiting a fresh CI run. A previous pass is not a guarantee for future commits.
+The isolated GitHub Actions run for commit `b77989a9e5787d8551d17c1c7ff92c795908b8e5` passed all eight CRM migrations, all 48 pgTAP security assertions, browser JavaScript/schema contract checks, and the browser end-to-end flow for email magic-link authentication, company setup, customer/request/task/deal creation, CSV download, private attachment upload, and reversible customer archiving. The SQL suite now contains 50 assertions, adding checks that anonymous users cannot execute the private file-access helper and authenticated users can execute it under RLS; this expanded suite is awaiting a fresh CI run. A previous pass is not a guarantee for future commits.
 
 ## Current limitations — not production-ready
 
