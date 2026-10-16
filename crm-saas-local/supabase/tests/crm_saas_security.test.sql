@@ -1,6 +1,6 @@
 begin;
 
-select plan(48);
+select plan(50);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -311,6 +311,8 @@ select ok(
 reset role;
 
 select has_table('crm_saas', 'attachments', 'private attachment metadata table exists');
+select ok(not has_function_privilege('anon', 'crm_saas_private.can_access_crm_file(text)', 'EXECUTE'), 'anonymous users cannot execute the private file access helper');
+select ok(has_function_privilege('authenticated', 'crm_saas_private.can_access_crm_file(text)', 'EXECUTE'), 'authenticated users can execute the private file access helper under RLS');
 select ok(exists(select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'crm_files_upload_accessible_work'), 'private file uploads have a Storage RLS policy');
 select ok(exists(select 1 from storage.buckets where id = 'crm-files' and public = false), 'CRM file bucket is private');
 select has_column('crm_saas', 'attachments', 'storage_path', 'attachments record a private storage path');
