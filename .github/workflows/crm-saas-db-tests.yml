@@ -10,7 +10,7 @@ on:
       - main
   push:
     branches:
-      - crm-saas-local-foundation
+      - main
 
 permissions:
   contents: read
