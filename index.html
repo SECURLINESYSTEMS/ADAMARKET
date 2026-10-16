@@ -47,6 +47,13 @@
     hr{border:0;border-top:1px solid var(--line);margin:24px 0}
     #appPanel>hr{display:none}
     #signedInUser{display:inline-block;color:var(--muted);margin-right:12px}
+    .crm-settings{margin:18px 0;border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}
+    .crm-settings>summary{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:14px 16px;cursor:pointer;list-style:none}
+    .crm-settings>summary::-webkit-details-marker{display:none}
+    .crm-settings>summary:after{content:"＋";margin-left:auto;color:var(--blue);font-size:18px}
+    .crm-settings[open]>summary:after{content:"−"}
+    .crm-settings>summary span{color:var(--muted);font-size:13px}
+    .crm-settings>section{padding:0 16px 16px}
     .crm-nav{position:sticky;top:8px;z-index:5;display:flex;gap:7px;overflow-x:auto;padding:9px;margin:12px 0 18px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 16px rgba(16,24,40,.06);scrollbar-width:thin}
     .crm-nav a{flex:0 0 auto;padding:8px 11px;border-radius:8px;color:var(--ink);font-size:13px;font-weight:650;text-decoration:none;white-space:nowrap}
     .crm-nav a:hover,.crm-nav a:focus-visible{background:#edf3ff;color:var(--blue-dark);outline-offset:2px}
@@ -139,7 +146,7 @@
         <a href="#taskHeading">Задачи</a>
         <a href="#dealHeading">Сделки</a>
         <a href="#teamHeading">Команда</a>
-        <a href="#fieldsHeading">Поля</a>
+        <a href="#fieldsHeading">Настройки CRM</a>
       </nav>
       <label><input id="showArchivedToggle" type="checkbox"> Показывать архивные записи</label>
       <label>Поиск по текущей компании <input id="globalSearch" type="search" placeholder="Клиент, заявка, сотрудник…"></label>
@@ -328,8 +335,11 @@
       </section>
 
       <hr>
-      <section aria-labelledby="fieldsHeading">
-        <h3 id="fieldsHeading">Дополнительные поля под профессию</h3>
+      <details class="crm-settings" id="crmSettings">
+        <summary><strong>Настройки CRM</strong><span>Дополнительные поля для карточек клиентов, заявок и сделок</span></summary>
+        <section aria-labelledby="fieldsHeading">
+        <h3 id="fieldsHeading">Поля CRM</h3>
+        <p>Эти настройки управляют полями внутри карточек. Внутренние ключи используются системой и не нужны для повседневной работы.</p>
         <form id="customFieldForm">
           <fieldset>
             <legend>Добавить поле</legend>
@@ -356,7 +366,8 @@
           </fieldset>
         </form>
         <div id="customFieldList"></div>
-      </section>
+        </section>
+      </details>
     </section>
   </main>
 
