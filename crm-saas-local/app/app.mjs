@@ -19,7 +19,7 @@ function slugifyOrganization(value) {
     ў:"o", қ:"q", ғ:"g", ҳ:"h"
   };
   let slug = String(value || "").toLowerCase().split("").map((char) => transliteration[char] ?? char).join("");
-  slug = slug.normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "")
+  slug = slug.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").replace(/-+/g, "-").slice(0, 64).replace(/-+$/g, "");
   if (slug.length < 3) slug = ((slug || "company") + "-crm").slice(0, 64).replace(/-+$/g, "");
   return slug;
