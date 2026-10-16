@@ -31,6 +31,16 @@ test("workspace quick navigation only points to existing CRM section headings", 
   assert.equal(new Set(targets).size, targets.length, "navigation targets must be unique");
 });
 
+test("dashboard summary renders separate metrics and uses the company timezone for overdue dates", () => {
+  assert.match(html, /<div id="summaryStats"[^>]*aria-live="polite"/);
+  assert.match(html, /\.stat-card\{/);
+  assert.match(app, /addStat\("Клиенты"/);
+  assert.match(app, /addStat\("Открытые заявки"/);
+  assert.match(app, /addStat\("Просрочено"/);
+  assert.match(app, /timeZone: currentOrg\.timezone \|\| "Asia\/Tashkent"/);
+  assert.match(app, /target\.replaceChildren\(\)/);
+});
+
 test("every profession-specific custom-data field read or written by the client exists in SQL", () => {
   assert.match(metadata, /alter table crm_saas\.customers[\s\S]*?add column if not exists custom_data jsonb/);
   assert.match(metadata, /alter table crm_saas\.work_items[\s\S]*?add column if not exists custom_data jsonb/);
