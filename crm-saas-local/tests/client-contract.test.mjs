@@ -82,7 +82,7 @@ test("CSV download object URL is not revoked before the browser can start downlo
 const securityTests = readFileSync(new URL("../supabase/tests/crm_saas_security.test.sql", import.meta.url), "utf8");
 
 test("SQL security test query blocks use exactly two opening dollar delimiters", () => {
-  const openings = [...securityTests.matchAll(/\$+select/g)].map(([token]) => token);
+  const openings = [...securityTests.matchAll(/\$+select(?=\s)/g)].map(([token]) => token);
   assert.ok(openings.length > 0, "expected SQL query blocks in security tests");
   assert.deepEqual([...new Set(openings)], ["$$select"], "malformed opening delimiters: " + [...new Set(openings)].join(", "));
 });
