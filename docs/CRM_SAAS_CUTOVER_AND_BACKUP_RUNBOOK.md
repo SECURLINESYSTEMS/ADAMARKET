@@ -83,8 +83,10 @@ Official procedure: [Supabase backup and restore using the CLI](https://supabase
 
 ### C. Auth and Storage
 - [ ] Inventory auth providers, redirect URLs, SMTP configuration, auth templates and relevant project settings. Store secret values only in an approved secret manager, if a secure export is supported.
-- [ ] Inventory Storage buckets and object counts; export the actual objects separately if needed. A Postgres dump alone does not preserve the binary contents of Storage.
-- [ ] Record Storage policies and bucket settings.
+- [ ] Inventory both known public buckets (`ad-images`, `adamarket`), list every object path/size/content type, and export the actual object bytes to the protected backup directory. A Postgres dump alone does not preserve Storage binary contents.
+- [ ] Use the installed CLI's `supabase storage --help` / `supabase storage cp --help` to verify the current supported copy syntax before bulk export; do not guess flags or place credentials in command history.
+- [ ] Generate a SHA-256 checksum manifest for the exported files and compare it with a post-copy verification pass. Preserve the object path-to-checksum mapping and bucket settings.
+- [ ] Record Storage policies and bucket settings. Official reference: [Supabase Storage object downloads](https://supabase.com/docs/guides/storage/management/download-objects).
 - [ ] Confirm how Auth identities and sessions behave when restored; do not assume a database restore alone makes every login/session configuration recoverable.
 
 ### D. Restore rehearsal
