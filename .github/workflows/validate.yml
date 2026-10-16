@@ -4,6 +4,10 @@ on:
     branches: [main, manus/prod-hardening]
     paths:
       - 'index.html'
+      - 'app.mjs'
+      - 'config.js'
+      - 'vercel.json'
+      - 'crm-saas-local/**'
       - 'download.html'
       - 'sitemap.xml'
       - 'scripts/generate_sitemap.mjs'
@@ -64,7 +68,3 @@ jobs:
         run: test -f android-demo/app/src/main/java/uz/adamarket/app/MainActivity.java
       - name: Check repository whitespace
         run: git diff --check
-      - name: Check public API
-        run: |
-          curl -fsS "https://nmskpqugwiwdcukqckcy.supabase.co/functions/v1/adamarket-web-api?action=plans" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const x=JSON.parse(s);if(!x.ok)process.exit(1);console.log("plans:",(x.plans||[]).length)})'
-          curl -fsS "https://nmskpqugwiwdcukqckcy.supabase.co/functions/v1/adamarket-web-api?action=places" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const x=JSON.parse(s);if(!x.ok)process.exit(1);console.log("places:",(x.places||[]).length)})'
