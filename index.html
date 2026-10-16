@@ -12,28 +12,29 @@
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.55 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-    body>header{background:#fff;color:var(--ink);padding:18px 28px;border-bottom:1px solid var(--line);margin-left:236px}
+    body>header{background:#fff;color:var(--ink);padding:18px max(20px,calc((100vw - 1440px)/2));border-bottom:1px solid var(--line)}
     body>header h1{margin:0;font-size:23px;letter-spacing:-.035em}
     body>header p{margin:4px 0;color:var(--muted);font-size:13px}
     #status{display:inline-flex;align-items:center;gap:8px;margin-top:7px;padding:4px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted)}
     #status:before{content:"";width:7px;height:7px;border-radius:50%;background:#12b76a}
     #status[data-state=error]{border-color:#fda29b;color:#b42318}
     #status[data-state=error]:before{background:#f97066}
-    main{width:auto;max-width:none;margin:22px 0 48px 236px;padding:0 26px}
+    main{width:min(1440px,100%);max-width:1440px;margin:24px auto 48px;padding:0 26px}
     section{min-width:0}
     #authPanel{max-width:620px;margin:30px auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(18px,2.4vw,28px);box-shadow:0 3px 12px rgba(16,24,40,.035)}
-    #appPanel{display:block;min-width:0}\n    #appPanel[hidden],#authPanel[hidden]{display:none!important}
+    #appPanel{display:block;min-width:0}
+    #appPanel[hidden],#authPanel[hidden]{display:none!important}
     #appHeading{font-size:23px;margin:0 0 4px}
     #signedInUser{display:inline-block;color:var(--muted);font-size:13px;margin:0 12px 12px 0}
     #signOutButton{float:right;background:#fff;color:var(--ink);border-color:var(--line)}
     #signOutButton:hover{background:#f2f4f7}
-    .crm-nav{position:fixed;left:0;top:0;bottom:0;z-index:20;width:220px;display:flex;flex-direction:column;gap:5px;overflow-y:auto;padding:20px 12px;background:#17243a;border:0;border-radius:0;box-shadow:4px 0 20px rgba(16,24,40,.08)}
-    .crm-nav:before{content:"ADAMARKET CRM";display:block;color:#fff;font-weight:800;font-size:17px;letter-spacing:-.03em;padding:8px 12px 24px}
-    .crm-nav a{display:flex;align-items:center;gap:10px;flex:0 0 auto;padding:11px 12px;border-radius:9px;color:#d0d8e5;font-size:13px;font-weight:600;text-decoration:none;white-space:normal;transition:background .15s,color .15s}
-    .crm-nav a:before{content:"";width:6px;height:6px;border-radius:2px;background:#7f91aa;flex:0 0 6px}
-    .crm-nav a:hover,.crm-nav a:focus-visible{background:#263954;color:#fff;outline-offset:2px}
-    .crm-nav a[aria-current=page]{background:#245fce;color:#fff}
-    .crm-nav a[aria-current=page]:before{background:#fff}
+    .crm-nav{position:sticky;top:8px;z-index:20;width:100%;display:flex;flex-direction:row;align-items:center;gap:5px;overflow-x:auto;padding:8px;margin:0 0 18px;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:12px;box-shadow:0 5px 18px rgba(16,24,40,.055);scrollbar-width:thin}
+    .crm-nav:before{display:none}
+    .crm-nav a{display:flex;align-items:center;gap:8px;flex:0 0 auto;padding:9px 12px;border-radius:8px;color:#475467;font-size:13px;font-weight:650;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s}
+    .crm-nav a:before{content:"";width:6px;height:6px;border-radius:50%;background:#b7c1d0;flex:0 0 6px}
+    .crm-nav a:hover,.crm-nav a:focus-visible{background:#f1f5fb;color:var(--blue-dark);outline-offset:2px}
+    .crm-nav a[aria-current=page]{background:#eaf1ff;color:#194aa7}
+    .crm-nav a[aria-current=page]:before{background:#245fce}
     #showArchivedToggle,#globalSearch{margin:0 0 12px}
     #appPanel>label{max-width:100%;display:flex;align-items:center;gap:9px;flex-direction:row;font-weight:500;color:#475467}
     #globalSearch{max-width:460px}
@@ -60,6 +61,43 @@
     code{background:#eef2f7;border-radius:5px;padding:2px 5px;overflow-wrap:anywhere}
     hr{display:none}
     #organizationInfo{color:var(--muted);font-size:13px}
+    .dashboard-welcome{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 24px;margin-bottom:20px;border:1px solid #dbe7fb;border-radius:13px;background:linear-gradient(115deg,#f0f5ff 0%,#fff 72%)}
+    .dashboard-welcome h3{margin:7px 0 6px;font-size:22px}
+    .dashboard-welcome p{margin:0;color:var(--muted);font-size:13px}
+    .dashboard-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--blue)}
+    .dashboard-mark{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border-radius:16px;background:#245fce;color:#fff;font-size:29px;font-weight:800;box-shadow:0 8px 20px rgba(36,95,206,.2)}
+    .dashboard-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+    .dashboard-action{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#344054;text-decoration:none;font-size:12px;font-weight:700}
+    .dashboard-action:hover{border-color:#b6ccf5;background:#f8faff}
+    .dashboard-action-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+    .dashboard-action-primary:hover{background:var(--blue-dark);color:#fff}
+    .dashboard-lower{margin-top:25px;border-top:1px solid var(--line);padding-top:20px}
+    .dashboard-lower-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .dashboard-lower-heading h4{margin:0 0 3px;font-size:16px}
+    .dashboard-lower-heading p{margin:0;color:var(--muted);font-size:12px}
+    .dashboard-lower-heading>a{font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap}
+    .dashboard-activity{display:grid;gap:0}
+    .dashboard-activity-row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #edf0f4}
+    .dashboard-activity-row:last-child{border-bottom:0}
+    .dashboard-activity-dot{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:10px;background:#edf3ff;color:var(--blue);font-weight:800}
+    .dashboard-activity-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+    .dashboard-activity-copy strong{font-size:12px;font-weight:650}
+    .dashboard-activity-copy small{font-size:11px;color:var(--muted)}
+    .dashboard-activity-time{margin-left:auto;color:var(--muted);font-size:11px;white-space:nowrap}
+
+    .dashboard-section-heading{display:flex;align-items:center;justify-content:space-between;margin:25px 0 12px}
+    .dashboard-section-heading h4{margin:0 0 3px;font-size:16px;color:var(--ink)}
+    .dashboard-section-heading p{margin:0;font-size:12px;color:var(--muted)}
+    .dashboard-modules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .module-card{display:flex;align-items:center;gap:12px;min-width:0;padding:15px 13px;background:#fff;border:1px solid var(--line);border-radius:11px;text-decoration:none;color:var(--ink);transition:border-color .15s,box-shadow .15s,transform .15s}
+    .module-card:hover{border-color:#b6ccf5;box-shadow:0 5px 16px rgba(16,24,40,.06);transform:translateY(-1px)}
+    .module-card:focus-visible{outline:3px solid #a7c5ff;outline-offset:2px}
+    .module-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:11px;font-weight:800;font-size:17px}
+    .module-blue{background:#eaf1ff;color:#245fce}.module-green{background:#e8f7ef;color:#087443}.module-amber{background:#fff4df;color:#a15c00}.module-violet{background:#f1eaff;color:#6941c6}.module-slate{background:#edf1f5;color:#475467}
+    .module-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+    .module-copy strong{font-size:13px;line-height:1.35}
+    .module-copy small{font-size:11px;color:var(--muted);line-height:1.35}
+    .module-arrow{margin-left:auto;align-self:flex-start;color:#98a2b3;font-size:17px}
     #summaryStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
     #summaryStats>*{min-width:0}
     .stat-card{display:flex;flex-direction:column;gap:7px;min-width:0;padding:17px;background:#fff;border:1px solid var(--line);border-radius:11px}
@@ -85,18 +123,31 @@
     .crm-settings>section{padding:0}
     [hidden]{display:none!important}
     a{color:var(--blue)}
+    @media(max-width:1100px){
+      .dashboard-modules{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
     @media(max-width:900px){
-      body>header{margin-left:0;padding:16px 18px}
-      main{margin:14px 0 36px;padding:0 14px}
-      .crm-nav{position:sticky;top:0;bottom:auto;width:100%;height:auto;flex-direction:row;overflow-x:auto;padding:8px;background:#17243a;border-radius:10px;margin:0 0 16px;box-shadow:none}
-      .crm-nav:before{display:none}
+      body>header{padding:16px 18px}
+      main{margin:16px auto 36px;padding:0 14px}
+      .crm-nav{top:4px;margin-bottom:14px}
       .crm-nav a{white-space:nowrap;padding:9px 11px}
       #summaryStats{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
     @media(max-width:600px){
+      .dashboard-welcome{padding:17px}
+      .dashboard-welcome h3{font-size:19px}
+      .dashboard-mark{width:43px;height:43px;flex-basis:43px;border-radius:12px;font-size:23px}
+      .dashboard-actions{align-items:stretch}
+      .dashboard-action{flex:1 1 100%}
+      .dashboard-lower-heading{align-items:flex-start}
+      .dashboard-activity-time{white-space:normal;text-align:right}
+      .dashboard-modules{grid-template-columns:1fr}
+      .module-card{padding:12px}
       body>header{padding:14px}
       body>header h1{font-size:20px}
       main{padding:0 10px;margin-top:10px}
+      .crm-nav{gap:3px;padding:6px}
+      .crm-nav a{padding:8px 10px;font-size:12px}
       #authPanel,#appPanel>section,#appPanel>details.crm-settings{padding:14px;border-radius:11px}
       #customerCustomFields,#work_itemCustomFields,#dealCustomFields{grid-template-columns:1fr}
       #summaryStats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -113,7 +164,7 @@
 <body>
   <header>
     <h1>ADAMARKET CRM</h1>
-    <p>Единая система для клиентов, заявок, задач, сделок и команды. Данные каждой компании защищены разграничением доступа.</p>
+    <p>Управляйте клиентами, заявками и командой в одном месте.</p>
     <p id="status" role="status" aria-live="polite">Проверка подключения…</p>
   </header>
 
@@ -210,8 +261,32 @@
 
       <hr>
       <section aria-labelledby="summaryHeading">
-        <h3 id="summaryHeading">Рабочая сводка</h3>
+        <div class="dashboard-welcome">
+          <div>
+            <span class="dashboard-eyebrow">ОБЗОР БИЗНЕСА</span>
+            <h3 id="summaryHeading">Добро пожаловать в ADAMARKET</h3>
+            <p>Ключевые показатели и быстрый доступ к ежедневной работе.</p>
+            <div class="dashboard-actions">
+              <a class="dashboard-action dashboard-action-primary" href="#customerHeading" data-workspace-link data-focus-id="customerForm">＋ Добавить клиента</a>
+              <a class="dashboard-action" href="#workHeading" data-workspace-link data-focus-id="workItemForm">＋ Создать заявку</a>
+            </div>
+          </div>
+          <span class="dashboard-mark" aria-hidden="true">A</span>
+        </div>
         <div id="summaryStats" aria-live="polite" aria-label="Показатели компании"><p class="summary-empty">Выберите компанию, чтобы увидеть сводку.</p></div>
+        <div class="dashboard-section-heading"><div><h4>Рабочие модули</h4><p>Выберите раздел, чтобы продолжить работу.</p></div></div>
+        <div class="dashboard-modules" aria-label="Быстрый доступ к разделам">
+          <a class="module-card" href="#customerHeading" data-workspace-link><span class="module-icon module-blue" aria-hidden="true">К</span><span class="module-copy"><strong>Клиенты</strong><small>Контакты и база клиентов</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#workHeading" data-workspace-link><span class="module-icon module-green" aria-hidden="true">З</span><span class="module-copy"><strong>Заявки и проекты</strong><small>Обращения и выполнение работ</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#taskHeading" data-workspace-link><span class="module-icon module-amber" aria-hidden="true">✓</span><span class="module-copy"><strong>Задачи</strong><small>Поручения и сроки</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#dealHeading" data-workspace-link><span class="module-icon module-violet" aria-hidden="true">₽</span><span class="module-copy"><strong>Продажи</strong><small>Сделки и этапы воронки</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#activityHeading" data-workspace-link><span class="module-icon module-slate" aria-hidden="true">↻</span><span class="module-copy"><strong>История действий</strong><small>Последние изменения</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#teamHeading" data-workspace-link><span class="module-icon module-blue" aria-hidden="true">Л</span><span class="module-copy"><strong>Команда</strong><small>Сотрудники и приглашения</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+        </div>
+        <div class="dashboard-lower">
+          <div class="dashboard-lower-heading"><div><h4>Последняя активность</h4><p>Недавние изменения в рабочей области</p></div><a href="#activityHeading" data-workspace-link>Вся история →</a></div>
+          <div id="dashboardActivity" class="dashboard-activity"><p class="summary-empty">Выберите компанию, чтобы увидеть активность.</p></div>
+        </div>
       </section>
 
       <hr>
