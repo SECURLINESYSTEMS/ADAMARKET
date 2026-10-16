@@ -269,11 +269,11 @@ select is((
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
 select throws_ok(
-  $select crm_saas.update_member_role(
+  $$select crm_saas.update_member_role(
     '20000000-0000-4000-8000-000000000001',
     '10000000-0000-4000-8000-000000000002',
     'admin'::crm_saas.organization_role
-  )$,
+  )$$,
   '42501', null,
   'admin cannot promote or demote another team member'
 );
