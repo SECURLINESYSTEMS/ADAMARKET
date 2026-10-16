@@ -22,7 +22,8 @@
     main{width:auto;max-width:none;margin:22px 0 48px 236px;padding:0 26px}
     section{min-width:0}
     #authPanel{max-width:620px;margin:30px auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(18px,2.4vw,28px);box-shadow:0 3px 12px rgba(16,24,40,.035)}
-    #appPanel{display:block;min-width:0}\n    #appPanel[hidden],#authPanel[hidden]{display:none!important}
+    #appPanel{display:block;min-width:0}
+    #appPanel[hidden],#authPanel[hidden]{display:none!important}
     #appHeading{font-size:23px;margin:0 0 4px}
     #signedInUser{display:inline-block;color:var(--muted);font-size:13px;margin:0 12px 12px 0}
     #signOutButton{float:right;background:#fff;color:var(--ink);border-color:var(--line)}
@@ -60,6 +61,24 @@
     code{background:#eef2f7;border-radius:5px;padding:2px 5px;overflow-wrap:anywhere}
     hr{display:none}
     #organizationInfo{color:var(--muted);font-size:13px}
+    .dashboard-welcome{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 24px;margin-bottom:20px;border:1px solid #dbe7fb;border-radius:13px;background:linear-gradient(115deg,#f0f5ff 0%,#fff 72%)}
+    .dashboard-welcome h3{margin:7px 0 6px;font-size:22px}
+    .dashboard-welcome p{margin:0;color:var(--muted);font-size:13px}
+    .dashboard-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--blue)}
+    .dashboard-mark{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border-radius:16px;background:#245fce;color:#fff;font-size:29px;font-weight:800;box-shadow:0 8px 20px rgba(36,95,206,.2)}
+    .dashboard-section-heading{display:flex;align-items:center;justify-content:space-between;margin:25px 0 12px}
+    .dashboard-section-heading h4{margin:0 0 3px;font-size:16px;color:var(--ink)}
+    .dashboard-section-heading p{margin:0;font-size:12px;color:var(--muted)}
+    .dashboard-modules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .module-card{display:flex;align-items:center;gap:12px;min-width:0;padding:15px 13px;background:#fff;border:1px solid var(--line);border-radius:11px;text-decoration:none;color:var(--ink);transition:border-color .15s,box-shadow .15s,transform .15s}
+    .module-card:hover{border-color:#b6ccf5;box-shadow:0 5px 16px rgba(16,24,40,.06);transform:translateY(-1px)}
+    .module-card:focus-visible{outline:3px solid #a7c5ff;outline-offset:2px}
+    .module-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:11px;font-weight:800;font-size:17px}
+    .module-blue{background:#eaf1ff;color:#245fce}.module-green{background:#e8f7ef;color:#087443}.module-amber{background:#fff4df;color:#a15c00}.module-violet{background:#f1eaff;color:#6941c6}.module-slate{background:#edf1f5;color:#475467}
+    .module-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+    .module-copy strong{font-size:13px;line-height:1.35}
+    .module-copy small{font-size:11px;color:var(--muted);line-height:1.35}
+    .module-arrow{margin-left:auto;align-self:flex-start;color:#98a2b3;font-size:17px}
     #summaryStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
     #summaryStats>*{min-width:0}
     .stat-card{display:flex;flex-direction:column;gap:7px;min-width:0;padding:17px;background:#fff;border:1px solid var(--line);border-radius:11px}
@@ -85,6 +104,9 @@
     .crm-settings>section{padding:0}
     [hidden]{display:none!important}
     a{color:var(--blue)}
+    @media(max-width:1100px){
+      .dashboard-modules{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
     @media(max-width:900px){
       body>header{margin-left:0;padding:16px 18px}
       main{margin:14px 0 36px;padding:0 14px}
@@ -94,6 +116,11 @@
       #summaryStats{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
     @media(max-width:600px){
+      .dashboard-welcome{padding:17px}
+      .dashboard-welcome h3{font-size:19px}
+      .dashboard-mark{width:43px;height:43px;flex-basis:43px;border-radius:12px;font-size:23px}
+      .dashboard-modules{grid-template-columns:1fr}
+      .module-card{padding:12px}
       body>header{padding:14px}
       body>header h1{font-size:20px}
       main{padding:0 10px;margin-top:10px}
@@ -112,8 +139,8 @@
 </head>
 <body>
   <header>
-    <h1>ADAMARKET CRM</h1>
-    <p>Единая система для клиентов, заявок, задач, сделок и команды. Данные каждой компании защищены разграничением доступа.</p>
+    <h1>Рабочее пространство</h1>
+    <p>Управляйте клиентами, заявками и командой в одном месте.</p>
     <p id="status" role="status" aria-live="polite">Проверка подключения…</p>
   </header>
 
@@ -210,8 +237,24 @@
 
       <hr>
       <section aria-labelledby="summaryHeading">
-        <h3 id="summaryHeading">Рабочая сводка</h3>
+        <div class="dashboard-welcome">
+          <div>
+            <span class="dashboard-eyebrow">ОБЗОР БИЗНЕСА</span>
+            <h3 id="summaryHeading">Добро пожаловать в ADAMARKET</h3>
+            <p>Ключевые показатели и быстрый доступ к ежедневной работе.</p>
+          </div>
+          <span class="dashboard-mark" aria-hidden="true">A</span>
+        </div>
         <div id="summaryStats" aria-live="polite" aria-label="Показатели компании"><p class="summary-empty">Выберите компанию, чтобы увидеть сводку.</p></div>
+        <div class="dashboard-section-heading"><div><h4>Рабочие модули</h4><p>Выберите раздел, чтобы продолжить работу.</p></div></div>
+        <div class="dashboard-modules" aria-label="Быстрый доступ к разделам">
+          <a class="module-card" href="#customerHeading" data-workspace-link><span class="module-icon module-blue" aria-hidden="true">К</span><span class="module-copy"><strong>Клиенты</strong><small>Контакты и база клиентов</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#workHeading" data-workspace-link><span class="module-icon module-green" aria-hidden="true">З</span><span class="module-copy"><strong>Заявки и проекты</strong><small>Обращения и выполнение работ</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#taskHeading" data-workspace-link><span class="module-icon module-amber" aria-hidden="true">✓</span><span class="module-copy"><strong>Задачи</strong><small>Поручения и сроки</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#dealHeading" data-workspace-link><span class="module-icon module-violet" aria-hidden="true">₽</span><span class="module-copy"><strong>Продажи</strong><small>Сделки и этапы воронки</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#activityHeading" data-workspace-link><span class="module-icon module-slate" aria-hidden="true">↻</span><span class="module-copy"><strong>История действий</strong><small>Последние изменения</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+          <a class="module-card" href="#teamHeading" data-workspace-link><span class="module-icon module-blue" aria-hidden="true">Л</span><span class="module-copy"><strong>Команда</strong><small>Сотрудники и приглашения</small></span><span class="module-arrow" aria-hidden="true">↗</span></a>
+        </div>
       </section>
 
       <hr>
