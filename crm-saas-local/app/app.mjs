@@ -979,6 +979,12 @@ function setupWorkspaceNavigation() {
     if (updateHash && activeSection) history.replaceState(null, "", "#" + (heading?.id || "summaryHeading"));
     window.scrollTo({ top: 0, behavior: "auto" });
   };
+  el("appPanel").addEventListener("click", (event) => {
+    const link = event.target.closest("a[data-workspace-link][href^='#']");
+    if (!link) return;
+    event.preventDefault();
+    activate(link.getAttribute("href"), true);
+  });
   nav.addEventListener("click", (event) => {
     const link = event.target.closest("a[href^='#']");
     if (!link) return;
