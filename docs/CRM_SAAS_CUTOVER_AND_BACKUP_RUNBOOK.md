@@ -23,6 +23,26 @@ Initial inventory observed:
 
 These are point-in-time observations, not a verified backup.
 
+## Read-only production inventory refresh (2026-10-16)
+
+This refresh used read-only Supabase project inspection and SQL. It did not modify production.
+
+- Project status: `ACTIVE_HEALTHY`; PostgreSQL 17.6.1; region `ap-southeast-2`.
+- Current counts at inspection time: **26 public base tables**, **9 Auth users**, **2 Storage buckets**, **15 Storage objects**. Counts are point-in-time inventory only, not backup evidence.
+- Storage buckets: `ad-images` (public), `adamarket` (public). Both bucket contents must be exported and checksummed independently from database rows; object-level policy/access behavior must be recorded.
+- Public tables include marketplace listings/ads, profiles, bookings, favorites, offers, partner requests, payments, plans, subscriptions, wallet transactions, BeautyUz tables, and existing `crm_*` tables. Preserve the entire project; do not assume unused or empty tables are disposable.
+- Applied migration history currently includes marketplace, booking, billing, Storage, and security-hardening migrations through `20261010101949`. Export the complete migration history and schema before planning any replacement.
+- Active Edge Functions observed: `telegram-adamarket`, `adamarket-api`, `adamarket-web-api`, `devsms-send-sms`. The owner has said ADAMARKET should no longer use its Telegram bot. Keep this function in the backup inventory; do not disable or delete it until backup/restore is verified and a separate cleanup/cutover step is approved.
+- Supabase security advisor observed **five warnings** for authenticated execution of SECURITY DEFINER functions (`create_booking`, `create_secure_booking`, `get_ad_place_contact`, `is_current_user_admin`, `spend_balance`) and **one warning** that leaked-password protection is disabled. These require deliberate review; do not make ad-hoc production permission or Auth changes during backup preparation.
+
+### Inventory completion status
+
+- [x] Read-only snapshot of project health, database engine/region, migration history, public table count, Auth user count, Storage bucket/object counts, active Edge Functions, and current security-advisor warnings.
+- [ ] Export database schema, data, roles/grants, policies, functions, triggers, and migration history to controlled storage.
+- [ ] Export the actual Storage object bytes and checksums.
+- [ ] Capture Auth/provider/redirect/SMTP and deployment/DNS configuration inventory without writing secret values to GitHub.
+- [ ] Restore the exports to an isolated target and validate counts, access rules, object availability, and application smoke tests.
+
 ## Non-negotiable safety gates
 
 1. Do not run destructive SQL, truncate/drop tables, delete Auth users or Storage objects, change DNS, or deploy a new production build during preparation.
