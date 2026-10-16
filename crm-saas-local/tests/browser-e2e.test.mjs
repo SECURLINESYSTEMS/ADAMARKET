@@ -124,8 +124,11 @@ try {
   await waitForStatus("Приглашение создано");
   const inviteResult = page.locator("#inviteResult");
   await inviteResult.getByText("?invite=", { exact: false }).waitFor();
-  assert.match(await inviteResult.textContent(), /crm-e2e-invitee@example\.test|invite=/,
-    "invitation should produce a shareable one-time link without sending email automatically");
+  await inviteResult.getByRole("button", { name: "Копировать ссылку" }).waitFor();
+  await page.locator("#inviteList").getByText("crm-e2e-invitee@example.test", { exact: true }).waitFor();
+  await page.locator("#inviteList").getByText("Ожидает", { exact: true }).waitFor();
+  assert.match(await inviteResult.textContent(), /invite=[A-Za-z0-9_-]+/,
+    "invitation should produce a tokenized shareable link without sending email automatically");
 
   assert.deepEqual(pageErrors, [], "browser should not raise uncaught JavaScript errors");
   console.log("CRM browser E2E passed: email auth, company setup, customer/request/task/deal CRUD, private attachment upload, archive and restore.");
