@@ -1,6 +1,6 @@
 begin;
 
-select plan(50);
+select plan(51);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -268,6 +268,15 @@ select is((
 ), 1, 'role update changes only the intended membership');
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
+select throws_ok(
+  $select crm_saas.update_member_role(
+    '20000000-0000-4000-8000-000000000001',
+    '10000000-0000-4000-8000-000000000002',
+    'admin'::crm_saas.organization_role
+  )$,
+  '42501', null,
+  'admin cannot promote or demote another team member'
+);
 select throws_ok(
   $$select crm_saas.set_member_active(
     '20000000-0000-4000-8000-000000000001',
