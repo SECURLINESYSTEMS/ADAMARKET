@@ -1,6 +1,6 @@
 begin;
 
-select plan(46);
+select plan(48);
 
 -- Synthetic-only fixtures. The entire test transaction is rolled back.
 insert into auth.users
@@ -98,6 +98,13 @@ select throws_ok(
   'employee cannot reassign a task to a coworker'
 );
 
+select throws_ok(
+  $insert into crm_saas.customers (organization_id, display_name, created_by)
+    values ('20000000-0000-4000-8000-000000000002', 'Cross-tenant customer attempt', '10000000-0000-4000-8000-000000000002')$,
+  '42501', null,
+  'employee cannot create a customer in another company'
+);
+
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select is((select count(*)::int from crm_saas.work_items), 3, 'owner sees all work in their own company, including member-created work');
 
@@ -187,9 +194,23 @@ select throws_ok(
 );
 
 
+reset role;
+insert into crm_saas.organization_invites
+  (organization_id, invitee_email, role, token_hash, invited_by, expires_at)
+values
+  ('20000000-0000-4000-8000-000000000001', 'crm-invitee@example.test', 'member',
+   md5(repeat('e', 64)), '10000000-0000-4000-8000-000000000001', now() - interval '1 minute');
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
+select throws_ok(
+  $select crm_saas.accept_invite(repeat('e', 64))$,
+  '42501', null,
+  'expired invitation token cannot be accepted'
+);
+
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $$select * from crm_saas.create_invite(
+  $select * from crm_saas.create_invite(
     '20000000-0000-4000-8000-000000000001',
     'unauthorized@example.test',
     null,
