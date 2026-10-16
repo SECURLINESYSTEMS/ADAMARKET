@@ -224,6 +224,7 @@ function stageName(id) {
 function setAppVisibility(isSignedIn) {
   el("authPanel").hidden = isSignedIn;
   el("appPanel").hidden = !isSignedIn;
+  if (isSignedIn) setupWorkspaceNavigation();
   if (isSignedIn && currentUser) {
     el("signedInUser").textContent = "Вошли: " + (currentUser.email || currentUser.phone || currentUser.id);
   }
@@ -954,6 +955,38 @@ submitForm(el("phoneVerifyForm"), async (values) => {
   if (error) throw error;
   message("Телефон подтверждён. Выполняется вход…");
 });
+
+function setupWorkspaceNavigation() {
+  const nav = document.querySelector(".crm-nav");
+  if (!nav || nav.dataset.ready === "true") return;
+  nav.dataset.ready = "true";
+  const sections = Array.from(el("appPanel").children).filter((node) =>
+    node.matches("section[aria-labelledby], details.crm-settings")
+  );
+  const activate = (hash, updateHash = false) => {
+    const targetId = String(hash || "#summaryHeading").replace(/^#/, "");
+    const heading = el(targetId);
+    const targetSection = heading?.closest("details.crm-settings") || heading?.closest("section[aria-labelledby]");
+    const fallback = el("summaryHeading")?.closest("section[aria-labelledby]");
+    const activeSection = sections.includes(targetSection) ? targetSection : fallback;
+    sections.forEach((section) => { section.hidden = section !== activeSection; });
+    if (activeSection?.matches("details") && !activeSection.open) activeSection.open = true;
+    nav.querySelectorAll("a[href]").forEach((link) => {
+      const current = link.getAttribute("href") === "#" + (heading?.id || "summaryHeading");
+      if (current) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    if (updateHash && activeSection) history.replaceState(null, "", "#" + (heading?.id || "summaryHeading"));
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+  nav.addEventListener("click", (event) => {
+    const link = event.target.closest("a[href^='#']");
+    if (!link) return;
+    event.preventDefault();
+    activate(link.getAttribute("href"), true);
+  });
+  activate(window.location.hash || "#summaryHeading");
+}
 
 el("googleLoginButton").addEventListener("click", async () => {
   try {
