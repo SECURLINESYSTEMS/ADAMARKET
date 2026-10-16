@@ -21,6 +21,16 @@ test("the HTML loads the module that owns the client behavior", () => {
   assert.match(html, /<script\s+type="module"\s+src="\.\/app\.mjs"\s*>\s*<\/script>/);
 });
 
+test("workspace quick navigation only points to existing CRM section headings", () => {
+  const nav = html.match(/<nav class="crm-nav" aria-label="Разделы CRM">([\s\S]*?)<\/nav>/);
+  assert.ok(nav, "CRM section navigation must be present");
+  const targets = [...nav[1].matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
+  assert.ok(targets.length >= 6, "expected shortcuts to core CRM sections");
+  const htmlIds = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]));
+  assert.deepEqual(targets.filter((target) => !htmlIds.has(target)), [], "navigation targets must exist");
+  assert.equal(new Set(targets).size, targets.length, "navigation targets must be unique");
+});
+
 test("every profession-specific custom-data field read or written by the client exists in SQL", () => {
   assert.match(metadata, /alter table crm_saas\.customers[\s\S]*?add column if not exists custom_data jsonb/);
   assert.match(metadata, /alter table crm_saas\.work_items[\s\S]*?add column if not exists custom_data jsonb/);
