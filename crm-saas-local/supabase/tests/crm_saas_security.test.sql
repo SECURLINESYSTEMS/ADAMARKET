@@ -100,7 +100,7 @@ select throws_ok(
 
 select throws_ok(
   $insert into crm_saas.customers (organization_id, display_name, created_by)
-    values ('20000000-0000-4000-8000-000000000002', 'Cross-tenant customer attempt', '10000000-0000-4000-8000-000000000002')$,
+    values ('20000000-0000-4000-8000-000000000002', 'Cross-tenant customer attempt', '10000000-0000-4000-8000-000000000002')$$,
   '42501', null,
   'employee cannot create a customer in another company'
 );
@@ -203,7 +203,7 @@ values
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000005', true);
 select throws_ok(
-  $$select crm_saas.accept_invite(repeat('e', 64))$,
+  $$select crm_saas.accept_invite(repeat('e', 64))$$,
   '42501', null,
   'expired invitation token cannot be accepted'
 );
