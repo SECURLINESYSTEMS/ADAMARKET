@@ -54,12 +54,12 @@ This CRM is developed on the `crm-saas-local-foundation` branch and is not conne
 
 ## Latest verification
 
-For branch HEAD `398a04849f7c1667620302b4b1c0aa7ff0fdcf29` (2026-10-16), both GitHub Actions workflows completed successfully:
+For branch commit `3bbfb2f0b73a423cf3ffd7eaef5e5b92443b85e8` (2026-10-16), both GitHub Actions workflows completed successfully:
 
 - **Validate ADAMARKET** — passed.
 - **CRM SaaS database tests** — passed on the local isolated Supabase stack, including the SQL security suite and browser end-to-end workflow.
 
-These checks validate the tested branch and isolated test environment only. They do not certify production readiness or prove that a production backup can be restored.
+The latest run (`38852971036`) passed on the disposable local Supabase stack, including migration reset, pgTAP security tests, and the authenticated Playwright browser end-to-end flow. These checks validate the tested branch and isolated test environment only. They do not certify production readiness or prove that a production backup can be restored.
 
 ## Outstanding limitations and release gates
 
