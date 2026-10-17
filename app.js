@@ -8,14 +8,9 @@ const uiText = isUzbek
       filterCount: (count) => `Ko‘rsatilmoqda: ${count} ta pozitsiya`,
       searchCount: (count) => `${count} ta pozitsiya ko‘rsatildi`,
       noResults: 'Hech narsa topilmadi. So‘rovni o‘zgartiring yoki boshqa bo‘limni tanlang.',
-      subject: (direction) => `SecurLineUz uchun so‘rov — ${direction}`,
-      formBody: (name, phone, direction, comment) => [
-        `Ism: ${name}`,
-        `Telefon: ${phone}`,
-        `Yo‘nalish: ${direction}`,
-        `Izoh: ${comment || 'ko‘rsatilmagan'}`,
-      ].join('\n'),
-      sentNote: 'Xat pochta ilovasida tayyorlandi. Ochilmasa, +998 95 021 43 34 raqamiga qo‘ng‘iroq qiling.',
+      sending: 'Yuborilmoqda…',
+      sent: 'So‘rovingiz yuborildi. SecurLineUz siz bilan bog‘lanadi.',
+      sendError: 'So‘rov yuborilmadi. Iltimos, qayta urinib ko‘ring yoki +998 95 021 43 34 raqamiga qo‘ng‘iroq qiling.',
     }
   : {
       openMenu: 'Открыть меню',
@@ -23,14 +18,9 @@ const uiText = isUzbek
       filterCount: (count) => `Показано позиций: ${count}`,
       searchCount: (count) => `Показано ${count} ${positionWord(count)}`,
       noResults: 'Ничего не найдено. Измените запрос или выберите другой раздел.',
-      subject: (direction) => `Запрос для SecurLineUz — ${direction}`,
-      formBody: (name, phone, direction, comment) => [
-        `Имя: ${name}`,
-        `Телефон: ${phone}`,
-        `Направление: ${direction}`,
-        `Комментарий: ${comment || 'не указан'}`,
-      ].join('\n'),
-      sentNote: 'Письмо подготовлено в вашем почтовом приложении. Если оно не открылось, позвоните по номеру +998 95 021 43 34.',
+      sending: 'Отправляем заявку…',
+      sent: 'Заявка отправлена. SecurLineUz свяжется с вами.',
+      sendError: 'Не удалось отправить заявку. Попробуйте ещё раз или позвоните: +998 95 021 43 34.',
     };
 
 const menuButton = document.querySelector('.menu-toggle');
@@ -109,18 +99,36 @@ searchInput?.addEventListener('input', updateEquipmentList);
 
 const form = document.querySelector('#contactForm');
 if (form) {
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
-    const direction = String(form.querySelector('#system')?.value ?? '');
-    const name = String(form.querySelector('#name')?.value ?? '');
-    const phone = String(form.querySelector('#phone')?.value ?? '');
-    const comment = String(form.querySelector('#message')?.value ?? '');
-    const subject = uiText.subject(direction);
-    const body = uiText.formBody(name, phone, direction, comment);
-    window.location.href = `mailto:kasfuri377@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     const note = document.querySelector('#formNote');
-    if (note) note.textContent = uiText.sentNote;
+    const submitButton = form.querySelector('[type="submit"]');
+    if (submitButton?.disabled) return;
+    const payload = {
+      name: String(form.querySelector('#name')?.value ?? '').trim(),
+      phone: String(form.querySelector('#phone')?.value ?? '').trim(),
+      direction: String(form.querySelector('#system')?.value ?? ''),
+      comment: String(form.querySelector('#message')?.value ?? '').trim(),
+    };
+
+    if (submitButton) submitButton.disabled = true;
+    if (note) note.textContent = uiText.sending;
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.ok) throw new Error('Submission failed');
+      if (note) note.textContent = uiText.sent;
+      form.reset();
+    } catch {
+      if (note) note.textContent = uiText.sendError;
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
   });
 }
 

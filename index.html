@@ -173,7 +173,7 @@
         <a class="contact-phone" href="tel:+998950214334">+998 95 021 43 34 <span aria-hidden="true">↗</span></a>
         <a class="contact-email" href="mailto:kasfuri377@gmail.com">kasfuri377@gmail.com</a>
       </div>
-      <form class="contact-form" id="contactForm" action="mailto:kasfuri377@gmail.com" method="post" enctype="text/plain">
+      <form class="contact-form" id="contactForm" action="/api/contact" method="post">
         <p class="form-title">Коротко о задаче</p>
         <label for="name">Как к вам обращаться</label>
         <input id="name" name="Имя" autocomplete="name" placeholder="Ваше имя" required>
@@ -189,8 +189,8 @@
         </select>
         <label for="message">Комментарий <span>(необязательно)</span></label>
         <textarea id="message" name="Комментарий" rows="2" placeholder="Пара слов об объекте"></textarea>
-        <button class="button button-primary form-submit" type="submit">Подготовить письмо <span aria-hidden="true">↗</span></button>
-        <p class="form-note" id="formNote">Заявка откроется в вашем почтовом приложении. Данные сайта не сохраняют.</p>
+        <button class="button button-primary form-submit" type="submit">Отправить заявку <span aria-hidden="true">↗</span></button>
+        <p class="form-note" id="formNote" role="status" aria-live="polite">Заявка будет отправлена на почту SecurLineUz. Сайт не сохраняет данные.</p>
       </form>
     </section>
   </main>
