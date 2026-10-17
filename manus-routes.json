@@ -1,1 +1,12 @@
-{"routes":[{"path":"/","title":"SecurLineUz — слаботочные системы и монтаж"}]}
+{
+  "routes": [
+    {
+      "path": "/",
+      "title": "SecurLineUz — слаботочные системы"
+    },
+    {
+      "path": "/catalog.html",
+      "title": "Каталог оборудования SecurLineUz"
+    }
+  ]
+}

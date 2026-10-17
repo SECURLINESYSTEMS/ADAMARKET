@@ -21,6 +21,7 @@
   <meta name="twitter:image" content="https://adamarket.uz/assets/hero.webp">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="catalog.css">
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -35,7 +36,7 @@
     </a>
     <nav class="main-nav" id="mainNav" aria-label="Основная навигация">
       <a href="#solutions">Решения</a>
-      <a href="#equipment">Оборудование</a>
+      <a href="catalog.html">Каталог</a>
       <a href="#installation">Монтаж</a>
       <a href="#about">О компании</a>
       <a href="#contacts">Контакты</a>
@@ -124,52 +125,16 @@
 
     <section class="section equipment-section" id="equipment" aria-labelledby="equipmentTitle">
       <div class="equipment-heading">
-        <div>
-          <p class="section-index"><span>02</span> / КОМПЛЕКТАЦИЯ</p>
-          <h2 id="equipmentTitle">Оборудование<br><span>по делу.</span></h2>
-        </div>
-        <p class="equipment-intro">Подберите направление и посмотрите цены за единицу. Состав и количество оборудования уточняются при подготовке сметы.</p>
+        <div><p class="section-index"><span>02</span> / КОМПЛЕКТАЦИЯ</p><h2 id="equipmentTitle">Оборудование<br><span>по делу.</span></h2></div>
+        <p class="equipment-intro">Полный прайс с 1 451 позициями в семи разделах: выберите направление, найдите модель и посмотрите цену в сумах или долларах.</p>
       </div>
-      <div class="filter-bar" role="group" aria-label="Фильтр оборудования">
-        <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">Все позиции <span id="totalEquipmentCount">20</span></button>
-        <button class="filter-button" type="button" data-filter="video" aria-pressed="false">Видеонаблюдение</button>
-        <button class="filter-button" type="button" data-filter="access" aria-pressed="false">Доступ</button>
-        <button class="filter-button" type="button" data-filter="fire" aria-pressed="false">Оповещение и пожар</button>
-        <button class="filter-button" type="button" data-filter="network" aria-pressed="false">Сеть</button>
+      <div class="catalog-category-grid"><a class="catalog-category-tile" href="catalog.html?category=hikvision"><span>Hikvision</span><strong>356 позиций</strong><i aria-hidden="true">↗</i></a><a class="catalog-category-tile" href="catalog.html?category=dahua"><span>Dahua</span><strong>146 позиций</strong><i aria-hidden="true">↗</i></a><a class="catalog-category-tile" href="catalog.html?category=hdd"><span>HDD-диски</span><strong>29 позиций</strong><i aria-hidden="true">↗</i></a><a class="catalog-category-tile" href="catalog.html?category=bolid-dahua"><span>BOLID / DAHUA</span><strong>34 позиций</strong><i aria-hidden="true">↗</i></a><a class="catalog-category-tile" href="catalog.html?category=security"><span>Охранные системы</span><strong>560 позиций</strong><i aria-hidden="true">↗</i></a><a class="catalog-category-tile" href="catalog.html?category=fire"><span>Пожарное оборудование</span><strong>274 позиций</strong><i aria-hidden="true">↗</i></a><a class="catalog-category-tile" href="catalog.html?category=turnstiles"><span>Турникеты, шлагбаумы и парковки</span><strong>52 позиций</strong><i aria-hidden="true">↗</i></a></div>
+      <div class="catalog-home-actions">
+        <a class="button button-primary" href="catalog.html">Открыть полный каталог <span aria-hidden="true">↗</span></a>
+        <a class="catalog-home-download" href="price-list.pdf" download>Скачать PDF-прайс <span aria-hidden="true">↓</span></a>
+        <a class="catalog-home-download" href="price-list.xlsx" download>Скачать Excel <span aria-hidden="true">↓</span></a>
       </div>
-      <div class="equipment-controls">
-        <label class="equipment-search" for="equipmentSearch">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4 4"></path></svg>
-          <input id="equipmentSearch" type="search" autocomplete="off" placeholder="Найти по названию или модели">
-        </label>
-        <p class="search-results" id="searchResults">Показано 20 позиций</p>
-      </div>
-      <p class="filter-status visually-hidden" aria-live="polite"></p>
-      <div class="equipment-grid" id="equipmentGrid">
-        <article class="equipment-item" data-category="video"><span class="equipment-tag">ВИДЕОРЕГИСТРАТОР</span><h3>32-канальный · S-8632NI-K8</h3><div class="equipment-price"><strong>6 751 304</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="video"><span class="equipment-tag">ВИДЕОРЕГИСТРАТОР</span><h3>32-канальный · S-8632NXI-K8</h3><div class="equipment-price"><strong>7 233 540</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="video"><span class="equipment-tag">ВИДЕОРЕГИСТРАТОР</span><h3>32-канальный · S-9632NI-M8</h3><div class="equipment-price"><strong>9 403 602</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="video"><span class="equipment-tag">ХРАНЕНИЕ</span><h3>WD Purple · 10 ТБ</h3><div class="equipment-price"><strong>5 545 714</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="video"><span class="equipment-tag">КАМЕРА · ВНУТРЕННЯЯ</span><h3>4 Мп · со звуком</h3><div class="equipment-price"><strong>590 739</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="video"><span class="equipment-tag">КАМЕРА · ВНУТРЕННЯЯ</span><h3>8 Мп · со звуком</h3><div class="equipment-price"><strong>1 085 031</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="video"><span class="equipment-tag">КАМЕРА · УЛИЧНАЯ</span><h3>4 Мп</h3><div class="equipment-price"><strong>868 025</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="video"><span class="equipment-tag">КАМЕРА · УЛИЧНАЯ</span><h3>8 Мп</h3><div class="equipment-price"><strong>1 326 149</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="access"><span class="equipment-tag">ТУРНИКЕТ · 1 ПРОХОД</span><h3>«Трипод-портал» · CS-B4-1</h3><div class="equipment-price"><strong>25 148 607</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="access"><span class="equipment-tag">ТУРНИКЕТ · 2 ПРОХОДА</span><h3>«Трипод-портал» · ES3216-2</h3><div class="equipment-price"><strong>35 685 464</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="fire"><span class="equipment-tag">СИСТЕМА ОПОВЕЩЕНИЯ</span><h3>Колонка оповещения</h3><div class="equipment-price"><strong class="project-price">По проекту</strong><span>комплект</span></div></article>
-        <article class="equipment-item" data-category="fire"><span class="equipment-tag">ПОЖАРНАЯ СИСТЕМА</span><h3>Пожарный датчик</h3><div class="equipment-price"><strong>96 447</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="fire"><span class="equipment-tag">ПОЖАРНОЕ ОПОВЕЩЕНИЕ</span><h3>Колонка · 3 W</h3><div class="equipment-price"><strong>72 335</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="fire"><span class="equipment-tag">УПРАВЛЕНИЕ</span><h3>Пожарный пульт управления</h3><div class="equipment-price"><strong>795 689</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="fire"><span class="equipment-tag">ИНФОРМАЦИОННАЯ ТАБЛИЧКА</span><h3>Неоновая табличка</h3><div class="equipment-price"><strong>180 839</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="network"><span class="equipment-tag">КОММУТАЦИЯ</span><h3>PoE-коммутатор · 24 порта</h3><div class="equipment-price"><strong>3 375 652</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="network"><span class="equipment-tag">ЛОКАЛЬНАЯ СЕТЬ</span><h3>Оборудование сети</h3><div class="equipment-price"><strong class="project-price">По проекту</strong><span>комплект</span></div></article>
-        <article class="equipment-item" data-category="network"><span class="equipment-tag">КОММУТАЦИЯ</span><h3>Коммутатор L2 · 32 порта</h3><div class="equipment-price"><strong>3 616 770</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="network"><span class="equipment-tag">ПОДКЛЮЧЕНИЕ</span><h3>Сетевая розетка</h3><div class="equipment-price"><strong>217 006</strong><span>сум / шт.</span></div></article>
-        <article class="equipment-item" data-category="network"><span class="equipment-tag">КАБЕЛЬ</span><h3>UTP Cat 6e</h3><div class="equipment-price"><strong>8 439</strong><span>сум / метр</span></div></article>
-      </div>
-      <p class="no-results" id="noResults" role="status" hidden>Ничего не найдено. Попробуйте изменить запрос или категорию.</p>
-      <div class="equipment-note"><span class="note-icon" aria-hidden="true">i</span><p>Цены указаны за единицу. Итоговая комплектация зависит от проекта и количества оборудования; стоимость колонок системы оповещения и комплекта локальной сети определяется отдельно.</p></div>
-      <a class="download-price" href="price-list.pdf" download>Скачать полный прайс <span>PDF ↓</span></a>
+      <div class="equipment-note"><span class="note-icon" aria-hidden="true">i</span><p>Сумовые цены пересчитаны по курсу 1 USD = 12 055,90 UZS на 17.10.2026. Монтажные расценки указаны отдельно и не изменены.</p></div>
     </section>
 
     <section class="installation-section" id="installation" aria-labelledby="installationTitle">
