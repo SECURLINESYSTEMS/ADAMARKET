@@ -20,12 +20,11 @@
     .trim();
 
   const formatCount = (value) => new Intl.NumberFormat('ru-RU').format(value).replace(/\u00a0/g, ' ');
-  const wordForCount = (value) => {
+  const wordForGenitiveCount = (value) => {
     const lastTwo = value % 100;
     const last = value % 10;
     if (lastTwo >= 11 && lastTwo <= 14) return 'позиций';
-    if (last === 1) return 'позиция';
-    if (last >= 2 && last <= 4) return 'позиции';
+    if (last === 1) return 'позиции';
     return 'позиций';
   };
 
@@ -75,7 +74,7 @@
         count.textContent = 'Найдено: 0 позиций';
       } else {
         const end = Math.min(start + pageSize, filteredCards.length);
-        count.textContent = `Показано ${formatCount(start + 1)}–${formatCount(end)} из ${formatCount(filteredCards.length)} ${wordForCount(filteredCards.length)}`;
+        count.textContent = `Показано ${formatCount(start + 1)}–${formatCount(end)} из ${formatCount(filteredCards.length)} ${wordForGenitiveCount(filteredCards.length)}`;
       }
     }
     if (empty) empty.hidden = filteredCards.length > 0;
