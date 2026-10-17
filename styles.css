@@ -1,0 +1,4 @@
+
+.download-price{max-width:var(--content);margin:18px auto 0;display:flex;justify-content:flex-end;align-items:center;gap:12px;color:var(--signal);font:9px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.download-price span{padding:8px 10px;background:var(--signal);color:#10150d;font-size:8px;transition:background .2s,transform .2s}
+.download-price:hover span{background:#d8ff7a;transform:translateY(-1px)}
