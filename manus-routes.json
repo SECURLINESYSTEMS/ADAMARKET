@@ -7,6 +7,14 @@
     {
       "path": "/catalog.html",
       "title": "Каталог оборудования SecurLineUz"
+    },
+    {
+      "path": "/uz/",
+      "title": "SecurLineUz — past tokli tizimlar"
+    },
+    {
+      "path": "/uz/catalog.html",
+      "title": "SecurLineUz — uskunalar katalogi"
     }
   ]
 }

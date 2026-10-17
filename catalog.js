@@ -2,6 +2,8 @@
   const grid = document.querySelector('#catalogList');
   if (!grid) return;
 
+  const isUzbek = document.documentElement.lang === 'uz';
+  const locale = isUzbek ? 'uz-UZ' : 'ru-RU';
   const cards = [...grid.querySelectorAll('.catalog-item')];
   const search = document.querySelector('#catalogSearch');
   const category = document.querySelector('#catalogCategory');
@@ -13,24 +15,29 @@
   let filteredCards = cards;
 
   const normalize = (value) => String(value ?? '')
-    .toLocaleLowerCase('ru')
+    .toLocaleLowerCase(locale)
     .replace(/ё/g, 'е')
+    .replace(/[‘’ʼ`]/g, "'")
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
 
-  const formatCount = (value) => new Intl.NumberFormat('ru-RU').format(value).replace(/\u00a0/g, ' ');
+  const formatCount = (value) => new Intl.NumberFormat(locale).format(value).replace(/\u00a0/g, ' ');
   const wordForGenitiveCount = (value) => {
+    if (isUzbek) return 'ta pozitsiya';
     const lastTwo = value % 100;
     const last = value % 10;
     if (lastTwo >= 11 && lastTwo <= 14) return 'позиций';
-    if (last === 1) return 'позиции';
+    if (last === 1) return 'позиция';
+    if (last >= 2 && last <= 4) return 'позиции';
     return 'позиций';
   };
 
   const updatePagination = (pageCount) => {
     document.querySelectorAll('.catalog-page-indicator').forEach((indicator) => {
-      indicator.textContent = `Страница ${page} из ${pageCount}`;
+      indicator.textContent = isUzbek
+        ? `Sahifa ${formatCount(page)} / ${formatCount(pageCount)}`
+        : `Страница ${page} из ${pageCount}`;
     });
     document.querySelectorAll('[data-page-action="prev"]').forEach((button) => {
       button.disabled = page <= 1;
@@ -56,7 +63,7 @@
     } else if (sortMode === 'price-desc') {
       filteredCards.sort((a, b) => Number(b.dataset.priceUzs) - Number(a.dataset.priceUzs));
     } else if (sortMode === 'name') {
-      filteredCards.sort((a, b) => a.querySelector('h2').textContent.localeCompare(b.querySelector('h2').textContent, 'ru', {sensitivity: 'base', numeric: true}));
+      filteredCards.sort((a, b) => a.querySelector('h2').textContent.localeCompare(b.querySelector('h2').textContent, locale, {sensitivity: 'base', numeric: true}));
     }
 
     const pageCount = Math.max(1, Math.ceil(filteredCards.length / pageSize));
@@ -71,10 +78,12 @@
 
     if (count) {
       if (filteredCards.length === 0) {
-        count.textContent = 'Найдено: 0 позиций';
+        count.textContent = isUzbek ? 'Topildi: 0 ta pozitsiya' : 'Найдено: 0 позиций';
       } else {
         const end = Math.min(start + pageSize, filteredCards.length);
-        count.textContent = `Показано ${formatCount(start + 1)}–${formatCount(end)} из ${formatCount(filteredCards.length)} ${wordForGenitiveCount(filteredCards.length)}`;
+        count.textContent = isUzbek
+          ? `Ko‘rsatilmoqda: ${formatCount(start + 1)}–${formatCount(end)} / ${formatCount(filteredCards.length)} ta pozitsiya`
+          : `Показано ${formatCount(start + 1)}–${formatCount(end)} из ${formatCount(filteredCards.length)} ${wordForGenitiveCount(filteredCards.length)}`;
       }
     }
     if (empty) empty.hidden = filteredCards.length > 0;

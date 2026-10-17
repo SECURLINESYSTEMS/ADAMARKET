@@ -1,18 +1,52 @@
 document.documentElement.classList.add('js-enabled');
 
+const isUzbek = document.documentElement.lang === 'uz';
+const uiText = isUzbek
+  ? {
+      openMenu: 'Menyuni ochish',
+      closeMenu: 'Menyuni yopish',
+      filterCount: (count) => `Ko‘rsatilmoqda: ${count} ta pozitsiya`,
+      searchCount: (count) => `${count} ta pozitsiya ko‘rsatildi`,
+      noResults: 'Hech narsa topilmadi. So‘rovni o‘zgartiring yoki boshqa bo‘limni tanlang.',
+      subject: (direction) => `SecurLineUz uchun so‘rov — ${direction}`,
+      formBody: (name, phone, direction, comment) => [
+        `Ism: ${name}`,
+        `Telefon: ${phone}`,
+        `Yo‘nalish: ${direction}`,
+        `Izoh: ${comment || 'ko‘rsatilmagan'}`,
+      ].join('\n'),
+      sentNote: 'Xat pochta ilovasida tayyorlandi. Ochilmasa, +998 95 021 43 34 raqamiga qo‘ng‘iroq qiling.',
+    }
+  : {
+      openMenu: 'Открыть меню',
+      closeMenu: 'Закрыть меню',
+      filterCount: (count) => `Показано позиций: ${count}`,
+      searchCount: (count) => `Показано ${count} ${positionWord(count)}`,
+      noResults: 'Ничего не найдено. Измените запрос или выберите другой раздел.',
+      subject: (direction) => `Запрос для SecurLineUz — ${direction}`,
+      formBody: (name, phone, direction, comment) => [
+        `Имя: ${name}`,
+        `Телефон: ${phone}`,
+        `Направление: ${direction}`,
+        `Комментарий: ${comment || 'не указан'}`,
+      ].join('\n'),
+      sentNote: 'Письмо подготовлено в вашем почтовом приложении. Если оно не открылось, позвоните по номеру +998 95 021 43 34.',
+    };
+
 const menuButton = document.querySelector('.menu-toggle');
 const mainNav = document.querySelector('#mainNav');
 if (menuButton && mainNav) {
+  menuButton.setAttribute('aria-label', uiText.openMenu);
   menuButton.addEventListener('click', () => {
     const isOpen = menuButton.getAttribute('aria-expanded') === 'true';
     menuButton.setAttribute('aria-expanded', String(!isOpen));
-    menuButton.setAttribute('aria-label', isOpen ? 'Открыть меню' : 'Закрыть меню');
+    menuButton.setAttribute('aria-label', isOpen ? uiText.openMenu : uiText.closeMenu);
     mainNav.classList.toggle('is-open', !isOpen);
   });
   mainNav.querySelectorAll('a').forEach((link) => {
     link.addEventListener('click', () => {
       menuButton.setAttribute('aria-expanded', 'false');
-      menuButton.setAttribute('aria-label', 'Открыть меню');
+      menuButton.setAttribute('aria-label', uiText.openMenu);
       mainNav.classList.remove('is-open');
     });
   });
@@ -29,15 +63,16 @@ let activeCategory = 'all';
 
 if (totalEquipmentCount) totalEquipmentCount.textContent = String(equipmentItems.length);
 
-const normalizeText = (text) => text.toLocaleLowerCase('ru').replace(/ё/g, 'е').trim();
-const positionWord = (count) => {
+const normalizeText = (text) => text.toLocaleLowerCase(isUzbek ? 'uz-UZ' : 'ru-RU').replace(/ё/g, 'е').trim();
+function positionWord(count) {
+  if (isUzbek) return 'ta pozitsiya';
   const lastTwo = count % 100;
   const lastDigit = count % 10;
   if (lastTwo >= 11 && lastTwo <= 14) return 'позиций';
   if (lastDigit === 1) return 'позиция';
   if (lastDigit >= 2 && lastDigit <= 4) return 'позиции';
   return 'позиций';
-};
+}
 
 function updateEquipmentList() {
   const query = normalizeText(searchInput?.value ?? '');
@@ -51,9 +86,12 @@ function updateEquipmentList() {
     if (isVisible) visibleCount += 1;
   });
 
-  if (filterStatus) filterStatus.textContent = `Показано позиций: ${visibleCount}`;
-  if (searchResults) searchResults.textContent = `Показано ${visibleCount} ${positionWord(visibleCount)}`;
-  if (noResults) noResults.hidden = visibleCount > 0;
+  if (filterStatus) filterStatus.textContent = uiText.filterCount(visibleCount);
+  if (searchResults) searchResults.textContent = uiText.searchCount(visibleCount);
+  if (noResults) {
+    noResults.textContent = uiText.noResults;
+    noResults.hidden = visibleCount > 0;
+  }
 }
 
 filterButtons.forEach((button) => {
@@ -74,17 +112,15 @@ if (form) {
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
-    const fields = new FormData(form);
-    const subject = `Запрос для SecurLineUz — ${fields.get('Направление')}`;
-    const body = [
-      `Имя: ${fields.get('Имя')}`,
-      `Телефон: ${fields.get('Телефон')}`,
-      `Направление: ${fields.get('Направление')}`,
-      `Комментарий: ${fields.get('Комментарий') || 'не указан'}`,
-    ].join('\n');
+    const direction = String(form.querySelector('#system')?.value ?? '');
+    const name = String(form.querySelector('#name')?.value ?? '');
+    const phone = String(form.querySelector('#phone')?.value ?? '');
+    const comment = String(form.querySelector('#message')?.value ?? '');
+    const subject = uiText.subject(direction);
+    const body = uiText.formBody(name, phone, direction, comment);
     window.location.href = `mailto:kasfuri377@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     const note = document.querySelector('#formNote');
-    if (note) note.textContent = 'Письмо подготовлено в вашем почтовом приложении. Если оно не открылось, позвоните по номеру +998 95 021 43 34.';
+    if (note) note.textContent = uiText.sentNote;
   });
 }
 
