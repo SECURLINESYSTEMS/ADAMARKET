@@ -176,3 +176,33 @@ h2, .section h2, .installation-section h2 { color: #1d2a22; }
   .project-cases .use-case-items { grid-template-columns: 1fr; }
   .project-cases .use-case-items article { min-height: auto; }
 }
+
+.contact-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  max-width: 560px;
+}
+.contact-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(31,48,37,.16);
+  border-radius: 999px;
+  background: rgba(255,255,255,.62);
+  color: #46564b;
+  font-size: 11px;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+.contact-social-link strong { color: #1d2a22; font-weight: 700; }
+.contact-social-link span:last-child { color: #557a1d; }
+.contact-social-link:hover, .contact-social-link:focus-visible {
+  border-color: rgba(85,122,29,.55);
+  background: #fff;
+  transform: translateY(-1px);
+}
+.contact-social-link:focus-visible { outline: 2px solid #557a1d; outline-offset: 3px; }
