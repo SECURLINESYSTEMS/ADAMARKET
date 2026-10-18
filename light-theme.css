@@ -157,6 +157,16 @@ h2, .section h2, .installation-section h2 { color: #1d2a22; }
 .case-systems { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; margin: 0; padding: 0; }
 .case-systems li { display: inline-flex; align-items: center; max-width: 100%; padding: 6px 8px; border: 1px solid rgba(31,48,37,.12); background: #f4f6f1; color: #526258; font-size: 10px; line-height: 1.4; }
 
+.case-photo-figure { margin: 0 0 17px; }
+.case-photo-frame { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 8px; background: #edf1eb; }
+.case-photo { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.case-photo--portrait { object-position: center 18%; }
+.case-photo-figure figcaption { display: grid; gap: 4px; margin-top: 9px; }
+.case-caption-brand { color: #6b842c; font-size: 8px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.case-caption-line { color: #334239; font-size: 13px; font-weight: 600; line-height: 1.45; }
+.case-photo-credit { color: #66746a; font-size: 9px; font-style: normal; line-height: 1.45; }
+.case-photo-credit a { color: #557a1d; text-decoration: underline; text-underline-offset: 2px; }
+
 @media (max-width: 900px) {
   .project-cases { grid-template-columns: 1fr; gap: 28px; }
   .project-cases .case-intro { max-width: 520px; }
