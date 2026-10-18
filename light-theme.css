@@ -146,3 +146,23 @@ h2, .section h2, .installation-section h2 { color: #1d2a22; }
 .catalog-category-tile i,
 .catalog-home-download span,
 .strip-item b { color: #557a1d; }
+
+
+/* Public project cases: compact system tags, readable long institution names, responsive two-column layout. */
+.project-cases .use-case-items { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.project-cases .use-case-items article { min-height: 250px; padding: 20px; justify-content: flex-start; }
+.project-cases .use-case-items article > span { font-size: 8px; letter-spacing: .12em; line-height: 1.5; }
+.project-cases .use-case-items h3 { font-size: clamp(15px, 1.3vw, 19px); line-height: 1.32; margin: 15px 0 16px; }
+.project-cases .case-intro { max-width: 340px; margin: 20px 0 0; color: #5b6b60; font-size: 12px; line-height: 1.7; }
+.case-systems { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; margin: 0; padding: 0; }
+.case-systems li { display: inline-flex; align-items: center; max-width: 100%; padding: 6px 8px; border: 1px solid rgba(31,48,37,.12); background: #f4f6f1; color: #526258; font-size: 10px; line-height: 1.4; }
+
+@media (max-width: 900px) {
+  .project-cases { grid-template-columns: 1fr; gap: 28px; }
+  .project-cases .case-intro { max-width: 520px; }
+}
+
+@media (max-width: 620px) {
+  .project-cases .use-case-items { grid-template-columns: 1fr; }
+  .project-cases .use-case-items article { min-height: auto; }
+}
