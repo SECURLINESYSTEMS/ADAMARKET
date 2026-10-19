@@ -1,4 +1,8 @@
-const ALLOWED_ORIGIN = "https://adamarket.uz";
+const ALLOWED_ORIGINS = new Set([
+  "https://adamarket.uz",
+  "https://securline.uz",
+  "https://www.securline.uz",
+]);
 const RECIPIENT = "kasfuri377@gmail.com";
 const SENDER = "SecurLineUz <noreply@adamarket.uz>";
 const MAX_BODY_BYTES = 8192;
@@ -52,7 +56,7 @@ function field(data, ...names) {
 
 function nativeFormResponse(request, status, success) {
   const referer = request.headers.get("Referer") || "";
-  const uz = referer.startsWith(ALLOWED_ORIGIN + "/uz/");
+  const uz = [...ALLOWED_ORIGINS].some(origin => referer.startsWith(origin + "/uz/"));
   const message = success
     ? uz ? "So‘rov yuborildi. SecurLineUz siz bilan bog‘lanadi." : "Заявка отправлена. SecurLineUz свяжется с вами."
     : uz ? "So‘rov yuborilmadi. Iltimos, keyinroq urinib ko‘ring yoki telefon qiling." : "Заявку не удалось отправить. Попробуйте позже или позвоните нам.";
@@ -90,7 +94,7 @@ export default {
         refererOrigin = "";
       }
     }
-    if (origin ? origin !== ALLOWED_ORIGIN : refererOrigin !== ALLOWED_ORIGIN) {
+    if (origin ? !ALLOWED_ORIGINS.has(origin) : !ALLOWED_ORIGINS.has(refererOrigin)) {
       return json(403, { ok: false, error: "forbidden" });
     }
 
