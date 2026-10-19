@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://adamarket.uz/</loc>
-    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://adamarket.uz/" />
-    <xhtml:link rel="alternate" hreflang="uz-UZ" href="https://adamarket.uz/uz/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://adamarket.uz/" />
+    <loc>https://securline.uz/</loc>
+    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://securline.uz/" />
+    <xhtml:link rel="alternate" hreflang="uz-UZ" href="https://securline.uz/uz/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://securline.uz/" />
   </url>
   <url>
-    <loc>https://adamarket.uz/catalog.html</loc>
-    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://adamarket.uz/catalog.html" />
-    <xhtml:link rel="alternate" hreflang="uz-UZ" href="https://adamarket.uz/uz/catalog.html" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://adamarket.uz/catalog.html" />
+    <loc>https://securline.uz/catalog.html</loc>
+    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://securline.uz/catalog.html" />
+    <xhtml:link rel="alternate" hreflang="uz-UZ" href="https://securline.uz/uz/catalog.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://securline.uz/catalog.html" />
   </url>
   <url>
-    <loc>https://adamarket.uz/uz/</loc>
-    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://adamarket.uz/" />
-    <xhtml:link rel="alternate" hreflang="uz-UZ" href="https://adamarket.uz/uz/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://adamarket.uz/" />
+    <loc>https://securline.uz/uz/</loc>
+    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://securline.uz/" />
+    <xhtml:link rel="alternate" hreflang="uz-UZ" href="https://securline.uz/uz/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://securline.uz/" />
   </url>
   <url>
-    <loc>https://adamarket.uz/uz/catalog.html</loc>
-    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://adamarket.uz/catalog.html" />
-    <xhtml:link rel="alternate" hreflang="uz-UZ" href="https://adamarket.uz/uz/catalog.html" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://adamarket.uz/catalog.html" />
+    <loc>https://securline.uz/uz/catalog.html</loc>
+    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://securline.uz/catalog.html" />
+    <xhtml:link rel="alternate" hreflang="uz-UZ" href="https://securline.uz/uz/catalog.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://securline.uz/catalog.html" />
   </url>
 </urlset>

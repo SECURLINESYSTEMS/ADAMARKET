@@ -1,6 +1,6 @@
 # SecurLineUz
 
-Статический сайт компании SecurLineUz, публикуемый через GitHub Pages на `https://adamarket.uz/`.
+Статический сайт компании SecurLineUz, публикуемый через GitHub Pages на `https://securline.uz/`.
 
 ## Страницы и файлы
 
