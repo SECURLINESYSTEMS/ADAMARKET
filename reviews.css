@@ -24,3 +24,5 @@
 .hero-contact-actions .hero-phone-link{flex-basis:100%;width:max-content;color:#d0d9d3;font-size:12px;text-decoration:underline;text-underline-offset:4px}
 .hero-contact-actions .hero-solutions-link{margin-top:2px}
 @media(max-width:760px){.hero-contact-actions{align-items:flex-start;gap:11px}.hero-contact-actions .button{width:100%;justify-content:space-between;max-width:360px}.hero-contact-actions .hero-phone-link{margin:1px 0 2px}}
+.hero-contact-actions .button{flex-shrink:0;white-space:nowrap}
+@media(max-width:760px){.hero-contact-actions .button{width:100%;max-width:360px;flex-shrink:1;white-space:normal}}
