@@ -106,6 +106,23 @@ async function reviewsEndpoint(request, env) {
   if (/(https?:\/\/|www\.)/i.test(comment) || /[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/.test(comment)) {
     return json(400, { ok: false, error: "contact_details_not_allowed" });
   }
+  const turnstileToken = String(data.turnstileToken || "").trim();
+  if (!turnstileToken || turnstileToken.length > 2048) return json(400, { ok: false, error: "captcha_required" });
+  if (!env.TURNSTILE_SECRET) return json(503, { ok: false, error: "captcha_unavailable" });
+  try {
+    const verificationResponse = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: turnstileToken, idempotency_key: crypto.randomUUID() }),
+    });
+    if (!verificationResponse.ok) return json(503, { ok: false, error: "captcha_unavailable" });
+    const verification = await verificationResponse.json();
+    if (!verification.success || !["securline.uz", "www.securline.uz"].includes(verification.hostname) || verification.action !== "review") {
+      return json(400, { ok: false, error: "captcha_failed" });
+    }
+  } catch {
+    return json(503, { ok: false, error: "captcha_unavailable" });
+  }
   if (!env.REVIEWS_DB) return json(503, { ok: false, error: "service_unavailable" });
   try {
     const duplicate = await env.REVIEWS_DB.prepare(
