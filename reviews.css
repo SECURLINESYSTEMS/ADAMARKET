@@ -15,3 +15,5 @@
 .review-note{font-size:11px;line-height:1.65;color:#a8b5ae;margin:14px 0 0}
 @media(max-width:760px){.reviews-section{grid-template-columns:1fr;gap:30px;padding-top:76px;padding-bottom:76px}.review-form{padding:21px}}
 @media(prefers-reduced-motion:reduce){.review-form *{scroll-behavior:auto}}
+
+.review-list{display:grid;gap:12px;margin-top:32px}.review-card{padding:17px 18px;border:1px solid rgba(211,229,217,.13);background:#0d1417}.review-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.review-card-head strong{font:600 13px var(--display);color:#f0f4f1}.review-rating{color:var(--signal);letter-spacing:.08em;font-size:14px;white-space:nowrap}.review-card>p{margin:10px 0 0;color:#c1cbc5;font-size:12px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.review-honeypot{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important}.review-form button:disabled{opacity:.6;cursor:wait}

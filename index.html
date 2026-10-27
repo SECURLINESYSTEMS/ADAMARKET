@@ -184,22 +184,24 @@
       <div class="reviews-copy">
         <p class="section-index">ОТЗЫВЫ КЛИЕНТОВ</p>
         <h2 id="reviewsTitle">Ваш опыт —<br><span>важный ориентир.</span></h2>
-        <p>Расскажите, как прошли подбор оборудования и монтаж. Мы проверим отзыв и опубликуем его на сайте только после согласования.</p>
+        <p>Расскажите, как прошли подбор оборудования и монтаж. После отправки ваш отзыв сразу появится на сайте. Пожалуйста, не указывайте личные данные и контакты.</p>
+        <div class="review-list" id="reviewList" aria-live="polite" aria-busy="true"><p class="review-note">Загружаем отзывы…</p></div>
       </div>
-      <form class="review-form" id="reviewForm">
+      <form class="review-form" id="reviewForm" action="/api/reviews" method="post">
         <p class="form-title">Оставить отзыв</p>
         <label for="reviewName">Имя или компания <span>(необязательно)</span></label>
-        <input id="reviewName" name="reviewName" type="text" autocomplete="name" maxlength="80" placeholder="Например, Азиз или название компании">
+        <input id="reviewName" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Например, Азиз или название компании">
         <label for="reviewRating">Ваша оценка</label>
-        <select id="reviewRating" name="reviewRating" required>
+        <select id="reviewRating" name="rating" required>
           <option value="" selected disabled>Выберите оценку</option>
           <option value="5">5 — отлично</option><option value="4">4 — хорошо</option><option value="3">3 — нормально</option><option value="2">2</option><option value="1">1</option>
         </select>
         <label for="reviewText">Ваш отзыв</label>
-        <textarea id="reviewText" name="reviewText" maxlength="1200" placeholder="Что устанавливали и как прошла работа?" required></textarea>
-        <label class="review-consent" for="reviewConsent"><input id="reviewConsent" name="reviewConsent" type="checkbox" required><span>Разрешаю SecurLineUz рассмотреть отзыв для публикации. Если указал(а) имя, согласен(на) показать его вместе с отзывом.</span></label>
-        <button class="button button-primary review-submit" type="submit">Перейти в WhatsApp <span aria-hidden="true">↗</span></button>
-        <p class="review-note" id="reviewNote" role="status" aria-live="polite">WhatsApp откроется с готовым сообщением. Нажмите «Отправить» в WhatsApp; отзыв не публикуется автоматически. Сайт не сохраняет введённые данные.</p>
+        <textarea id="reviewText" name="comment" maxlength="1200" placeholder="Что устанавливали и как прошла работа?" required></textarea>
+        <label class="review-consent" for="reviewConsent"><input id="reviewConsent" name="consent" type="checkbox" required><span>Соглашаюсь, что отправленный отзыв и указанное имя будут автоматически опубликованы на сайте SecurLineUz.</span></label>
+        <label class="review-honeypot" aria-hidden="true">Не заполняйте это поле<input name="company" tabindex="-1" autocomplete="off"></label>
+        <button class="button button-primary review-submit" type="submit">Опубликовать отзыв <span aria-hidden="true">↗</span></button>
+        <p class="review-note" id="reviewNote" role="status" aria-live="polite">Публикация происходит сразу после отправки. Указывайте только отзыв об услуге; не добавляйте номера телефонов, адреса и другие личные данные.</p>
       </form>
     </section>
 

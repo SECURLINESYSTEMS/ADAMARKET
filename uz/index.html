@@ -184,22 +184,24 @@
       <div class="reviews-copy">
         <p class="section-index">MIJOZLAR FIKRI</p>
         <h2 id="reviewsTitle">Tajribangiz —<br><span>biz uchun muhim.</span></h2>
-        <p>Uskunalarni tanlash va o‘rnatish jarayoni qanday o‘tganini yozing. Fikrni tekshirib, faqat siz bilan kelishilgandan keyin saytda e’lon qilamiz.</p>
+        <p>Uskunalarni tanlash va o‘rnatish qanday o‘tganini yozing. Yuborilgandan so‘ng fikringiz darhol saytda e’lon qilinadi. Iltimos, shaxsiy ma’lumot va aloqa ma’lumotlarini yozmang.</p>
+        <div class="review-list" id="reviewList" aria-live="polite" aria-busy="true"><p class="review-note">Fikrlar yuklanmoqda…</p></div>
       </div>
-      <form class="review-form" id="reviewForm">
+      <form class="review-form" id="reviewForm" action="/api/reviews" method="post">
         <p class="form-title">Fikr qoldirish</p>
         <label for="reviewName">Ism yoki kompaniya <span>(ixtiyoriy)</span></label>
-        <input id="reviewName" name="reviewName" type="text" autocomplete="name" maxlength="80" placeholder="Masalan, Aziz yoki kompaniya nomi">
+        <input id="reviewName" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Masalan, Aziz yoki kompaniya nomi">
         <label for="reviewRating">Bahoyingiz</label>
-        <select id="reviewRating" name="reviewRating" required>
+        <select id="reviewRating" name="rating" required>
           <option value="" selected disabled>Bahoni tanlang</option>
           <option value="5">5 — a’lo</option><option value="4">4 — yaxshi</option><option value="3">3 — qoniqarli</option><option value="2">2</option><option value="1">1</option>
         </select>
         <label for="reviewText">Fikringiz</label>
-        <textarea id="reviewText" name="reviewText" maxlength="1200" placeholder="Nima o‘rnatildi va ish qanday o‘tdi?" required></textarea>
-        <label class="review-consent" for="reviewConsent"><input id="reviewConsent" name="reviewConsent" type="checkbox" required><span>Fikrimni e’lon qilish uchun ko‘rib chiqishga SecurLineUz’ga ruxsat beraman. Ism yozgan bo‘lsam, uni fikr bilan birga ko‘rsatishga roziman.</span></label>
-        <button class="button button-primary review-submit" type="submit">WhatsApp’ga o‘tish <span aria-hidden="true">↗</span></button>
-        <p class="review-note" id="reviewNote" role="status" aria-live="polite">WhatsApp tayyor xabar bilan ochiladi. Xabarni yuborish uchun WhatsApp’da «Yuborish»ni bosing; fikr saytda avtomatik e’lon qilinmaydi. Sayt kiritilgan ma’lumotlarni saqlamaydi.</p>
+        <textarea id="reviewText" name="comment" maxlength="1200" placeholder="Nima o‘rnatildi va ish qanday o‘tdi?" required></textarea>
+        <label class="review-consent" for="reviewConsent"><input id="reviewConsent" name="consent" type="checkbox" required><span>Yuborilgan fikrim va yozilgan ismim SecurLineUz saytida avtomatik e’lon qilinishiga roziman.</span></label>
+        <label class="review-honeypot" aria-hidden="true">Bu maydonni to‘ldirmang<input name="company" tabindex="-1" autocomplete="off"></label>
+        <button class="button button-primary review-submit" type="submit">Fikrni e’lon qilish <span aria-hidden="true">↗</span></button>
+        <p class="review-note" id="reviewNote" role="status" aria-live="polite">Fikr yuborilgach darhol e’lon qilinadi. Faqat xizmat haqidagi fikrni yozing; telefon raqami, manzil va boshqa shaxsiy ma’lumotlarni kiritmang.</p>
       </form>
     </section>
 

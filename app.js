@@ -134,20 +134,79 @@ if (form) {
 
 
 const reviewForm = document.querySelector('#reviewForm');
+const reviewList = document.querySelector('#reviewList');
+const reviewNote = document.querySelector('#reviewNote');
+const reviewText = isUzbek ? {
+  loading: 'Fikrlar yuklanmoqda…', empty: 'Hozircha fikrlar yo‘q. Birinchi bo‘lib fikr qoldiring.',
+  failed: 'Fikrlarni yuklab bo‘lmadi. Keyinroq qayta urinib ko‘ring.',
+  sending: 'Fikr yuborilmoqda…', sent: 'Rahmat! Fikringiz saytda e’lon qilindi.',
+  sendError: 'Fikr yuborilmadi. Iltimos, qayta urinib ko‘ring.',
+  rating: 'baho', name: 'Mijoz'
+} : {
+  loading: 'Загружаем отзывы…', empty: 'Пока отзывов нет. Будьте первым, кто поделится впечатлением.',
+  failed: 'Не удалось загрузить отзывы. Попробуйте позже.',
+  sending: 'Отправляем отзыв…', sent: 'Спасибо! Ваш отзыв опубликован на сайте.',
+  sendError: 'Не удалось отправить отзыв. Попробуйте ещё раз.',
+  rating: 'оценка', name: 'Клиент'
+};
+function renderReviews(items) {
+  if (!reviewList) return;
+  reviewList.replaceChildren();
+  if (!items.length) {
+    const empty = document.createElement('p'); empty.className = 'review-note'; empty.textContent = reviewText.empty;
+    reviewList.append(empty); return;
+  }
+  items.forEach((item) => {
+    const card = document.createElement('article'); card.className = 'review-card';
+    const head = document.createElement('div'); head.className = 'review-card-head';
+    const author = document.createElement('strong'); author.textContent = item.name || reviewText.name;
+    const rating = document.createElement('span'); rating.className = 'review-rating'; rating.textContent = '★'.repeat(Math.max(1, Math.min(5, Number(item.rating))));
+    rating.setAttribute('aria-label', Number(item.rating) + '/5');
+    head.append(author, rating);
+    const body = document.createElement('p'); body.textContent = item.comment;
+    card.append(head, body); reviewList.append(card);
+  });
+}
+async function loadReviews() {
+  if (!reviewList) return;
+  reviewList.setAttribute('aria-busy', 'true');
+  try {
+    const response = await fetch('/api/reviews', { headers: { Accept: 'application/json' } });
+    const result = await response.json();
+    if (!response.ok || !result?.ok || !Array.isArray(result.reviews)) throw new Error('load');
+    renderReviews(result.reviews);
+  } catch {
+    reviewList.replaceChildren();
+    const error = document.createElement('p'); error.className = 'review-note'; error.textContent = reviewText.failed;
+    reviewList.append(error);
+  } finally { reviewList.setAttribute('aria-busy', 'false'); }
+}
+loadReviews();
 if (reviewForm) {
-  reviewForm.addEventListener('submit', (event) => {
+  reviewForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!reviewForm.reportValidity()) return;
-    const name = reviewForm.querySelector('#reviewName')?.value.trim() || (isUzbek ? 'Ismsiz' : 'Без имени');
-    const rating = reviewForm.querySelector('#reviewRating')?.value || '';
-    const review = reviewForm.querySelector('#reviewText')?.value.trim() || '';
-    const text = isUzbek
-      ? ['SecurLineUz sayti uchun mijoz fikri', '', 'Ism / kompaniya: ' + name, 'Baho: ' + rating + '/5', 'Fikr: ' + review, '', 'Saytda e’lon qilish uchun ko‘rib chiqishga roziman.'].join('\n')
-      : ['Отзыв для сайта SecurLineUz', '', 'Имя / компания: ' + name, 'Оценка: ' + rating + '/5', 'Отзыв: ' + review, '', 'Согласен(на) на рассмотрение отзыва для публикации.'].join('\n');
-    const url = 'https://wa.me/998950214334?text=' + encodeURIComponent(text);
-    const waWindow = window.open(url, '_blank');
-    if (waWindow) waWindow.opener = null;
-    else window.location.assign(url);
+    const button = reviewForm.querySelector('[type="submit"]');
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
+    if (reviewNote) reviewNote.textContent = reviewText.sending;
+    const payload = {
+      name: String(reviewForm.querySelector('[name="name"]')?.value ?? '').trim(),
+      rating: Number(reviewForm.querySelector('[name="rating"]')?.value ?? 0),
+      comment: String(reviewForm.querySelector('[name="comment"]')?.value ?? '').trim(),
+      consent: Boolean(reviewForm.querySelector('[name="consent"]')?.checked),
+      company: String(reviewForm.querySelector('[name="company"]')?.value ?? '').trim(),
+    };
+    try {
+      const response = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.ok) throw new Error(result?.error || 'submit');
+      reviewForm.reset();
+      if (reviewNote) reviewNote.textContent = reviewText.sent;
+      await loadReviews();
+    } catch {
+      if (reviewNote) reviewNote.textContent = reviewText.sendError;
+    } finally { if (button) button.disabled = false; }
   });
 }
 
