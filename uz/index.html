@@ -28,7 +28,8 @@
   <link rel="stylesheet" href="/light-theme.css?v=5">
   <link rel="stylesheet" href="/locale.css?v=1">
   <link rel="stylesheet" href="/reviews.css?v=1">
-  <script src="/app.js?v=reviews1" defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="/app.js?v=reviews2" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Asosiy mazmunga o‘tish</a>
@@ -198,10 +199,11 @@
         </select>
         <label for="reviewText">Fikringiz</label>
         <textarea id="reviewText" name="comment" maxlength="1200" placeholder="Nima o‘rnatildi va ish qanday o‘tdi?" required></textarea>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFoABqozXuMwGhQK" data-action="review" data-theme="dark"></div>
         <label class="review-consent" for="reviewConsent"><input id="reviewConsent" name="consent" type="checkbox" required><span>Yuborilgan fikrim va yozilgan ismim SecurLineUz saytida avtomatik e’lon qilinishiga roziman.</span></label>
         <label class="review-honeypot" aria-hidden="true">Bu maydonni to‘ldirmang<input name="company" tabindex="-1" autocomplete="off"></label>
         <button class="button button-primary review-submit" type="submit">Fikrni e’lon qilish <span aria-hidden="true">↗</span></button>
-        <p class="review-note" id="reviewNote" role="status" aria-live="polite">Fikr yuborilgach darhol e’lon qilinadi. Faqat xizmat haqidagi fikrni yozing; telefon raqami, manzil va boshqa shaxsiy ma’lumotlarni kiritmang.</p>
+        <p class="review-note" id="reviewNote" role="status" aria-live="polite">Cloudflare Turnstile forma haqiqiy odam tomonidan yuborilayotganini tekshiradi. Fikr yuborish orqali uning darhol e’lon qilinishiga rozilik bildirasiz. Faqat hamkorlik tajribasini yozing; shaxsiy va aloqa ma’lumotlarini joylamang.</p>
       </form>
     </section>
 

@@ -28,7 +28,8 @@
   <link rel="stylesheet" href="light-theme.css?v=5">
   <link rel="stylesheet" href="locale.css?v=1">
   <link rel="stylesheet" href="reviews.css?v=1">
-  <script src="app.js?v=reviews1" defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="app.js?v=reviews2" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -198,10 +199,11 @@
         </select>
         <label for="reviewText">Ваш отзыв</label>
         <textarea id="reviewText" name="comment" maxlength="1200" placeholder="Что устанавливали и как прошла работа?" required></textarea>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFoABqozXuMwGhQK" data-action="review" data-theme="dark"></div>
         <label class="review-consent" for="reviewConsent"><input id="reviewConsent" name="consent" type="checkbox" required><span>Соглашаюсь, что отправленный отзыв и указанное имя будут автоматически опубликованы на сайте SecurLineUz.</span></label>
         <label class="review-honeypot" aria-hidden="true">Не заполняйте это поле<input name="company" tabindex="-1" autocomplete="off"></label>
         <button class="button button-primary review-submit" type="submit">Опубликовать отзыв <span aria-hidden="true">↗</span></button>
-        <p class="review-note" id="reviewNote" role="status" aria-live="polite">Публикация происходит сразу после отправки. Указывайте только отзыв об услуге; не добавляйте номера телефонов, адреса и другие личные данные.</p>
+        <p class="review-note" id="reviewNote" role="status" aria-live="polite">Cloudflare Turnstile проверяет, что форму отправляет человек. Отправляя отзыв, вы соглашаетесь на его немедленную публикацию. Указывайте только опыт сотрудничества; не публикуйте личные данные и контакты.</p>
       </form>
     </section>
 

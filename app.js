@@ -141,12 +141,14 @@ const reviewText = isUzbek ? {
   failed: 'Fikrlarni yuklab bo‘lmadi. Keyinroq qayta urinib ko‘ring.',
   sending: 'Fikr yuborilmoqda…', sent: 'Rahmat! Fikringiz saytda e’lon qilindi.',
   sendError: 'Fikr yuborilmadi. Iltimos, qayta urinib ko‘ring.',
+  captcha: 'Iltimos, CAPTCHA tekshiruvini bajaring va qayta urinib ko‘ring.',
   rating: 'baho', name: 'Mijoz'
 } : {
   loading: 'Загружаем отзывы…', empty: 'Пока отзывов нет. Будьте первым, кто поделится впечатлением.',
   failed: 'Не удалось загрузить отзывы. Попробуйте позже.',
   sending: 'Отправляем отзыв…', sent: 'Спасибо! Ваш отзыв опубликован на сайте.',
   sendError: 'Не удалось отправить отзыв. Попробуйте ещё раз.',
+  captcha: 'Пожалуйста, пройдите проверку CAPTCHA и попробуйте снова.',
   rating: 'оценка', name: 'Клиент'
 };
 function renderReviews(items) {
@@ -196,16 +198,20 @@ if (reviewForm) {
       comment: String(reviewForm.querySelector('[name="comment"]')?.value ?? '').trim(),
       consent: Boolean(reviewForm.querySelector('[name="consent"]')?.checked),
       company: String(reviewForm.querySelector('[name="company"]')?.value ?? '').trim(),
+      turnstileToken: String(reviewForm.querySelector('[name="cf-turnstile-response"]')?.value ?? '').trim(),
     };
     try {
       const response = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.ok) throw new Error(result?.error || 'submit');
       reviewForm.reset();
+      window.turnstile?.reset();
       if (reviewNote) reviewNote.textContent = reviewText.sent;
       await loadReviews();
-    } catch {
-      if (reviewNote) reviewNote.textContent = reviewText.sendError;
+    } catch (error) {
+      window.turnstile?.reset();
+      const message = ['captcha_required', 'captcha_failed'].includes(error?.message) ? reviewText.captcha : reviewText.sendError;
+      if (reviewNote) reviewNote.textContent = message;
     } finally { if (button) button.disabled = false; }
   });
 }
