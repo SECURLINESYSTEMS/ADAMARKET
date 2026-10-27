@@ -110,6 +110,7 @@ if (form) {
       phone: String(form.querySelector('#phone')?.value ?? '').trim(),
       direction: String(form.querySelector('#system')?.value ?? ''),
       comment: String(form.querySelector('#message')?.value ?? '').trim(),
+      language: isUzbek ? 'uz' : 'ru',
     };
 
     if (submitButton) submitButton.disabled = true;

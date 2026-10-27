@@ -215,14 +215,14 @@ export default {
 
     if (name.length < 2 || name.length > 100) return errorResponse(request, isJson, 400, "invalid_name");
     if (!/^[0-9+() \t-]{7,30}$/.test(phone)) return errorResponse(request, isJson, 400, "invalid_phone");
-    if (!ALLOWED_DIRECTIONS.has(direction)) return errorResponse(request, isJson, 400, "invalid_direction");
+    if (direction && !ALLOWED_DIRECTIONS.has(direction)) return errorResponse(request, isJson, 400, "invalid_direction");
     if (comment.length > MAX_MESSAGE_CHARS) return errorResponse(request, isJson, 400, "message_too_long");
     if (!env.RESEND_API_KEY) return errorResponse(request, isJson, 503, "service_unavailable");
 
-    const uz = UZ_DIRECTIONS.has(direction);
+    const uz = UZ_DIRECTIONS.has(direction) || field(data, "language") === "uz";
     const text = uz
-      ? ["SecurLineUz saytidan yangi so‘rov", "", "Ism: " + name, "Telefon: " + phone, "Yo‘nalish: " + direction, "Izoh: " + (comment || "ko‘rsatilmagan")].join("\n")
-      : ["Новая заявка с сайта SecurLineUz", "", "Имя: " + name, "Телефон: " + phone, "Направление: " + direction, "Комментарий: " + (comment || "не указан")].join("\n");
+      ? ["SecurLineUz saytidan yangi so‘rov", "", "Ism: " + name, "Telefon: " + phone, "Yo‘nalish: " + (direction || "suhbatda aniqlashtiriladi"), "Izoh: " + (comment || "ko‘rsatilmagan")].join("\n")
+      : ["Новая заявка с сайта SecurLineUz", "", "Имя: " + name, "Телефон: " + phone, "Направление: " + (direction || "уточнить при разговоре"), "Комментарий: " + (comment || "не указан")].join("\n");
     try {
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",

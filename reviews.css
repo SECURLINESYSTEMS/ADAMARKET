@@ -26,3 +26,15 @@
 @media(max-width:760px){.hero-contact-actions{align-items:flex-start;gap:11px}.hero-contact-actions .button{width:100%;justify-content:space-between;max-width:360px}.hero-contact-actions .hero-phone-link{margin:1px 0 2px}}
 .hero-contact-actions .button{flex-shrink:0;white-space:nowrap}
 @media(max-width:760px){.hero-contact-actions .button{width:100%;max-width:360px;flex-shrink:1;white-space:normal}}
+
+/* Keep the main message inside a phone-width viewport. */
+.hero h1{max-width:min(100%,760px);overflow-wrap:anywhere;word-break:normal}
+@media(max-width:760px){.hero h1{font-size:clamp(40px,11vw,60px);line-height:.98;letter-spacing:-.075em;max-width:100%;margin-bottom:22px}.hero-content{width:min(100%,600px)}.hero-copy{max-width:38ch}}
+@media(max-width:420px){.hero h1{font-size:clamp(38px,11.2vw,46px);line-height:1;letter-spacing:-.07em}.hero{overflow:hidden}}
+
+.case-summary{margin:0 0 12px;color:#47584e;font-size:11px;line-height:1.6}.case-summary strong{color:#26372c}
+.faq-section{padding:clamp(70px,9vw,112px) var(--page-pad,7vw);display:grid;grid-template-columns:minmax(220px,.72fr) minmax(0,1.28fr);gap:clamp(28px,6vw,76px);background:#edf1eb;color:#1d2a22;border-top:1px solid rgba(31,48,37,.12)}
+.faq-heading h2{font:600 clamp(36px,4.5vw,58px)/.98 var(--display);letter-spacing:-.055em;margin:18px 0}.faq-heading h2 span{color:#557a1d}.faq-heading>p:last-child{max-width:34ch;color:#5b6b60;font-size:12px;line-height:1.7}
+.faq-list{border-top:1px solid rgba(31,48,37,.16)}.faq-list details{border-bottom:1px solid rgba(31,48,37,.16);padding:0 2px}.faq-list summary{position:relative;cursor:pointer;list-style:none;padding:18px 36px 18px 0;color:#1d2a22;font-size:14px;font-weight:650;line-height:1.5}.faq-list summary::-webkit-details-marker{display:none}.faq-list summary::after{content:'+';position:absolute;right:3px;top:15px;color:#557a1d;font-size:21px;font-weight:400}.faq-list details[open] summary::after{content:'−'}.faq-list details p{max-width:68ch;margin:0;padding:0 28px 18px 0;color:#536258;font-size:12px;line-height:1.8}
+.faq-heading a{color:#385b17;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:760px){.faq-section{grid-template-columns:1fr;gap:20px;padding-top:68px;padding-bottom:68px}.faq-heading h2{font-size:42px}.faq-list summary{font-size:13px}}
