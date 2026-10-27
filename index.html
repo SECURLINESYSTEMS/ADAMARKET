@@ -27,7 +27,8 @@
   <link rel="stylesheet" href="catalog.css">
   <link rel="stylesheet" href="light-theme.css?v=5">
   <link rel="stylesheet" href="locale.css?v=1">
-  <script src="app.js?v=3d60cc427c" defer></script>
+  <link rel="stylesheet" href="reviews.css?v=1">
+  <script src="app.js?v=reviews1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -44,6 +45,7 @@
       <a href="catalog.html">Каталог</a>
       <a href="#about">О компании</a>
       <a href="#cases">Объекты</a>
+      <a href="#reviews">Отзывы</a>
       <a href="#contacts">Контакты</a>
     <div class="language-switch" aria-label="Язык сайта"><a class="language-link is-active" href="/" lang="ru" hreflang="ru" aria-current="page">RU</a><a class="language-link" href="/uz/" lang="uz" hreflang="uz-UZ">UZ</a></div></nav>
     <a class="header-contact" href="tel:+998950214334">
@@ -176,6 +178,29 @@
         <article class="case-card"><span>03 / ГОСУДАРСТВЕННОЕ УЧРЕЖДЕНИЕ</span><h3>Консульско-правовой департамент Министерства иностранных дел Республики Узбекистан</h3><ul class="case-systems" aria-label="Виды систем"><li>Видеонаблюдение</li><li>Пожарная сигнализация BOLID</li><li>Охранная сигнализация</li><li>Структурированная кабельная система (СКС)</li></ul></article>
         <article class="case-card"><span>04 / ОБРАЗОВАНИЕ</span><h3>Специализированная школа Алмазарского района</h3><ul class="case-systems" aria-label="Виды систем"><li>Видеонаблюдение</li><li>Пожарная сигнализация</li><li>Структурированная кабельная система (СКС)</li><li>Wi-Fi на оборудовании MikroTik</li><li>Сервер</li></ul></article>
       </div>
+    </section>
+
+    <section class="reviews-section" id="reviews" aria-labelledby="reviewsTitle">
+      <div class="reviews-copy">
+        <p class="section-index">ОТЗЫВЫ КЛИЕНТОВ</p>
+        <h2 id="reviewsTitle">Ваш опыт —<br><span>важный ориентир.</span></h2>
+        <p>Расскажите, как прошли подбор оборудования и монтаж. Мы проверим отзыв и опубликуем его на сайте только после согласования.</p>
+      </div>
+      <form class="review-form" id="reviewForm">
+        <p class="form-title">Оставить отзыв</p>
+        <label for="reviewName">Имя или компания <span>(необязательно)</span></label>
+        <input id="reviewName" name="reviewName" type="text" autocomplete="name" maxlength="80" placeholder="Например, Азиз или название компании">
+        <label for="reviewRating">Ваша оценка</label>
+        <select id="reviewRating" name="reviewRating" required>
+          <option value="" selected disabled>Выберите оценку</option>
+          <option value="5">5 — отлично</option><option value="4">4 — хорошо</option><option value="3">3 — нормально</option><option value="2">2</option><option value="1">1</option>
+        </select>
+        <label for="reviewText">Ваш отзыв</label>
+        <textarea id="reviewText" name="reviewText" maxlength="1200" placeholder="Что устанавливали и как прошла работа?" required></textarea>
+        <label class="review-consent" for="reviewConsent"><input id="reviewConsent" name="reviewConsent" type="checkbox" required><span>Разрешаю SecurLineUz рассмотреть отзыв для публикации. Если указал(а) имя, согласен(на) показать его вместе с отзывом.</span></label>
+        <button class="button button-primary review-submit" type="submit">Перейти в WhatsApp <span aria-hidden="true">↗</span></button>
+        <p class="review-note" id="reviewNote" role="status" aria-live="polite">WhatsApp откроется с готовым сообщением. Нажмите «Отправить» в WhatsApp; отзыв не публикуется автоматически. Сайт не сохраняет введённые данные.</p>
+      </form>
     </section>
 
     <section class="contact-section" id="contacts" aria-labelledby="contactTitle">

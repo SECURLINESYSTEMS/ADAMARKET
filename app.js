@@ -132,6 +132,25 @@ if (form) {
   });
 }
 
+
+const reviewForm = document.querySelector('#reviewForm');
+if (reviewForm) {
+  reviewForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!reviewForm.reportValidity()) return;
+    const name = reviewForm.querySelector('#reviewName')?.value.trim() || (isUzbek ? 'Ismsiz' : 'Без имени');
+    const rating = reviewForm.querySelector('#reviewRating')?.value || '';
+    const review = reviewForm.querySelector('#reviewText')?.value.trim() || '';
+    const text = isUzbek
+      ? ['SecurLineUz sayti uchun mijoz fikri', '', 'Ism / kompaniya: ' + name, 'Baho: ' + rating + '/5', 'Fikr: ' + review, '', 'Saytda e’lon qilish uchun ko‘rib chiqishga roziman.'].join('\n')
+      : ['Отзыв для сайта SecurLineUz', '', 'Имя / компания: ' + name, 'Оценка: ' + rating + '/5', 'Отзыв: ' + review, '', 'Согласен(на) на рассмотрение отзыва для публикации.'].join('\n');
+    const url = 'https://wa.me/998950214334?text=' + encodeURIComponent(text);
+    const waWindow = window.open(url, '_blank');
+    if (waWindow) waWindow.opener = null;
+    else window.location.assign(url);
+  });
+}
+
 const year = document.querySelector('#year');
 if (year) year.textContent = new Date().getFullYear();
 

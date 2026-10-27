@@ -27,7 +27,8 @@
   <link rel="stylesheet" href="/catalog.css">
   <link rel="stylesheet" href="/light-theme.css?v=5">
   <link rel="stylesheet" href="/locale.css?v=1">
-  <script src="/app.js?v=3d60cc427c" defer></script>
+  <link rel="stylesheet" href="/reviews.css?v=1">
+  <script src="/app.js?v=reviews1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Asosiy mazmunga o‘tish</a>
@@ -44,6 +45,7 @@
       <a href="catalog.html">Katalog</a>
       <a href="#about">Kompaniya haqida</a>
       <a href="#cases">Loyihalar</a>
+      <a href="#reviews">Mijozlar fikri</a>
       <a href="#contacts">Aloqa</a>
     <div class="language-switch" aria-label="Tilni tanlash"><a class="language-link" href="/" lang="ru" hreflang="ru">RU</a><a class="language-link is-active" href="/uz/" lang="uz" hreflang="uz-UZ" aria-current="page">UZ</a></div></nav>
     <a class="header-contact" href="tel:+998950214334">
@@ -176,6 +178,29 @@
         <article class="case-card"><span>03 / DAVLAT IDORASI</span><h3>O‘zbekiston Respublikasi Tashqi ishlar vazirligining Konsullik-huquqiy departamenti</h3><ul class="case-systems" aria-label="Tizim turlari"><li>Videokuzatuv</li><li>BOLID yong‘in signalizatsiyasi</li><li>Qo‘riqlash signalizatsiyasi</li><li>Tarkibiy kabel tizimi (SKS)</li></ul></article>
         <article class="case-card"><span>04 / TA’LIM</span><h3>Olmazor tuman ixtisoslashtirilgan maktabi</h3><ul class="case-systems" aria-label="Tizim turlari"><li>Videokuzatuv</li><li>Yong‘in signalizatsiyasi</li><li>Tarkibiy kabel tizimi (SKS)</li><li>MikroTik asosidagi Wi-Fi</li><li>Server</li></ul></article>
       </div>
+    </section>
+
+    <section class="reviews-section" id="reviews" aria-labelledby="reviewsTitle">
+      <div class="reviews-copy">
+        <p class="section-index">MIJOZLAR FIKRI</p>
+        <h2 id="reviewsTitle">Tajribangiz —<br><span>biz uchun muhim.</span></h2>
+        <p>Uskunalarni tanlash va o‘rnatish jarayoni qanday o‘tganini yozing. Fikrni tekshirib, faqat siz bilan kelishilgandan keyin saytda e’lon qilamiz.</p>
+      </div>
+      <form class="review-form" id="reviewForm">
+        <p class="form-title">Fikr qoldirish</p>
+        <label for="reviewName">Ism yoki kompaniya <span>(ixtiyoriy)</span></label>
+        <input id="reviewName" name="reviewName" type="text" autocomplete="name" maxlength="80" placeholder="Masalan, Aziz yoki kompaniya nomi">
+        <label for="reviewRating">Bahoyingiz</label>
+        <select id="reviewRating" name="reviewRating" required>
+          <option value="" selected disabled>Bahoni tanlang</option>
+          <option value="5">5 — a’lo</option><option value="4">4 — yaxshi</option><option value="3">3 — qoniqarli</option><option value="2">2</option><option value="1">1</option>
+        </select>
+        <label for="reviewText">Fikringiz</label>
+        <textarea id="reviewText" name="reviewText" maxlength="1200" placeholder="Nima o‘rnatildi va ish qanday o‘tdi?" required></textarea>
+        <label class="review-consent" for="reviewConsent"><input id="reviewConsent" name="reviewConsent" type="checkbox" required><span>Fikrimni e’lon qilish uchun ko‘rib chiqishga SecurLineUz’ga ruxsat beraman. Ism yozgan bo‘lsam, uni fikr bilan birga ko‘rsatishga roziman.</span></label>
+        <button class="button button-primary review-submit" type="submit">WhatsApp’ga o‘tish <span aria-hidden="true">↗</span></button>
+        <p class="review-note" id="reviewNote" role="status" aria-live="polite">WhatsApp tayyor xabar bilan ochiladi. Xabarni yuborish uchun WhatsApp’da «Yuborish»ni bosing; fikr saytda avtomatik e’lon qilinmaydi. Sayt kiritilgan ma’lumotlarni saqlamaydi.</p>
+      </form>
     </section>
 
     <section class="contact-section" id="contacts" aria-labelledby="contactTitle">
