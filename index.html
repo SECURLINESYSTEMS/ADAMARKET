@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="catalog.css">
   <link rel="stylesheet" href="light-theme.css?v=5">
   <link rel="stylesheet" href="locale.css?v=1">
-  <link rel="stylesheet" href="reviews.css?v=2">
+  <link rel="stylesheet" href="reviews.css?v=3">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script src="app.js?v=reviews3" defer></script>
 </head>
@@ -220,23 +220,18 @@
       </div>
     </section>
 
-    <section class="contact-section" id="contacts" aria-labelledby="contactTitle">
+    <section class="contact-section contact-section-socials" id="contacts" aria-labelledby="contactTitle">
       <div class="contact-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="contact-copy">
         <p class="section-index"><span>06</span> / СЛЕДУЮЩИЙ ШАГ</p>
         <h2 id="contactTitle">Есть объект.<br><span>Давайте соберём</span><br>систему.</h2>
         <p>Расскажите, что нужно подключить или защитить. Обсудим оборудование и монтаж.</p>
+              <nav class="contact-socials" aria-label="Социальные сети и Telegram">
+          <a class="contact-social-link" href="https://www.instagram.com/securlineuz/" target="_blank" rel="noopener noreferrer"><span>Instagram</span><strong>@securlineuz</strong><span aria-hidden="true">↗</span></a>
+          <a class="contact-social-link" href="https://t.me/SecurLineUzBot" target="_blank" rel="noopener noreferrer"><span>Telegram-бот</span><strong>@SecurLineUzBot</strong><span aria-hidden="true">↗</span></a>
+          <a class="contact-social-link" href="https://t.me/SecurLineUz" target="_blank" rel="noopener noreferrer"><span>Telegram-группа</span><strong>@SecurLineUz</strong><span aria-hidden="true">↗</span></a>
+        </nav>
       </div>
-      <form class="contact-form" id="contactForm" action="/api/contact" method="post">
-        <label for="name">Имя</label>
-        <input id="name" name="Имя" autocomplete="name" placeholder="Ваше имя" required>
-        <label for="phone">Номер телефона</label>
-        <input id="phone" name="Телефон" type="tel" autocomplete="tel" placeholder="+998 __ ___ __ __" required>
-        <label for="message">Что нужно сделать? <span>(необязательно)</span></label>
-        <textarea id="message" name="Комментарий" rows="2" maxlength="2500" placeholder="Например: установить камеры в магазине"></textarea>
-        <button class="button button-primary form-submit" type="submit">Отправить заявку <span aria-hidden="true">↗</span></button>
-        <p class="form-note" id="formNote" role="status" aria-live="polite">Оставьте имя и телефон. Тип системы и подробности можно уточнить при разговоре.</p>
-      </form>
     </section>
   </main>
 

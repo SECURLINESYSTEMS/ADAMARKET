@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="/catalog.css">
   <link rel="stylesheet" href="/light-theme.css?v=5">
   <link rel="stylesheet" href="/locale.css?v=1">
-  <link rel="stylesheet" href="/reviews.css?v=2">
+  <link rel="stylesheet" href="/reviews.css?v=3">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script src="/app.js?v=reviews3" defer></script>
 </head>
@@ -220,23 +220,18 @@
       </div>
     </section>
 
-    <section class="contact-section" id="contacts" aria-labelledby="contactTitle">
+    <section class="contact-section contact-section-socials" id="contacts" aria-labelledby="contactTitle">
       <div class="contact-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="contact-copy">
         <p class="section-index"><span>06</span> / KEYINGI QADAM</p>
         <h2 id="contactTitle">Obyekt bormi?<br><span>Keling, birgalikda</span><br>tizimni yig‘amiz.</h2>
         <p>Nimani ulash yoki himoya qilish kerakligini ayting. Uskunalar va o‘rnatish ishlarini muhokama qilamiz.</p>
+              <nav class="contact-socials" aria-label="Ijtimoiy tarmoqlar va Telegram">
+          <a class="contact-social-link" href="https://www.instagram.com/securlineuz/" target="_blank" rel="noopener noreferrer"><span>Instagram</span><strong>@securlineuz</strong><span aria-hidden="true">↗</span></a>
+          <a class="contact-social-link" href="https://t.me/SecurLineUzBot" target="_blank" rel="noopener noreferrer"><span>Telegram bot</span><strong>@SecurLineUzBot</strong><span aria-hidden="true">↗</span></a>
+          <a class="contact-social-link" href="https://t.me/SecurLineUz" target="_blank" rel="noopener noreferrer"><span>Telegram guruhi</span><strong>@SecurLineUz</strong><span aria-hidden="true">↗</span></a>
+        </nav>
       </div>
-      <form class="contact-form" id="contactForm" action="/api/contact" method="post">
-        <label for="name">Ismingiz</label>
-        <input id="name" name="ism" autocomplete="name" placeholder="Ismingiz" required>
-        <label for="phone">Telefon raqami</label>
-        <input id="phone" name="telefon" type="tel" autocomplete="tel" placeholder="+998 __ ___ __ __" required>
-        <label for="message">Nima qilish kerak? <span>(ixtiyoriy)</span></label>
-        <textarea id="message" name="izoh" rows="2" maxlength="2500" placeholder="Masalan: do‘konga kameralar o‘rnatish"></textarea>
-        <button class="button button-primary form-submit" type="submit">So‘rov yuborish <span aria-hidden="true">↗</span></button>
-        <p class="form-note" id="formNote" role="status" aria-live="polite">Ism va telefon raqamingizni qoldiring. Tizim turi va tafsilotlarni suhbatda aniqlashtiramiz.</p>
-      </form>
     </section>
   </main>
 

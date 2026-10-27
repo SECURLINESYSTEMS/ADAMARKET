@@ -38,3 +38,5 @@
 .faq-list{border-top:1px solid rgba(31,48,37,.16)}.faq-list details{border-bottom:1px solid rgba(31,48,37,.16);padding:0 2px}.faq-list summary{position:relative;cursor:pointer;list-style:none;padding:18px 36px 18px 0;color:#1d2a22;font-size:14px;font-weight:650;line-height:1.5}.faq-list summary::-webkit-details-marker{display:none}.faq-list summary::after{content:'+';position:absolute;right:3px;top:15px;color:#557a1d;font-size:21px;font-weight:400}.faq-list details[open] summary::after{content:'−'}.faq-list details p{max-width:68ch;margin:0;padding:0 28px 18px 0;color:#536258;font-size:12px;line-height:1.8}
 .faq-heading a{color:#385b17;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:760px){.faq-section{grid-template-columns:1fr;gap:20px;padding-top:68px;padding-bottom:68px}.faq-heading h2{font-size:42px}.faq-list summary{font-size:13px}}
+
+.contact-section-socials{grid-template-columns:1fr}.contact-section-socials .contact-copy{max-width:760px}
